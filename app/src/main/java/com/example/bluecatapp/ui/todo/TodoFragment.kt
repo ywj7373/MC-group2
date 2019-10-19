@@ -1,4 +1,4 @@
-package com.example.bluecatapp.ui.home
+package com.example.bluecatapp.ui.todo
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,20 +10,20 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.bluecatapp.R
 
-class HomeFragment : Fragment() {
+class TodoFragment : Fragment() {
 
-    private lateinit var homeViewModel: HomeViewModel
+    private lateinit var todoViewModel: TodoViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        homeViewModel =
-                ViewModelProviders.of(this).get(HomeViewModel::class.java)
-        val root = inflater.inflate(R.layout.fragment_home, container, false)
-        val textView: TextView = root.findViewById(R.id.text_home)
-        homeViewModel.text.observe(this, Observer {
+        todoViewModel =
+            ViewModelProviders.of(this).get(TodoViewModel::class.java)
+        val root = inflater.inflate(R.layout.fragment_todo, container, false)
+        val textView: TextView = root.findViewById(R.id.text_todo)
+        todoViewModel.text.observe(this, Observer {
             textView.text = it
         })
         return root
