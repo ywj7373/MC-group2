@@ -3,23 +3,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_todo">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.bluecatapp.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/navigation_todo"
+        android:name="com.example.bluecatapp.ui.todo.TodoFragment"
+        android:label="@string/title_todo" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.bluecatapp.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_appblocking"
+        android:name="com.example.bluecatapp.ui.appblocking.AppBlockingFragment"
+        android:label="@string/title_appblocking" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.bluecatapp.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/navigation_settings"
+        android:name="com.example.bluecatapp.ui.settings.SettingsFragment"
+        android:label="@string/title_settings" />
+    <fragment
+        android:id="@+id/navigation_location"
+        android:name="com.example.bluecatapp.ui.location.LocationFragment"
+        android:label="@string/title_location" />
 </navigation>
