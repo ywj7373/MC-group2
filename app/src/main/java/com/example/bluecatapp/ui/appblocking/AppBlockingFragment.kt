@@ -17,10 +17,8 @@ import android.util.Log
 import android.provider.Settings
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.text.SpannableStringBuilder
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.text.bold
 
 
