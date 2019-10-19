@@ -1,5 +1,7 @@
 package com.example.bluecatapp.ui.appblocking
 
+import android.Manifest
+import android.app.AlertDialog
 import android.app.AppOpsManager
 import android.app.usage.UsageStats
 import android.os.Bundle
@@ -15,6 +17,9 @@ import android.util.Log
 import android.provider.Settings
 import android.content.Context
 import android.content.Intent
+import android.text.SpannableStringBuilder
+import android.widget.Toast
+import androidx.core.text.bold
 
 
 class AppBlockingFragment : Fragment() {
@@ -46,8 +51,8 @@ class AppBlockingFragment : Fragment() {
         if (hasUsageDataAccessPermission()) {
             Log.d("bcat", "Permissions all good")
         } else {
-            // Permission is not granted, go to settings to enable
-            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+            // Permission is not granted, show alert dialog to request for permission
+            showAlertDialog()
         }
     }
 
@@ -58,6 +63,38 @@ class AppBlockingFragment : Fragment() {
             context!!.packageName
         )
         return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun showAlertDialog() {
+        val alert = AlertDialog.Builder(activity!!)
+
+        // Set the alert dialog title
+        val titleMessage = SpannableStringBuilder()
+            .append("Allow ")
+            .bold { append("Bluecat ") }
+            .append("to access usage data?")
+        alert.setTitle(titleMessage)
+
+        // Display a message on alert dialog
+        alert.setMessage("In order to use the App Blocking feature, please enable \"Usage Access Permission\" on your device.")
+
+        // Set a positive button and its click listener on alert dialog
+        alert.setPositiveButton("OK"){dialog, which ->
+            // Redirect to settings to enable usage access permission
+            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+        }
+
+        // Display a negative button on alert dialog
+        alert.setNegativeButton("Cancel"){dialog,which ->
+            Toast.makeText(activity!!.applicationContext,"Permission request denied.",Toast.LENGTH_SHORT).show()
+            activity!!.onBackPressed();
+        }
+
+        // create alert dialog using builder
+        val dialog: AlertDialog = alert.create()
+
+        // Display the alert dialog on app interface
+        dialog.show()
     }
 }
 
