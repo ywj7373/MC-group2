@@ -1,9 +1,9 @@
 package com.example.bluecatapp.ui.appblocking
 
-import android.Manifest
 import android.app.AlertDialog
 import android.app.AppOpsManager
 import android.app.usage.UsageStats
+import android.app.usage.UsageStatsManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,11 +20,25 @@ import android.content.Intent
 import android.text.SpannableStringBuilder
 import android.widget.Toast
 import androidx.core.text.bold
-
+import android.content.pm.PackageManager
+import com.example.bluecatapp.FragmentToLoad
+import com.example.bluecatapp.MainActivity
 
 class AppBlockingFragment : Fragment() {
     private lateinit var appOps: AppOpsManager
     private lateinit var appBlockingViewModel: AppBlockingViewModel
+    private lateinit var usage: UsageStatsManager
+    private lateinit var packageManager: PackageManager
+    private lateinit var appsToBlock: MutableList<String>
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        appOps = context?.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        usage = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        packageManager = context.packageManager
+
+        // TODO: Implement some kind of background service that will check repeatedly if the app in the foreground should be blocked.
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,12 +52,9 @@ class AppBlockingFragment : Fragment() {
         appBlockingViewModel.text.observe(this, Observer {
             textView.text = it
         })
-        return root
-    }
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        appOps = context?.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        return root
+
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -53,6 +64,37 @@ class AppBlockingFragment : Fragment() {
         } else {
             // Permission is not granted, show alert dialog to request for permission
             showAlertDialog()
+        }
+        appsToBlock = mutableListOf("com.android.chrome", "com.google.android.youtube")
+        if (hasUsageDataAccessPermission()) {
+
+            var currentApp: UsageStats? = null
+            val currentTime = System.currentTimeMillis()
+            val events: MutableList<UsageStats> =
+                usage.queryUsageStats(
+                    UsageStatsManager.INTERVAL_DAILY,
+                    currentTime - 1000 * 100,
+                    currentTime
+                )
+            events.sortBy { currentTime - it.lastTimeStamp }
+            val filteredUsageStats = events.filter {
+                appsToBlock.contains(it.packageName)
+            }
+            filteredUsageStats.forEach {
+                // Debug logging
+                Log.d(
+                    "bcat", "${it.packageName} ${currentTime - it.lastTimeStamp}"
+                )
+            }
+            currentApp = filteredUsageStats[0]
+
+            val blockedAppNameView: TextView = activity!!.findViewById(R.id.text_appblocking_data)
+            blockedAppNameView.text = packageManager.getApplicationLabel(
+                packageManager.getApplicationInfo(
+                    currentApp.packageName,
+                    0
+                )
+            )
         }
     }
 
@@ -79,14 +121,18 @@ class AppBlockingFragment : Fragment() {
         alert.setMessage("In order to use the App Blocking feature, please enable \"Usage Access Permission\" on your device.")
 
         // Set a positive button and its click listener on alert dialog
-        alert.setPositiveButton("OK"){dialog, which ->
+        alert.setPositiveButton("OK") { dialog, which ->
             // Redirect to settings to enable usage access permission
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         }
 
         // Display a negative button on alert dialog
-        alert.setNegativeButton("Cancel"){dialog,which ->
-            Toast.makeText(activity!!.applicationContext,"Permission request denied.",Toast.LENGTH_SHORT).show()
+        alert.setNegativeButton("Cancel") { dialog, which ->
+            Toast.makeText(
+                activity!!.applicationContext,
+                "Permission request denied.",
+                Toast.LENGTH_SHORT
+            ).show()
             activity!!.onBackPressed();
         }
 
@@ -95,6 +141,16 @@ class AppBlockingFragment : Fragment() {
 
         // Display the alert dialog on app interface
         dialog.show()
+    }
+
+    private fun blockApp() {
+        // TODO: Use this function for blocking app through background service.
+        startActivity(
+            Intent(context, MainActivity::class.java).putExtra(
+                "frgToLoad",
+                FragmentToLoad.APPBLOCK
+            )
+        )
     }
 }
 
