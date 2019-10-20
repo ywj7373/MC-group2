@@ -1,12 +1,14 @@
 package com.example.bluecatapp
 
 import android.os.Bundle
+import android.util.Log
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.google.gson.Gson
 
 object FragmentToLoad {
     val TODO = 0
@@ -16,6 +18,10 @@ object FragmentToLoad {
 }
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        val gson = Gson()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
