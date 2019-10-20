@@ -41,9 +41,9 @@ class AppBlockingFragment : Fragment() {
         return root
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
-        appOps = context?.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
