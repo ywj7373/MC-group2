@@ -2,7 +2,8 @@
 
 Jinyeong Kim : jinyeongkim37@gmail.com / sonia37@snu.ac.kr<br />
 YoungWoong Jun: herojun9696@gmail.com / ywj7373@snu.ac.kr<br />
-Sigrid Marita Kvamme: sigridkvamme@gmail.com
+Sigrid Marita Kvamme: sigridkvamme@gmail.com<br />
+Rachel Gan : ganrachel98@gmail.com / rachelg98@snu.ac.kr
 
 ## UI
 
