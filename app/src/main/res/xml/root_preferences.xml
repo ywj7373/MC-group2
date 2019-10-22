@@ -30,7 +30,6 @@
             app:title="@string/profile_title"
             app:useSimpleSummaryProvider="true"
             app:dialogTitle="@string/profile_dialog_title" />
-
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -55,6 +54,12 @@
             app:iconSpaceReserved="false"
             app:title="@string/time_limit_title" />
 
+        <SwitchPreference
+            app:key="smart_blocking"
+            app:iconSpaceReserved="false"
+            app:summary="@string/smart_blocking_summary"
+            android:selectable="true"
+            app:title="@string/smart_blocking_title" />
     </PreferenceCategory>
 
     <PreferenceCategory

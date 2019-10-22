@@ -1,7 +1,6 @@
 package com.example.bluecatapp.ui.settings
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.preference.Preference
 import android.view.LayoutInflater
@@ -12,7 +11,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
-import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
 
 @Suppress("DEPRECATION")

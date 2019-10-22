@@ -26,7 +26,8 @@
     <!-- App Blocking Mode Preferences -->
     <string name="restricted_apps_title">Select Apps to Restrict</string>
     <string name="restricted_apps_dialog">Apps to Restrict</string>
-
+    <string name="smart_blocking_title">Smart Blocking</string>
+    <string name="smart_blocking_summary">ADD ME</string>
     <string name="time_limit_title">Maximum Time Limit</string>
 
     <!-- TODO -->
