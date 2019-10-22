@@ -41,6 +41,7 @@ class AppBlockingFragment : Fragment() {
         return root
     }
 
+    // Remove null check from Context to prevent error in settings
     override fun onAttach(context: Context) {
         super.onAttach(context)
         appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager

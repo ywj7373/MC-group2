@@ -14,39 +14,71 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:icon="@mipmap/ic_launcher_round"
+    android:id="@+id/settings_screen" >
 
-    <PreferenceCategory app:title="@string/messages_header">
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/profile_header" >
 
         <EditTextPreference
-            app:key="signature"
-            app:title="@string/signature_title"
-            app:useSimpleSummaryProvider="true" />
+            app:key="profile"
+            app:icon="@mipmap/ic_launcher_round"
+            app:iconSpaceReserved="true"
+            app:title="@string/profile_title"
+            app:useSimpleSummaryProvider="true"
+            app:dialogTitle="@string/profile_dialog_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/app_blocking_header">
+
+        <MultiSelectListPreference
+            app:key="restricted_apps"
+            android:defaultValue="@array/empty_array"
+            android:entries="@array/restricted_app_entries"
+            android:entryValues="@array/restricted_app_values"
+            app:dialogTitle="@string/restricted_apps_dialog"
+            app:iconSpaceReserved="false"
+            app:title="@string/restricted_apps_title" />
 
         <ListPreference
-            app:defaultValue="reply"
-            app:entries="@array/reply_entries"
-            app:entryValues="@array/reply_values"
-            app:key="reply"
-            app:title="@string/reply_title"
-            app:useSimpleSummaryProvider="true" />
+            app:key="time_limit"
+            android:entries="@array/time_limit_entries"
+            android:entryValues="@array/time_limit_values"
+            android:selectable="true"
+            app:dialogTitle="@string/time_limit_title"
+            app:iconSpaceReserved="false"
+            app:title="@string/time_limit_title" />
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/sync_header">
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/location_reminder_header">
 
-        <SwitchPreferenceCompat
-            app:key="sync"
-            app:title="@string/sync_title" />
-
-        <SwitchPreferenceCompat
-            app:dependency="sync"
-            app:key="attachment"
-            app:summaryOff="@string/attachment_summary_off"
-            app:summaryOn="@string/attachment_summary_on"
-            app:title="@string/attachment_title" />
+        <!-- TODO -->
 
     </PreferenceCategory>
 
-</PreferenceScreen>
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/homework_header">
+
+        <!-- TODO -->
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/general_header">
+
+        <!-- TODO -->
+
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>
