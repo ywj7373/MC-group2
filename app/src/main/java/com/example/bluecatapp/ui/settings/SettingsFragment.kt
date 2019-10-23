@@ -40,12 +40,10 @@ class SettingsFragment : Fragment() {
 
         val appRestrictButton: Button = root.findViewById(R.id.settings_select_apps)
         appRestrictButton.setOnClickListener {
-
-            val builder = AlertDialog.Builder(context)
-            builder.setTitle("Select apps to restrict")
-
+            // This code block creates and opens the setting popup when button is clicked
+            val appSelectionDialog = AlertDialog.Builder(context)
+            appSelectionDialog.setTitle("Select apps to restrict")
             val type = object : TypeToken<Array<String>>() {}.type
-
             val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
             var selectedAppNames: Array<String> =
                 if (sharedPrefs.getString("restrictedApps", null) !== null) {
@@ -54,17 +52,20 @@ class SettingsFragment : Fragment() {
                         type
                     )
                 } else emptyArray()
+
+            // Get list of apps on phone
             val pm = context!!.packageManager
             appList = pm.getInstalledApplications(PackageManager.GET_META_DATA)
                 .filter { appInfo -> isNotSystemPackage(appInfo) }
                 .map { appInfo ->
-                    Log.d("bcat *****", appInfo.packageName)
                     appInfo.loadLabel(pm).toString()
                 }.toTypedArray().sortedArray()
             selectedApps =
                 appList.map { appName -> selectedAppNames.contains(appName) }
                     .toBooleanArray()
-            builder.setMultiChoiceItems(
+
+            // Create popup dialog for selecting apps
+            appSelectionDialog.setMultiChoiceItems(
                 appList,
                 selectedApps
             ) { dialog, which, isChecked ->
@@ -72,9 +73,7 @@ class SettingsFragment : Fragment() {
                 selectedApps[which] = isChecked
                 selectedAppNames = getCheckedItems(appList, selectedApps)
             }
-            // Set a positive button and its click listener on alert dialog
-            builder.setPositiveButton("SAVE") { dialog, which ->
-                Log.d("bcat", "Save:" + selectedAppNames.joinToString(", "))
+            appSelectionDialog.setPositiveButton("SAVE") { dialog, which ->
                 with(sharedPrefs.edit()) {
                     putString(
                         "restrictedApps",
@@ -86,14 +85,10 @@ class SettingsFragment : Fragment() {
                 Toast.makeText(context, "Saved", Toast.LENGTH_SHORT)
                     .show()
             }
-
-            // Display a negative button on alert dialog
-            builder.setNeutralButton("Cancel") { dialog, which ->
+            appSelectionDialog.setNeutralButton("Cancel") { dialog, which ->
                 dialog.dismiss()
             }
-
-            val dialog = builder.create()
-            // Display the alert dialog on interface
+            val dialog = appSelectionDialog.create()
             dialog.show()
         }
 
@@ -110,8 +105,6 @@ class SettingsFragment : Fragment() {
         if (pm.getLaunchIntentForPackage(applicationInfo.packageName) == null) {
             return false
         }
-
-        Log.d("bcat", "Has launch intent ${applicationInfo.loadLabel(pm)}")
         // This is an app you can launch (this excludes most system apps, services)
         if (((applicationInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0)
             or ((applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0)
@@ -122,14 +115,9 @@ class SettingsFragment : Fragment() {
             if (applicationInfo.loadLabel(pm).contains("System")) {
                 return false
             }
-            Log.d(
-                "bcat",
-                "Is wanted system app ${applicationInfo.loadLabel(pm)}, ${applicationInfo.packageName}"
-            )
             return true
         } else {
             // These are the apps the user installed by themselves
-            Log.d("bcat", "Is user installed app ${applicationInfo.loadLabel(pm)}")
             return true
 
         }
