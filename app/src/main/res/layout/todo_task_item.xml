@@ -1,38 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    android:id="@+id/todo_task_item_container"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="8dp"
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/todo_task_item_description"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/todo_task_item_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Task Description" />
-
-    <TextView
-        android:id="@+id/todo_task_item_date"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/todo_task_item_description"
-        android:text="Task Date" />
-
-    <TextView
-        android:id="@+id/todo_task_item_location"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/todo_task_item_date"
-        android:text="Task Location" />
-
-    <CheckBox
-        android:id="@+id/todo_task_item_done"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:text="Done"
-        android:checked="false"
-        />
+        android:orientation="vertical">
 
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/todo_item_task_prefix"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Task : " />
+
+        <TextView
+            android:id="@+id/todo_item_task"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Task description" />
+
+        <TextView
+            android:id="@+id/todo_item_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/todo_item_task"
+            android:text="Task Date" />
+
+        <TextView
+            android:id="@+id/todo_item_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/todo_item_date"
+            android:text="Task Location" />
+
+        <CheckBox
+            android:id="@+id/todo_item_done"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:checked="false"
+            android:text="Done" />
+
+
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

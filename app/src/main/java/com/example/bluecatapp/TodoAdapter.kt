@@ -1,23 +1,44 @@
 package com.example.bluecatapp
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.bluecatapp.db.TodoDTO
+import com.example.bluecatapp.data.TodoItem
 
-class TodoAdapter(private val list: List<TodoDTO>)
-    : RecyclerView.Adapter<TodoViewHolder>() {
+class TodoAdapter : RecyclerView.Adapter<TodoAdapter.TodoItemHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        return TodoViewHolder(inflater, parent)
+    private var todoItems: List<TodoItem> = ArrayList()
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoItemHolder {
+        val itemView = LayoutInflater.from(parent.context)
+            .inflate(R.layout.todo_task_item, parent, false)
+        return TodoItemHolder(itemView)
     }
 
-    override fun onBindViewHolder(holder: TodoViewHolder, position: Int) {
-        val todo: TodoDTO= list[position]
-        holder.bind(todo)
+    override fun onBindViewHolder(holder: TodoItemHolder, position: Int) {
+        val currentTodoItem = todoItems[position]
+        holder.textViewTask.text = currentTodoItem.task
+        holder.textViewDate.text = currentTodoItem.dateTime
+        holder.textViewLocation.text = currentTodoItem.location
+        holder.checkBoxDone.isChecked = currentTodoItem.done
     }
 
-    override fun getItemCount(): Int = list.size
+    override fun getItemCount(): Int = todoItems.size
+
+    fun setTodoItems(todoItems: List<TodoItem>) {
+        this.todoItems = todoItems
+        notifyDataSetChanged()
+    }
+
+    inner class TodoItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        var textViewTask: TextView = itemView.findViewById(R.id.todo_item_task)
+        var textViewDate: TextView = itemView.findViewById(R.id.todo_item_date)
+        var textViewLocation: TextView = itemView.findViewById(R.id.todo_item_location)
+        var checkBoxDone: CheckBox = itemView.findViewById(R.id.todo_item_done)
+
+    }
 
 }

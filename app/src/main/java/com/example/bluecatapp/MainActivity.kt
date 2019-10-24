@@ -1,14 +1,23 @@
 package com.example.bluecatapp
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.recyclerview.widget.RecyclerView
+import com.example.bluecatapp.data.TodoItem
+import com.example.bluecatapp.ui.todo.TodoViewModel
 
 class MainActivity : AppCompatActivity() {
+
+    private val ADD_TODO_REQUEST = 1
+    private lateinit var todoViewModel: TodoViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,10 +35,27 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        runMe()
+//        val recyclerView = findViewById<RecyclerView>(R.id.todo_recycler_view)
     }
 
-    fun runMe() {
-        println("Hello world")
-    }
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//
+//        if (requestCode == ADD_TODO_REQUEST && resultCode == Activity.RESULT_OK) {
+//            val newTodoItem = TodoItem(
+//                data!!.getStringExtra(AddTodoActivity.TASK),
+//                data.getStringExtra(AddTodoActivity.DATETIME),
+//                data.getStringExtra(AddTodoActivity.LOCATION),
+//                false
+//            );
+//
+//            todoViewModel.insert(newTodoItem)
+//
+//            Toast.makeText(this, "Todo saved!", Toast.LENGTH_SHORT).show()
+//        } else {
+//            Toast.makeText(this, "Todo not saved!", Toast.LENGTH_SHORT).show()
+//        }
+//
+//
+//    }
 }
