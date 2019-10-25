@@ -15,7 +15,6 @@ import com.example.bluecatapp.TodoAdapter
 import com.example.bluecatapp.data.TodoItem
 import kotlinx.android.synthetic.main.fragment_todo.*
 
-
 class TodoFragment : Fragment() {
 
     private val ADD_TODO_REQUEST = 1
@@ -30,7 +29,7 @@ class TodoFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true);
+        setHasOptionsMenu(true)
         retainInstance = true
 
     }
@@ -78,12 +77,12 @@ class TodoFragment : Fragment() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.todo_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         return when (item?.itemId) {
             R.id.todo_delete_all_tasks -> {
@@ -106,7 +105,7 @@ class TodoFragment : Fragment() {
                 data.getStringExtra(AddTodoActivity.DATETIME),
                 data.getStringExtra(AddTodoActivity.LOCATION),
                 false
-            );
+            )
 
             todoViewModel.insert(newTodoItem)
 

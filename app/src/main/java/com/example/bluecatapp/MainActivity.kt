@@ -50,6 +50,12 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
+        when (intent.extras?.getInt("frgToLoad")) {
+            0 -> navController.navigate(R.id.navigation_todo)
+            1 -> navController.navigate(R.id.navigation_appblocking)
+            2 -> navController.navigate(R.id.navigation_location)
+            3 -> navController.navigate(R.id.navigation_settings)
+        }
 //        val recyclerView = findViewById<RecyclerView>(R.id.todo_recycler_view)
     }
 
@@ -73,11 +79,4 @@ class MainActivity : AppCompatActivity() {
 //
 //
 //    }
-        when (intent.extras?.getInt("frgToLoad")) {
-            0 -> navController.navigate(R.id.navigation_todo)
-            1 -> navController.navigate(R.id.navigation_appblocking)
-            2 -> navController.navigate(R.id.navigation_location)
-            3 -> navController.navigate(R.id.navigation_settings)
-        }
-    }
 }

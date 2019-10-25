@@ -1,9 +1,9 @@
 package com.example.bluecatapp.ui.location
 
 import android.Manifest
-import android.app.Application
-import android.content.ContentValues.TAG
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
@@ -13,9 +13,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -30,65 +27,49 @@ import kotlinx.android.synthetic.main.fragment_location.*
 import org.json.JSONException
 import org.json.JSONObject
 
-
 class LocationFragment : Fragment() {
-
+    private val TAG = "Location Fragment"
     private lateinit var locationViewModel: LocationViewModel
     private val PERMISSION_ID = 270
-    private lateinit var latAndLong: TextView
-    private lateinit var estimatedTime: TextView
     private lateinit var odsayService : ODsayService
-
-    private var latitude : Double = 0.0
-    private var longitude : Double = 0.0
-
-    // Views for testing
-    private lateinit var inputEX: EditText
-    private lateinit var inputEY: EditText
-    private lateinit var calcButton: Button
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        //initialize
+        //initialize view and viewmodel
         val root = inflater.inflate(R.layout.fragment_location, container, false)
-        latAndLong = root.findViewById(R.id.text_latAndLong)
-        estimatedTime = root.findViewById(R.id.text_estimatedTime)
         locationViewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
-
-        //For testing
-        //////////////////////////////////////////////////////////////////////////////////
-        inputEX = root.findViewById(R.id.editText_EX)
-        inputEY = root.findViewById(R.id.editText_EY)
-        calcButton = root.findViewById(R.id.calc_travel_time_button)
-        calcButton.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(p0: View?) {
-                Log.d("Mouse clicked", "clicked!")
-                estimateTravelTime(longitude.toString(), latitude.toString(),inputEX.text.toString(),inputEY.text.toString())
-            }
-        } )
-        ////////////////////////////////////////////////////////////////////
 
         //Initialize ODsayService
         odsayService = ODsayService.init(requireContext(), getString(R.string.odsay_key))
-        Log.d("ODSAY api key", getString(R.string.odsay_key))
         odsayService.setConnectionTimeout(5000)
         odsayService.setReadTimeout(5000)
 
-        //Start receiving current location
+        //Start receiving current location every 5 second
         getCurrentLocation()
+
         return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        addItemButton.setOnClickListener {
+            val intent = Intent(requireContext(), AddLocationActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun getCurrentLocation() {
         if (checkLocationPermissions()) {
             if (isLocationEnabled()) {
                 locationViewModel.getLocationData().observe(this, Observer {
+                    /*
                     latAndLong.text = it.longitude.toString() + " " + it.latitude.toString()
                     latitude = it.latitude
-                    longitude = it.longitude
+                    longitude = it.longitude*/
                 })
             }
             else {
@@ -119,10 +100,11 @@ class LocationFragment : Fragment() {
     private fun requestLocationPermission() {
         val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
         if (shouldProvideRationale) {
-            Log.i(TAG, "Displaying permission rationale")
+            Log.d(TAG, "Displaying permission rationale")
+            //permission rationale not yet implemented
         }
         else {
-            Log.i(TAG, "Requesting Permission")
+            Log.d(TAG, "Requesting Permission")
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_ID)
         }
     }
@@ -136,34 +118,29 @@ class LocationFragment : Fragment() {
         }
     }
 
-
+    //callback method to get json data from ODsay
     private val onEstimateTimeResultCallbackListener = object : OnResultCallbackListener {
 
         override fun onSuccess(odsayData: ODsayData?, api: API?) {
-            Log.d("ODSAY onSuccess called", "Good")
+            Log.d(TAG, "Connection to ODsay successful")
             try {
                 if (api == API.SEARCH_PUB_TRANS_PATH) {
                     val inquiryResult = (odsayData!!.getJson().getJSONObject("result").getJSONArray("path").get(0) as JSONObject).getJSONObject("info")
-                    estimatedTime.text = ( inquiryResult.toString()
-                            )
-                    Log.d("Parsed ", estimatedTime.text.toString())
-                    Log.d("JSONObject Parsing", "Successful")
                     //estimatedTime.text = inquiryResult.getInt("totalTime").toString()
                 }
             } catch (e: JSONException) {
-                Log.d("JSONException Occurred", "JSONException")
+                Log.d(TAG, "JSONException")
                 e.printStackTrace()
             }
         }
 
         override fun onError(i: Int, s: String?, api: API?) {
-            Log.d("ODSAY onError called", (i.toString()+", "+s) )
+            Log.d(TAG, (i.toString()+", "+s) )
         }
     }
 
-
+    //call ODsay to estimate Travel time
     private fun estimateTravelTime(sx: String, sy: String, ex: String, ey: String) {
         odsayService.requestSearchPubTransPath(sx, sy, ex, ey, "0", "0", "0", onEstimateTimeResultCallbackListener)
-        //odsayService.requestBusStationInfo("107475", onEstimateTimeResultCallbackListener)
     }
 }
