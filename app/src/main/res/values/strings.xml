@@ -4,4 +4,34 @@
     <string name="title_appblocking">App blocking</string>
     <string name="title_location">Location</string>
     <string name="title_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Keys -->
+    <string name="profile">Profile</string>
+    <string name="restricted_apps">Restricted Apps</string>
+    <string name="time_limit">Time Limit</string>
+
+    <!-- Preference Titles -->
+    <string name="profile_header">YOUR PROFILE</string>
+    <string name="app_blocking_header">APP BLOCKING MODE</string>
+    <string name="location_reminder_header">LOCATION REMINDER MODE</string>
+    <string name="homework_header">HOMEWORK MODE</string>
+    <string name="general_header">GENERAL</string>
+
+    <!-- Profile Preferences -->
+    <string name="profile_title">Display Name</string>
+    <string name="profile_summary">Display Name</string>
+    <string name="profile_dialog_title">Enter Your Name</string>
+
+    <!-- App Blocking Mode Preferences -->
+    <string name="restricted_apps_title">Select Apps to Restrict</string>
+    <string name="restricted_apps_dialog">Apps to Restrict</string>
+    <string name="smart_blocking_title">Smart Blocking</string>
+    <string name="smart_blocking_summary">ADD ME</string>
+    <string name="time_limit_title">Maximum Time Limit</string>
+
+    <!-- TODO -->
+    
+    <!-- Location -->
+    <string name="odsay_key">PUT_API_KEY_HERE</string>
 </resources>

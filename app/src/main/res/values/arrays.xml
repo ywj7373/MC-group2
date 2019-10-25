@@ -1,0 +1,32 @@
+<resources>
+    <!-- App Blocking Preference -->
+    <string-array name="restricted_app_entries">
+        <item>App 1</item>
+        <item>App 2</item>
+    </string-array>
+
+    <string-array name="restricted_app_values">
+        <item>first_app</item>
+        <item>second_app</item>
+    </string-array>
+
+    <string-array name="time_limit_entries">
+        <item>Deactivate</item>
+        <item>20 mins</item>
+        <item>30 mins</item>
+        <item>1 hour</item>
+        <item>2 hours</item>
+    </string-array>
+
+    <string-array name="time_limit_values">
+        <item>deactivate_time_limit</item>
+        <item>first_time_limit</item>
+        <item>second_time_limit</item>
+        <item>third_time_limit</item>
+        <item>fourth_time_limit</item>
+    </string-array>
+
+    <!-- Empty Default Array-->
+    <string-array name="empty_array" />
+
+</resources>
