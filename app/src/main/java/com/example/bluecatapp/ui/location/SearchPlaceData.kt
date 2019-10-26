@@ -1,5 +1,6 @@
 package com.example.bluecatapp.ui.location
 
+//Parse JSON to Java Objects
 data class SearchPlaceData (
     val status: String,
     val meta: SearchPlaceMeta,

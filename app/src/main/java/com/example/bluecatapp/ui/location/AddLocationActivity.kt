@@ -55,7 +55,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
 
                 override fun onResponse(call: Call<CoordToAddrData>, response: Response<CoordToAddrData>) {
                     Log.e(TAG, response.body().toString())
-                    startLocText.text = response.body()!!.results[0].land.addition0.value
+                    if (response.body()!!.status.code == 0)
+                        startLocText.text = response.body()!!.results[0].land.addition0.value
                 }
 
             })
@@ -74,16 +75,20 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
         when (v.id) {
             R.id.changeStartLoc -> openSearchPlaceDialog(0)
             R.id.changeDestLoc -> openSearchPlaceDialog(1)
-            else -> {
-            }
+            R.id.dateText -> {}
+            R.id.timeText -> {}
+            R.id.addButton -> {}
+            R.id.cancelButton -> {}
         }
     }
 
+    //show search place dialog
     private fun openSearchPlaceDialog(isStart: Int) {
         val searchPlaceDialog = SearchPlaceDialog.newInstance(location, isStart)
         searchPlaceDialog.show(supportFragmentManager, null)
     }
 
+    //create click listener to pass data from dialog to activity
     override fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces) {
         if (isStart == 0) {
             startLocText.text = place.name

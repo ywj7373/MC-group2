@@ -33,6 +33,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
     private lateinit var place: SearchPlacePlaces
     private val TAG = "SearchPlaceDialog"
 
+    //new instance to pass data from activity to dialog
     companion object {
         fun newInstance(str: String, isStart: Int) = SearchPlaceDialog().apply {
             arguments = Bundle().apply {
@@ -42,6 +43,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
         }
     }
 
+    //attch listener to pass data from dialog to activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
         mListener = context as OnButtonClick
@@ -49,6 +51,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //receive data from activity
         arguments?.let {
             val str = it.getString("EXTRA_DATA")
             if (str != null) {
@@ -96,6 +99,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
         }
     }
 
+    //search for place name using naver api
     private fun requestSearch() {
         NaverRetrofit.getService().requestSearchPlace(placeText.text.toString(), currentLocation).enqueue(object: Callback<SearchPlaceData>{
             override fun onFailure(call: Call<SearchPlaceData>, t: Throwable) {
@@ -126,6 +130,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
         })
     }
 
+    //save place user clicked
     private fun saveLocation(text: Int, place: SearchPlacePlaces) {
         when (text) {
             1 -> {
@@ -167,6 +172,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
         this.place = place
     }
 
+    //pass the location user picked to activity
     private fun saveAddr() {
         mListener!!.onDialogClickListener(isStart, place)
         dismiss()

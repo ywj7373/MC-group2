@@ -1,5 +1,6 @@
 package com.example.bluecatapp.ui.location
 
+//Parse JSON file to Java Objects
 data class CoordToAddrData(
     val status: HttpStatus,
     val results: List<LocationResults>
