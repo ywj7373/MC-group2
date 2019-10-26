@@ -54,18 +54,26 @@ class AddTodoActivity : AppCompatActivity() {
 
         if(todo_edit_time.hour<10){
             hour = "0"+todo_edit_time.hour.toString();
+        }else{
+            hour = todo_edit_time.hour.toString()
         }
 
         if(todo_edit_time.minute<10){
             minute = "0"+todo_edit_time.minute.toString();
+        }else{
+            minute = todo_edit_time.minute.toString()
         }
 
-        if(todo_edit_date.month<10){
+        if((todo_edit_date.month+1)<10){
             month = "0"+(todo_edit_date.month+1).toString();
+        }else{
+            month = (todo_edit_date.month+1).toString()
         }
 
         if(todo_edit_date.dayOfMonth<10){
             day = "0"+todo_edit_date.dayOfMonth.toString();
+        }else{
+            day = todo_edit_date.dayOfMonth.toString();
         }
 
         val data = Intent().apply {
