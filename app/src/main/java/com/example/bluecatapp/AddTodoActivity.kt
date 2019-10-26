@@ -41,16 +41,51 @@ class AddTodoActivity : AppCompatActivity() {
 
     private fun saveTodo() {
         if (todo_edit_task.text.toString().trim().isBlank()
-            || todo_edit_datetime.text.toString().trim().isBlank()
-            || todo_edit_location.text.toString().trim().isBlank()) {
+            || todo_edit_date.dayOfMonth.toString().trim().isBlank()
+//            || todo_edit_location.text.toString().trim().isBlank()
+            ) {
             Toast.makeText(this, "Can not insert empty item!", Toast.LENGTH_SHORT).show()
             return
+        }
+        var hour = ""
+        var minute = ""
+        var month = ""
+        var day = ""
+
+        if(todo_edit_time.hour<10){
+            hour = "0"+todo_edit_time.hour.toString();
+        }else{
+            hour = todo_edit_time.hour.toString()
+        }
+
+        if(todo_edit_time.minute<10){
+            minute = "0"+todo_edit_time.minute.toString();
+        }else{
+            minute = todo_edit_time.minute.toString()
+        }
+
+        if((todo_edit_date.month+1)<10){
+            month = "0"+(todo_edit_date.month+1).toString();
+        }else{
+            month = (todo_edit_date.month+1).toString()
+        }
+
+        if(todo_edit_date.dayOfMonth<10){
+            day = "0"+todo_edit_date.dayOfMonth.toString();
+        }else{
+            day = todo_edit_date.dayOfMonth.toString();
         }
 
         val data = Intent().apply {
             putExtra(TASK, todo_edit_task.text.toString())
-            putExtra(DATETIME, todo_edit_datetime.text.toString())
-            putExtra(LOCATION, todo_edit_location.text.toString())
+            putExtra(DATETIME,
+                "${todo_edit_date.year}." +
+                        "$month." +
+                        "$day:" +
+                        "$hour:" +
+                        "$minute"
+                )
+//            putExtra(LOCATION, todo_edit_location.text.toString())
         }
 
         setResult(Activity.RESULT_OK, data)

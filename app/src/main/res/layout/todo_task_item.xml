@@ -11,6 +11,7 @@
         android:id="@+id/todo_task_item_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/color_todo_item_bg"
         android:orientation="vertical">
 
         <TextView
@@ -26,12 +27,12 @@
             android:layout_below="@+id/todo_item_task"
             android:text="Task Date" />
 
-        <TextView
-            android:id="@+id/todo_item_location"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/todo_item_date"
-            android:text="Task Location" />
+<!--        <TextView-->
+<!--            android:id="@+id/todo_item_location"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_below="@+id/todo_item_date"-->
+<!--            android:text="Task Location" />-->
 
         <CheckBox
             android:id="@+id/todo_item_done"
