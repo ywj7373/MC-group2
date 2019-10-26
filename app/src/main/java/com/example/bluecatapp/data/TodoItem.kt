@@ -13,8 +13,8 @@ data class TodoItem(
     @field:SerializedName("dateTime")
     val dateTime: String,
 
-    @field:SerializedName("location")
-    val location: String,
+//    @field:SerializedName("location")
+//    val location: String,
 
     @field:SerializedName("isDone")
     val done: Boolean

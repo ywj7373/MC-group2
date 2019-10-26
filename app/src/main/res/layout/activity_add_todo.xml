@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
+    android:scrollbars="vertical"
     tools:context=".AddTodoActivity">
 
     <EditText
@@ -15,17 +16,25 @@
         android:hint="TASK"
         android:inputType="text"/>
 
-    <EditText
-        android:id="@+id/todo_edit_datetime"
+    <DatePicker
+        android:id="@+id/todo_edit_date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="DATETIME"
+        android:datePickerMode="calendar"
+        android:startYear="2019"
         android:inputType="textMultiLine"/>
-    <EditText
-        android:id="@+id/todo_edit_location"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="LOCATION"
-        android:inputType="textMultiLine"/>
+
+    <TimePicker
+        android:id="@+id/todo_edit_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+<!--    <EditText-->
+<!--        android:id="@+id/todo_edit_location"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:hint="LOCATION"-->
+<!--        android:inputType="textMultiLine"/>-->
 
 </LinearLayout>

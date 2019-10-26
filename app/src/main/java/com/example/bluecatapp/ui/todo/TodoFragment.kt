@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.AddTodoActivity
 import com.example.bluecatapp.R
-import com.example.bluecatapp.TodoAdapter
 import com.example.bluecatapp.data.TodoItem
 import kotlinx.android.synthetic.main.fragment_todo.*
 
@@ -68,27 +67,26 @@ class TodoFragment : Fragment() {
 
         }
 
-        todo_add_task.setOnClickListener {
-                view->
+        todo_add_task.setOnClickListener { view ->
             //            getActivity().
             startActivityForResult(
-            Intent(requireContext(), AddTodoActivity::class.java),
-            ADD_TODO_REQUEST
-        )
+                Intent(requireContext(), AddTodoActivity::class.java),
+                ADD_TODO_REQUEST
+            )
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.todo_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item?.itemId) {
             R.id.todo_delete_all_tasks -> {
                 todoViewModel.deleteAllTodoItems()
-                Toast.makeText(requireContext(), "All To-do Items deleted!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "All To-do Items deleted!", Toast.LENGTH_SHORT)
+                    .show()
                 true
             }
             else -> {
@@ -104,9 +102,9 @@ class TodoFragment : Fragment() {
             val newTodoItem = TodoItem(
                 data!!.getStringExtra(AddTodoActivity.TASK),
                 data.getStringExtra(AddTodoActivity.DATETIME),
-                data.getStringExtra(AddTodoActivity.LOCATION),
+//                data.getStringExtra(AddTodoActivity.LOCATION),
                 false
-            );
+            )
 
             todoViewModel.insert(newTodoItem)
 
