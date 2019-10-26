@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.example.bluecatapp.R
 import retrofit2.Call
@@ -103,35 +104,32 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
     private fun requestSearch() {
         NaverRetrofit.getService().requestSearchPlace(placeText.text.toString(), currentLocation).enqueue(object: Callback<SearchPlaceData>{
             override fun onFailure(call: Call<SearchPlaceData>, t: Throwable) {
-                Log.e(TAG, t.message.toString())
+                Log.e(TAG, "Connection failed")
+                Toast.makeText(context, "Unavailable to connect! Please check wifi\"", Toast.LENGTH_SHORT).show()
             }
 
-            override fun onResponse(
-                call: Call<SearchPlaceData>,
-                response: Response<SearchPlaceData>
-            ) {
+            override fun onResponse(call: Call<SearchPlaceData>, response: Response<SearchPlaceData>) {
                 Log.e(TAG, response.body().toString())
                 var len = response.body()!!.meta.totalCount - 1
                 if (len > 4) len = 4
+                if (len == -1) Toast.makeText(context, "No result!\"", Toast.LENGTH_SHORT).show()
                 results = response.body()!!.places
                 for (i in 0..len) {
-                    if (results[i] != null) {
-                        when (i) {
-                            0 -> loc1.text = results[i].name
-                            1 -> loc2.text = results[i].name
-                            2 -> loc3.text = results[i].name
-                            3 -> loc4.text = results[i].name
-                            4 -> loc5.text = results[i].name
-                        }
+                    when (i) {
+                        0 -> loc1.text = results[i].name
+                        1 -> loc2.text = results[i].name
+                        2 -> loc3.text = results[i].name
+                        3 -> loc4.text = results[i].name
+                        4 -> loc5.text = results[i].name
                     }
                 }
             }
-
         })
     }
 
     //save place user clicked
     private fun saveLocation(text: Int, place: SearchPlacePlaces) {
+        //hightlight clicked text
         when (text) {
             1 -> {
                 loc1.setBackgroundColor(Color.GREEN)
@@ -169,6 +167,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
                 loc5.setBackgroundColor(Color.GREEN)
             }
         }
+        //set current place to user's place
         this.place = place
     }
 

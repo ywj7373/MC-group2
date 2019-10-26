@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -13,6 +14,11 @@ import com.example.bluecatapp.R
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
+
+interface OnButtonClick {
+    fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces)
+}
 
 class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonClick {
     private val TAG = "AddLocationActivity"
@@ -27,6 +33,9 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     private lateinit var cancelButton: Button
     private lateinit var addButton: Button
     private lateinit var location: String
+    private var startPlace : SearchPlacePlaces? = null
+    private var endPlace : SearchPlacePlaces? = null
+    private var userEditText = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,20 +55,40 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
 
         //get address of my location
         locationViewModel.getLocationData().observe(this, Observer {
-            location = it.longitude.toString() + "," + it.latitude.toString()
-            Log.e(TAG, location)
-            NaverRetrofit.getService().requestReverseGeocode(location).enqueue(object : Callback<CoordToAddrData>{
-                override fun onFailure(call: Call<CoordToAddrData>, t: Throwable) {
-                    Log.e(TAG, t.message.toString())
-                }
+            //if user didn't edited his or her location
+            if (!userEditText) {
+                location = it.longitude.toString() + "," + it.latitude.toString()
+                Log.e(TAG, location)
+                NaverRetrofit.getService().requestReverseGeocode(location)
+                    .enqueue(object : Callback<CoordToAddrData> {
+                        override fun onFailure(call: Call<CoordToAddrData>, t: Throwable) {
+                            Log.e(TAG, "Error requesting reverse geocode")
+                            Toast.makeText(
+                                this@AddLocationActivity,
+                                "Unavailable to connect! Please check wifi",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
 
-                override fun onResponse(call: Call<CoordToAddrData>, response: Response<CoordToAddrData>) {
-                    Log.e(TAG, response.body().toString())
-                    if (response.body()!!.status.code == 0)
-                        startLocText.text = response.body()!!.results[0].land.addition0.value
-                }
+                        override fun onResponse(
+                            call: Call<CoordToAddrData>,
+                            response: Response<CoordToAddrData>
+                        ) {
+                            Log.e(TAG, response.body().toString())
+                            //set result as my current location address if the status code is 0
+                            if (response.body()!!.status.code == 0)
+                                startLocText.text =
+                                    response.body()!!.results[0].land.addition0.value
+                            else
+                                Toast.makeText(
+                                    this@AddLocationActivity,
+                                    "Unavailable to get current address!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                        }
 
-            })
+                    })
+            }
         })
 
         //set click listener
@@ -75,10 +104,11 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
         when (v.id) {
             R.id.changeStartLoc -> openSearchPlaceDialog(0)
             R.id.changeDestLoc -> openSearchPlaceDialog(1)
+            //Unimplemented-----------------------------Need to implement-----------------
             R.id.dateText -> {}
             R.id.timeText -> {}
-            R.id.addButton -> {}
-            R.id.cancelButton -> {}
+            R.id.addButton -> addNewSchedule()
+            R.id.cancelButton -> finish()
         }
     }
 
@@ -91,15 +121,20 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     //create click listener to pass data from dialog to activity
     override fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces) {
         if (isStart == 0) {
+            userEditText = true
             startLocText.text = place.name
+            startPlace = place
         }
         else {
             endLocText.text = place.name
+            endPlace = place
         }
     }
 
-}
-
-interface OnButtonClick {
-    fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces)
+    // Save data to database
+    //Implement database functions here!!!!
+    private fun addNewSchedule() {
+        //if the user didn't modify start location, use current location
+        //check if each place is still null -> user didn't acquired preferred location -> alert message
+    }
 }
