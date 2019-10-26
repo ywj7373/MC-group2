@@ -14,16 +14,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="TASK"
-        android:inputType="text"/>
+        android:inputType="textMultiLine"/>
 
     <DatePicker
         android:id="@+id/todo_edit_date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="DATETIME"
         android:datePickerMode="calendar"
-        android:startYear="2019"
-        android:inputType="textMultiLine"/>
+        android:startYear="2019" />
 
     <TimePicker
         android:id="@+id/todo_edit_time"

@@ -2,6 +2,7 @@ package com.example.bluecatapp.ui.todo
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
@@ -20,6 +21,8 @@ class TodoFragment : Fragment() {
     private val ADD_TODO_REQUEST = 1
     private lateinit var todoViewModel: TodoViewModel
     private val todoAdapter = TodoAdapter()
+
+    private var isHomeworkMode = false;
 
 //    private val sampleTasks = listOf(
 //        TodoItem(0, "sample1", "2019.10.10", "Seoul",false),
@@ -51,6 +54,7 @@ class TodoFragment : Fragment() {
         todoViewModel.getAllTodoItems().observe(this,
             Observer<List<TodoItem>> { t -> todoAdapter.setTodoItems(t!!) })
 
+
         return root
     }
 
@@ -74,6 +78,25 @@ class TodoFragment : Fragment() {
                 ADD_TODO_REQUEST
             )
         }
+
+        container_hwmode.setOnClickListener{view->
+            if(isHomeworkMode){
+                isHomeworkMode = false;
+                text_homework.text = "Turn Homework Mode ON"
+                todo_ll_container.setBackgroundColor(Color.parseColor("#ffffff"))
+                clock_homework.visibility = View.VISIBLE
+                text_hw_timer.visibility = View.GONE
+
+            }else{
+                isHomeworkMode = true
+                text_homework.text = "Turn Homework Mode OFF"
+                todo_ll_container.setBackgroundColor(Color.parseColor("#111111"))
+                clock_homework.visibility = View.GONE
+                text_hw_timer.visibility = View.VISIBLE
+
+            }
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
