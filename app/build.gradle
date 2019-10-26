@@ -23,14 +23,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    splits {
-        abi {
-            enable true
-            reset()
-            include 'x86', 'x86_64', 'armeabi-v7a', 'armeabi'
-            universalApk false
-        }
-    }
 }
 
 dependencies {
@@ -65,6 +57,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'androidx.preference:preference:1.1.0-rc01'
     implementation project(path: ':SDK_release_v2.0.0')
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation files('libs/libDaumMapAndroid.jar')
+    implementation "com.naver.maps:map-sdk:3.6.1"
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
 }

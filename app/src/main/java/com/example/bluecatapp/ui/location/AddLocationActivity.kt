@@ -1,6 +1,8 @@
 package com.example.bluecatapp.ui.location
 
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -8,18 +10,23 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.bluecatapp.R
-import net.daum.mf.map.api.MapPoint
-import net.daum.mf.map.api.MapReverseGeoCoder
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class AddLocationActivity: AppCompatActivity() {
+class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonClick {
+    private val TAG = "AddLocationActivity"
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var titleEdit: EditText
     private lateinit var startLocText: TextView
     private lateinit var endLocText: TextView
     private lateinit var dateText: TextView
     private lateinit var timeText: TextView
+    private lateinit var changeStartLoc: Button
+    private lateinit var changeDestLoc: Button
     private lateinit var cancelButton: Button
     private lateinit var addButton: Button
+    private lateinit var location: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,62 +39,62 @@ class AddLocationActivity: AppCompatActivity() {
         endLocText = findViewById(R.id.endLocText)
         dateText = findViewById(R.id.dateText)
         timeText = findViewById(R.id.timeText)
+        changeStartLoc = findViewById(R.id.changeStartLoc)
+        changeDestLoc = findViewById(R.id.changeDestLoc)
         cancelButton = findViewById(R.id.cancelButton)
         addButton = findViewById(R.id.addButton)
 
-        var mapPoint = MapPoint.mapPointWithGeoCoord(37.53737528, 127.00557633)
-        val reverseGeoCoder = MapReverseGeoCoder(
-            "b1237dcf2b12fab3b9ef06d50f04990d",
-            mapPoint,
-            reverseGeoCodingResultListener,
-            this
-        )
-        reverseGeoCoder.startFindingAddress()
-
-        //observe current location change
+        //get address of my location
         locationViewModel.getLocationData().observe(this, Observer {
-            /*
-            latAndLong.text = it.longitude.toString() + " " + it.latitude.toString()
-            latitude = it.latitude
-            longitude = it.longitude*/
+            location = it.longitude.toString() + "," + it.latitude.toString()
+            Log.e(TAG, location)
+            NaverRetrofit.getService().requestReverseGeocode(location).enqueue(object : Callback<CoordToAddrData>{
+                override fun onFailure(call: Call<CoordToAddrData>, t: Throwable) {
+                    Log.e(TAG, t.message.toString())
+                }
+
+                override fun onResponse(call: Call<CoordToAddrData>, response: Response<CoordToAddrData>) {
+                    Log.e(TAG, response.body().toString())
+                    startLocText.text = response.body()!!.results[0].land.addition0.value
+                }
+
+            })
         })
 
-        startLocText.setOnClickListener() {
+        //set click listener
+        changeStartLoc.setOnClickListener(this)
+        changeDestLoc.setOnClickListener(this)
+        dateText.setOnClickListener(this)
+        timeText.setOnClickListener(this)
+        addButton.setOnClickListener(this)
+        cancelButton.setOnClickListener(this)
+    }
 
-        }
-
-        endLocText.setOnClickListener() {
-
-        }
-
-        dateText.setOnClickListener() {
-
-        }
-
-        timeText.setOnClickListener() {
-
-        }
-
-        addButton.setOnClickListener() {
-
-        }
-
-        cancelButton.setOnClickListener() {
-
+    override fun onClick(v: View) {
+        when (v.id) {
+            R.id.changeStartLoc -> openSearchPlaceDialog(0)
+            R.id.changeDestLoc -> openSearchPlaceDialog(1)
+            else -> {
+            }
         }
     }
 
+    private fun openSearchPlaceDialog(isStart: Int) {
+        val searchPlaceDialog = SearchPlaceDialog.newInstance(location, isStart)
+        searchPlaceDialog.show(supportFragmentManager, null)
+    }
 
-    private val reverseGeoCodingResultListener =
-        object : MapReverseGeoCoder.ReverseGeoCodingResultListener {
-            override fun onReverseGeoCoderFoundAddress(p0: MapReverseGeoCoder?, p1: String?) {
-                println(p1)
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onReverseGeoCoderFailedToFindAddress(p0: MapReverseGeoCoder?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
+    override fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces) {
+        if (isStart == 0) {
+            startLocText.text = place.name
         }
+        else {
+            endLocText.text = place.name
+        }
+    }
+
+}
+
+interface OnButtonClick {
+    fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces)
 }

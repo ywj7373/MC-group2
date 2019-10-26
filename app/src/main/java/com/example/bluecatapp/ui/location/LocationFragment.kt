@@ -1,9 +1,7 @@
 package com.example.bluecatapp.ui.location
 
 import android.Manifest
-import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
@@ -85,7 +83,7 @@ class LocationFragment : Fragment() {
 
     //Check if the location tracker is enabled in the setting
     private fun isLocationEnabled(): Boolean {
-        var locationManager: LocationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val locationManager: LocationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
