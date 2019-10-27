@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.bluecatapp.R
+import com.example.bluecatapp.data.LocationItem
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -157,6 +158,11 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     // Save data to database
     //Implement database functions here!!!!
     private fun addNewSchedule() {
+        val time = year.toString() + monthOfYear.toString() + dayOfMonth.toString() +
+                hourOfDay.toString() + minute.toString()
+        val newLocationItem = LocationItem(endPlace!!.name, "", endPlace!!.x, endPlace!!.y, time)
+        locationViewModel.insert(newLocationItem)
+        Toast.makeText(this@AddLocationActivity, "Location saved!", Toast.LENGTH_SHORT).show()
         Log.d("LOGGING", "" + year +", "+ monthOfYear +", " + hourOfDay)
         //if the user didn't modify start location, use current location
         //check if each place is still null -> user didn't acquired preferred location -> alert message

@@ -8,15 +8,14 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.bluecatapp.R
+import com.example.bluecatapp.data.LocationItem
 import com.odsay.odsayandroidsdk.API
 import com.odsay.odsayandroidsdk.ODsayData
 import com.odsay.odsayandroidsdk.ODsayService
@@ -30,6 +29,8 @@ class LocationFragment : Fragment() {
     private lateinit var locationViewModel: LocationViewModel
     private val PERMISSION_ID = 270
     private lateinit var odsayService : ODsayService
+    private val locationAdapter = LocationAdapter()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,10 +41,16 @@ class LocationFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_location, container, false)
         locationViewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
 
+
+        setHasOptionsMenu(true)
+
         //Initialize ODsayService
         odsayService = ODsayService.init(requireContext(), getString(R.string.odsay_key))
         odsayService.setConnectionTimeout(5000)
         odsayService.setReadTimeout(5000)
+
+        locationViewModel.getAllLocationItems().observe(this,
+            Observer<List<LocationItem>> { t -> locationAdapter.setLocationItems(t!!) })
 
         //Start receiving current location every 5 second
         getCurrentLocation()
@@ -57,6 +64,25 @@ class LocationFragment : Fragment() {
         addItemButton.setOnClickListener {
             val intent = Intent(requireContext(), AddLocationActivity::class.java)
             startActivity(intent)
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.location_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        return when (item?.itemId) {
+            R.id.location_delete_all_locations -> {
+                locationViewModel.deleteAllLocationItems()
+                Toast.makeText(requireContext(), "All Location Items deleted!", Toast.LENGTH_SHORT).show()
+                true
+            }
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
         }
     }
 
