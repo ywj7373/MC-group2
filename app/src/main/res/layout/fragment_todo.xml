@@ -1,19 +1,109 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<?xml version="1.0" encoding="utf-8"?><!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    android:orientation="vertical"-->
+<!--    tools:context=".MainActivity">-->
 
-    <TextView
-        android:id="@+id/text_todo"
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/todo_recycler_view"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        app:layout_anchorGravity="center"-->
+<!--        tools:itemCount="10"-->
+<!--        tools:listitem="@layout/todo_task_item" />-->
+
+<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--        android:id="@+id/todo_add_task"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:src="@drawable/ic_add"-->
+<!--        app:layout_anchorGravity="center">-->
+
+<!--    </com.google.android.material.floatingactionbutton.FloatingActionButton>-->
+
+
+<!--</androidx.constraintlayout.widget.ConstraintLayout>-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/todo_ll_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_todo_hw_off"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/container_hwmode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin">
+
+        <TextView
+            android:id="@+id/text_homework"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/color_todo_hw_on"
+            android:text="Turn Homework Mode ON"
+            android:textAlignment="center"
+            android:textColor="@color/color_todo_hw_off"
+            android:textSize="16dp"
+            android:textStyle="bold">
+
+        </TextView>
+
+        <TextClock
+            android:id="@+id/clock_homework"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text_homework"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:format12Hour="hh:mm:ss a"
+            android:textAlignment="center"
+            android:textColor="#80CC28"
+            android:textSize="45dp"
+            android:textStyle="bold"
+            android:visibility="visible">
+        </TextClock>
+
+        <TextView
+            android:id="@+id/text_hw_timer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text_homework"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:textColor="#80CC28"
+            android:textSize="45dp"
+            android:textStyle="bold"
+            android:textAlignment="center"
+            android:text="45:00"
+            android:visibility="invisible">
+
+        </TextView>
+
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/todo_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:itemCount="10"
+        tools:listitem="@layout/todo_task_item" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/todo_add_task"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:src="@drawable/ic_add"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_constraintTop_toTopOf="@+id/todo_recycler_view" />
+
+</LinearLayout>
