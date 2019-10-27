@@ -14,6 +14,7 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationItem
 import com.odsay.odsayandroidsdk.API
@@ -60,6 +61,16 @@ class LocationFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        location_recycler_view.apply {
+            // set a LinearLayoutManager to handle Android
+            // RecyclerView behavior
+            layoutManager = LinearLayoutManager(activity)
+            // set the custom adapter to the RecyclerView
+            adapter = locationAdapter
+            setHasFixedSize(true)
+
+        }
 
         addItemButton.setOnClickListener {
             val intent = Intent(requireContext(), AddLocationActivity::class.java)

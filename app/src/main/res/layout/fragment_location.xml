@@ -8,8 +8,10 @@
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/recyclerView"
-        android:scrollbars="vertical">
+        android:id="@+id/location_recycler_view"
+        android:scrollbars="vertical"
+        tools:itemCount="10"
+        tools:listitem="@layout/location_item">
     </androidx.recyclerview.widget.RecyclerView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

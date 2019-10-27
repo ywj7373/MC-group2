@@ -14,6 +14,8 @@ import com.example.bluecatapp.data.LocationItem
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 interface OnButtonClick {
@@ -113,13 +115,15 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
             R.id.changeDestLoc -> openSearchPlaceDialog(1)
             //Unimplemented-----------------------------Need to implement-----------------
             R.id.dateText -> {
+                val current = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
                 var dialog = object:DatePickerDialog(this, object:DatePickerDialog.OnDateSetListener {
                     override fun onDateSet(view: DatePicker?, year: Int, monthOfYear: Int, dayOfMonth: Int) {
                         this@AddLocationActivity.year = year
                         this@AddLocationActivity.monthOfYear = monthOfYear
                         this@AddLocationActivity.dayOfMonth = dayOfMonth
+                        dateText.setText(String.format("%04d%02d%02d", year, monthOfYear, dayOfMonth))
                     }
-                }, 2019, 10, 27 ) {}
+                }, Integer.parseInt(current.substring(0,4)), Integer.parseInt(current.substring(4,6)), Integer.parseInt(current.substring(6,8)) ) {}
                 dialog.show()
             }
             R.id.timeText -> {
@@ -127,6 +131,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
                     override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
                         this@AddLocationActivity.hourOfDay = hourOfDay
                         this@AddLocationActivity.minute = minute
+                        timeText.setText(String.format("%02d%02d", hourOfDay, minute))
                     }
                 }, 12, 0, true) { }
                 dialog.show()
@@ -158,12 +163,19 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     // Save data to database
     //Implement database functions here!!!!
     private fun addNewSchedule() {
-        val time = year.toString() + monthOfYear.toString() + dayOfMonth.toString() +
-                hourOfDay.toString() + minute.toString()
-        val newLocationItem = LocationItem(endPlace!!.name, "", endPlace!!.x, endPlace!!.y, time)
+        /*
+        User Input Validation
+        if(endPlace == null || endPlace?.name == null || endPlace?.x == null || endPlace?.y == null) {
+            Toast.makeText(this@AddLocationActivity, "Please fill in the format", Toast.LENGTH_SHORT).show()
+            return
+        }
+         */
+        val current = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
+        val time = String.format("%04d%02d%02d%02d%02d", year, monthOfYear, dayOfMonth, hourOfDay, minute)
+        //val newLocationItem = LocationItem(endPlace!!.name, "", endPlace!!.x, endPlace!!.y, time)
+        val newLocationItem = LocationItem(endPlace?.name ?: "Unknown", current, endPlace?.x ?: "Unknown", endPlace?.y ?: "Unknown", time)
         locationViewModel.insert(newLocationItem)
         Toast.makeText(this@AddLocationActivity, "Location saved!", Toast.LENGTH_SHORT).show()
-        Log.d("LOGGING", "" + year +", "+ monthOfYear +", " + hourOfDay)
         //if the user didn't modify start location, use current location
         //check if each place is still null -> user didn't acquired preferred location -> alert message
         finish()
