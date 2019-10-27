@@ -1,12 +1,11 @@
 package com.example.bluecatapp.ui.location
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -35,6 +34,13 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     private lateinit var location: String
     private var startPlace : SearchPlacePlaces? = null
     private var endPlace : SearchPlacePlaces? = null
+
+    private var year:Int = 0
+    private var monthOfYear:Int = 0
+    private var dayOfMonth:Int = 0
+    private var hourOfDay:Int = 0
+    private var minute: Int = 0
+
     private var userEditText = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,8 +111,25 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
             R.id.changeStartLoc -> openSearchPlaceDialog(0)
             R.id.changeDestLoc -> openSearchPlaceDialog(1)
             //Unimplemented-----------------------------Need to implement-----------------
-            R.id.dateText -> {}
-            R.id.timeText -> {}
+            R.id.dateText -> {
+                var dialog = object:DatePickerDialog(this, object:DatePickerDialog.OnDateSetListener {
+                    override fun onDateSet(view: DatePicker?, year: Int, monthOfYear: Int, dayOfMonth: Int) {
+                        this@AddLocationActivity.year = year
+                        this@AddLocationActivity.monthOfYear = monthOfYear
+                        this@AddLocationActivity.dayOfMonth = dayOfMonth
+                    }
+                }, 2019, 10, 27 ) {}
+                dialog.show()
+            }
+            R.id.timeText -> {
+                var dialog = object:TimePickerDialog(this, object:TimePickerDialog.OnTimeSetListener {
+                    override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
+                        this@AddLocationActivity.hourOfDay = hourOfDay
+                        this@AddLocationActivity.minute = minute
+                    }
+                }, 12, 0, true) { }
+                dialog.show()
+            }
             R.id.addButton -> addNewSchedule()
             R.id.cancelButton -> finish()
         }
@@ -134,7 +157,9 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     // Save data to database
     //Implement database functions here!!!!
     private fun addNewSchedule() {
+        Log.d("LOGGING", "" + year +", "+ monthOfYear +", " + hourOfDay)
         //if the user didn't modify start location, use current location
         //check if each place is still null -> user didn't acquired preferred location -> alert message
+        finish()
     }
 }
