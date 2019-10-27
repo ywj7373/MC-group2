@@ -76,28 +76,21 @@ class AppBlockingFragment : Fragment() {
 //        val blockDuration: Long = Calendar.getInstance().timeInMillis + 1200000
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         // Retrieve blocking duration value in milliseconds
-        val blockDuration: Long = (sharedPrefs.getString("time_limit", null)?.toLong()!!)
+        val blockDuration: Long = (sharedPrefs.getString("block_duration", null)?.toLong()!!)
         // Deactivated if blocking duration is negative
-        if(blockDuration<0){
-            Toast.makeText(
-                activity!!.applicationContext,
-                "Blocking Deactivated",
-                Toast.LENGTH_SHORT
-            ).show()
-        } else {
-            Toast.makeText(
-                activity!!.applicationContext,
-                "Blocking Duration is $blockDuration ms",
-                Toast.LENGTH_SHORT
-            ).show()
-            val currentlyBlockedApps: MutableMap<String, Long> = mutableMapOf(
-                "com.android.chrome" to blockDuration,
-                "com.google.android.youtube" to blockDuration
-            )
-            with(sharedPrefs.edit()) {
-                putString("currentlyBlockedApps", MainActivity.gson.toJson(currentlyBlockedApps))
-                commit()
-            }
+        Toast.makeText(
+            activity!!.applicationContext,
+            "Blocking Duration is $blockDuration ms",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        val currentlyBlockedApps: MutableMap<String, Long> = mutableMapOf(
+            "com.android.chrome" to blockDuration,
+            "com.google.android.youtube" to blockDuration
+        )
+        with(sharedPrefs.edit()) {
+            putString("currentlyBlockedApps", MainActivity.gson.toJson(currentlyBlockedApps))
+            commit()
         }
     }
 

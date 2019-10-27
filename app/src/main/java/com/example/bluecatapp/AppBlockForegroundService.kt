@@ -2,6 +2,7 @@ package com.example.bluecatapp
 
 import android.app.*
 import android.app.usage.UsageEvents
+import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -19,7 +20,8 @@ import android.util.Log
 class AppBlockForegroundService : Service() {
     private val CHANNEL_ID = "AppBlockForegroundService"
     private lateinit var appOps: AppOpsManager
-    private lateinit var usage: UsageStatsManager
+//    private lateinit var usage: UsageStatsManager
+    private lateinit var usageStatsMap: MutableMap<String, UsageStats>
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
     private val UPDATE_INTERVAL: Long = 1000
@@ -117,11 +119,16 @@ class AppBlockForegroundService : Service() {
 
     private fun getForegroundApp(): String? {
         var foregroundPackageName: String? = null
-        usage = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        var timeInForeground: Long? = 0
+
+        val usage = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+
         val endTime = System.currentTimeMillis()
-        val beginTime = endTime - (1 * 60 * 1000)
+        //query usage time for previous 2 hours
+        val beginTime = endTime - (1 * 60 * 60 * 1000)
 
         val usageEvents = usage.queryEvents(beginTime, endTime)
+        val usageStatsMap = usage.queryAndAggregateUsageStats(beginTime, endTime)
         val event: UsageEvents.Event = UsageEvents.Event()
 
         while (usageEvents.hasNextEvent()) {
@@ -163,6 +170,9 @@ class AppBlockForegroundService : Service() {
         if (currentlyBlockedApps !== null) {
             if (hasUsageDataAccessPermission()) {
                 val foregroundApp = getForegroundApp()
+                sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+                val maxTimeLimit= sharedPrefs.getString("time_limit", "0")!!.toLong()
+
                 Log.d(
                     "bcat",
                     "CHECK - ${if (!prevDetectedForegroundAppPackageName.equals(foregroundApp)) "APP CHANGED - " else ""}Prev app $prevDetectedForegroundAppPackageName, current app open $foregroundApp"
@@ -173,7 +183,8 @@ class AppBlockForegroundService : Service() {
                         "bcat",
                         "App changed, block? ${if (currentlyBlockedApps.keys.contains(foregroundApp)) "YES" else "No"}"
                     )
-                    if (currentlyBlockedApps.keys.contains(foregroundApp)) {
+                    if (currentlyBlockedApps.keys.contains(foregroundApp)
+                        && (usageStatsMap.get(foregroundApp)!!.totalTimeInForeground >= maxTimeLimit)) {
                         foregroundApp?.let { blockApp(it) }
                     }
                 }
