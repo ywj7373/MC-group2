@@ -223,7 +223,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
                 }
             } catch (e: JSONException) {
                 Log.d(TAG, "JSONException")
-                e.printStackTrace()
+                Toast.makeText(this@AddLocationActivity, "Unable to calculate time distance", Toast.LENGTH_LONG).show()
             }
         }
 
