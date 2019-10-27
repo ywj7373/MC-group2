@@ -3,4 +3,10 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#4099C2</color>
+
+    <color name="color_todo_item_bg">#dddddd</color>
+
+    <color name="color_todo_hw_off">#ffffff</color>
+    <color name="color_todo_hw_on">#111111</color>
+
 </resources>

@@ -27,6 +27,7 @@ object FragmentToLoad {
 class MainActivity : AppCompatActivity() {
   private val ADD_TODO_REQUEST = 1
     private lateinit var todoViewModel: TodoViewModel
+
     companion object {
         val gson = Gson()
     }
@@ -47,6 +48,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_settings
             )
         )
+
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
@@ -56,27 +58,5 @@ class MainActivity : AppCompatActivity() {
             2 -> navController.navigate(R.id.navigation_location)
             3 -> navController.navigate(R.id.navigation_settings)
         }
-//        val recyclerView = findViewById<RecyclerView>(R.id.todo_recycler_view)
     }
-
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//
-//        if (requestCode == ADD_TODO_REQUEST && resultCode == Activity.RESULT_OK) {
-//            val newTodoItem = TodoItem(
-//                data!!.getStringExtra(AddTodoActivity.TASK),
-//                data.getStringExtra(AddTodoActivity.DATETIME),
-//                data.getStringExtra(AddTodoActivity.LOCATION),
-//                false
-//            );
-//
-//            todoViewModel.insert(newTodoItem)
-//
-//            Toast.makeText(this, "Todo saved!", Toast.LENGTH_SHORT).show()
-//        } else {
-//            Toast.makeText(this, "Todo not saved!", Toast.LENGTH_SHORT).show()
-//        }
-//
-//
-//    }
 }
