@@ -1,15 +1,5 @@
 <resources>
     <!-- App Blocking Preference -->
-    <string-array name="restricted_app_entries">
-        <item>App 1</item>
-        <item>App 2</item>
-    </string-array>
-
-    <string-array name="restricted_app_values">
-        <item>first_app</item>
-        <item>second_app</item>
-    </string-array>
-
     <string-array name="time_limit_entries">
         <item>Deactivate</item>
         <item>20 mins</item>

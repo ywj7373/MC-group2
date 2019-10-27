@@ -16,49 +16,46 @@
 
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:icon="@mipmap/ic_launcher_round"
-    android:id="@+id/settings_screen" >
+    android:id="@+id/settings_screen"
+    app:icon="@mipmap/ic_launcher_round">
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
-        app:title="@string/profile_header" >
+        app:title="@string/profile_header">
 
         <EditTextPreference
-            app:key="profile"
+            app:dialogTitle="@string/profile_dialog_title"
             app:icon="@mipmap/ic_launcher_round"
             app:iconSpaceReserved="true"
+            app:key="profile"
             app:title="@string/profile_title"
-            app:useSimpleSummaryProvider="true"
-            app:dialogTitle="@string/profile_dialog_title" />
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
         app:title="@string/app_blocking_header">
 
-        <MultiSelectListPreference
-            app:key="restricted_apps"
+        <com.example.bluecatapp.ui.settings.RestrictAppsPreference
             android:defaultValue="@array/empty_array"
-            android:entries="@array/restricted_app_entries"
-            android:entryValues="@array/restricted_app_values"
-            app:dialogTitle="@string/restricted_apps_dialog"
             app:iconSpaceReserved="false"
+            app:key="restricted_apps"
             app:title="@string/restricted_apps_title" />
 
         <ListPreference
-            app:key="time_limit"
             android:entries="@array/time_limit_entries"
             android:entryValues="@array/time_limit_values"
             android:selectable="true"
             app:dialogTitle="@string/time_limit_title"
             app:iconSpaceReserved="false"
+            app:key="time_limit"
             app:title="@string/time_limit_title" />
 
         <SwitchPreference
-            app:key="smart_blocking"
-            app:iconSpaceReserved="false"
-            app:summary="@string/smart_blocking_summary"
             android:selectable="true"
+            app:iconSpaceReserved="false"
+            app:key="smart_blocking"
+            app:summary="@string/smart_blocking_summary"
             app:title="@string/smart_blocking_title" />
     </PreferenceCategory>
 

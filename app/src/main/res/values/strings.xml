@@ -31,7 +31,7 @@
     <string name="time_limit_title">Maximum Time Limit</string>
 
     <!-- TODO -->
-    
+
     <!-- Location -->
     <string name="odsay_key">PUT_API_KEY_HERE</string>
 </resources>
