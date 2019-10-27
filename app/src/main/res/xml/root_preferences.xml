@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright 2018 The app Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/settings_screen"
+    app:icon="@mipmap/ic_launcher_round">
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/profile_header">
+
+        <EditTextPreference
+            app:dialogTitle="@string/profile_dialog_title"
+            app:icon="@mipmap/ic_launcher_round"
+            app:iconSpaceReserved="true"
+            app:key="profile"
+            app:title="@string/profile_title"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/app_blocking_header">
+
+        <com.example.bluecatapp.ui.settings.RestrictAppsPreference
+            android:defaultValue="@array/empty_array"
+            app:iconSpaceReserved="false"
+            app:key="restricted_apps"
+            app:title="@string/restricted_apps_title" />
+
+        <ListPreference
+            android:entries="@array/time_limit_entries"
+            android:entryValues="@array/time_limit_values"
+            android:selectable="true"
+            app:dialogTitle="@string/time_limit_title"
+            app:iconSpaceReserved="false"
+            app:key="time_limit"
+            app:title="@string/time_limit_title" />
+
+        <SwitchPreference
+            android:selectable="true"
+            app:iconSpaceReserved="false"
+            app:key="smart_blocking"
+            app:summary="@string/smart_blocking_summary"
+            app:title="@string/smart_blocking_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/location_reminder_header">
+
+        <!-- TODO -->
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/homework_header">
+
+        <!-- TODO -->
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/general_header">
+
+        <!-- TODO -->
+
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>

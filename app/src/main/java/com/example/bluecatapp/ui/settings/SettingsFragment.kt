@@ -1,127 +1,29 @@
 package com.example.bluecatapp.ui.settings
 
-import android.app.AlertDialog
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.preference.PreferenceManager
-import com.example.bluecatapp.MainActivity
+import androidx.fragment.app.DialogFragment
+import androidx.preference.EditTextPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
 import com.example.bluecatapp.R
-import com.google.gson.reflect.TypeToken
 
-class SettingsFragment : Fragment() {
+class SettingsFragment : PreferenceFragmentCompat() {
 
-    private lateinit var settingsViewModel: SettingsViewModel
-    private lateinit var appList: Array<String>
-    private lateinit var selectedApps: BooleanArray
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        settingsViewModel =
-            ViewModelProviders.of(this).get(SettingsViewModel::class.java)
-        val root = inflater.inflate(R.layout.fragment_settings, container, false)
-        val textView: TextView = root.findViewById(R.id.text_settings)
-        settingsViewModel.text.observe(this, Observer {
-            textView.text = it
-        })
+        val sharedPref = preferenceManager.sharedPreferences
 
-        val appRestrictButton: Button = root.findViewById(R.id.settings_select_apps)
-        appRestrictButton.setOnClickListener {
-            // This code block creates and opens the setting popup when button is clicked
-            val appSelectionDialog = AlertDialog.Builder(context)
-            appSelectionDialog.setTitle("Select apps to restrict")
-            val type = object : TypeToken<Array<String>>() {}.type
-            val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
-            var selectedAppNames: Array<String> =
-                if (sharedPrefs.getString("restrictedApps", null) !== null) {
-                    MainActivity.gson.fromJson(
-                        sharedPrefs.getString("restrictedApps", null),
-                        type
-                    )
-                } else emptyArray()
-
-            // Get list of apps on phone
-            val pm = context!!.packageManager
-            appList = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-                .filter { appInfo -> isNotSystemPackage(appInfo) }
-                .map { appInfo ->
-                    appInfo.loadLabel(pm).toString()
-                }.toTypedArray().sortedArray()
-            selectedApps =
-                appList.map { appName -> selectedAppNames.contains(appName) }
-                    .toBooleanArray()
-
-            // Create popup dialog for selecting apps
-            appSelectionDialog.setMultiChoiceItems(
-                appList,
-                selectedApps
-            ) { dialog, which, isChecked ->
-                // Update the current focused item's checked status
-                selectedApps[which] = isChecked
-                selectedAppNames = getCheckedItems(appList, selectedApps)
-            }
-            appSelectionDialog.setPositiveButton("SAVE") { dialog, which ->
-                with(sharedPrefs.edit()) {
-                    putString(
-                        "restrictedApps",
-                        MainActivity.gson.toJson(selectedAppNames)
-                    )
-                    commit()
-                }
-                Log.d("bcat", "Save restricted apps: " + selectedAppNames.joinToString(", "))
-                Toast.makeText(context, "Saved", Toast.LENGTH_SHORT)
-                    .show()
-            }
-            appSelectionDialog.setNeutralButton("Cancel") { dialog, which ->
-                dialog.dismiss()
-            }
-            val dialog = appSelectionDialog.create()
-            dialog.show()
-        }
-
-        return root
+        val profilePreference = findPreference<EditTextPreference>(getString(R.string.profile))
+        profilePreference?.summary = "Display Name"
     }
 
-    private fun getCheckedItems(array1: Array<String>, array2: BooleanArray): Array<String> {
-        return array1.filterIndexed { index, _ -> array2[index] }.toTypedArray()
-    }
-
-    private fun isNotSystemPackage(applicationInfo: ApplicationInfo): Boolean {
-        val pm = context!!.packageManager
-
-        if (pm.getLaunchIntentForPackage(applicationInfo.packageName) == null) {
-            return false
-        }
-        // This is an app you can launch (this excludes most system apps, services)
-        if (((applicationInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0)
-            or ((applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0)
-        ) {
-            // This is a system app (but Gmail, Chrome, etc are also system apps but we want them)
-            // Some system apps can be launched but we are not interested in them.
-            // Those apps (empirically) contain the word "System", so we can exclude those apps.
-            if (applicationInfo.loadLabel(pm).contains("System")) {
-                return false
-            }
-            return true
-        } else {
-            // These are the apps the user installed by themselves
-            return true
-
-        }
+    override fun onDisplayPreferenceDialog(preference: Preference?) {
+        if (preference is RestrictAppsPreference) {
+            val dialogFragment: DialogFragment =
+                RestrictAppsPreferenceFragmentCompat.newInstance(preference.key)
+            dialogFragment.setTargetFragment(this, 0)
+            dialogFragment.show(fragmentManager!!, null)
+        } else super.onDisplayPreferenceDialog(preference)
     }
 }
-
-
