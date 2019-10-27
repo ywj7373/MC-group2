@@ -2,8 +2,8 @@ package com.example.bluecatapp.ui.settings
 
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
-import androidx.preference.EditTextPreference
 import androidx.preference.Preference
+import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
 import com.example.bluecatapp.R
 
