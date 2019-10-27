@@ -20,44 +20,13 @@ data class LocationItem(
     val y: String,
 
     @field:SerializedName("time")
-    val time: String
-    /*
-    @field:SerializedName("year")
-    val year: Int,
+    val time: String,
 
-    @field:SerializedName("month")
-    val month: Int,
-
-    @field:SerializedName("day")
-    val day: Int,
-
-    @field:SerializedName("hour")
-    val hour: Int,
-
-    @field:SerializedName("minute")
-    val minute: Int
-
-     */
+    @field:SerializedName("timeToDest")
+    val timeToDest: String
 )
 {
     @PrimaryKey(autoGenerate = true)
     @field:SerializedName("id")
     var id: Int = 0
 }
-
-
-//package com.example.bluecatapp.data
-/*
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-@Entity
-class LocationItem(@PrimaryKey(autoGenerate = true) var id: Int? = null,
-                   @ColumnInfo(name = "name")var name: String?,
-                   @ColumnInfo(name = "latitude") var latitude: Int?,
-                   @ColumnInfo(name = "longitude") var longitude: Int?,
-                   @ColumnInfo(name = " ")) {
-
-
-}*/

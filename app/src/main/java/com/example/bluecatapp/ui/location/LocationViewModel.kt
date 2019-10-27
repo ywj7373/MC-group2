@@ -8,10 +8,11 @@ import com.example.bluecatapp.data.LocationItemRepository
 import com.example.bluecatapp.data.LocationItem
 
 class LocationViewModel(application: Application) : AndroidViewModel(application) {
+    //track changes in current location
     private val locationData : LiveData<Location> = TrackLocation(application)
     fun getLocationData() = locationData
 
-
+    //track changes in the database
     private var repository: LocationItemRepository = LocationItemRepository(application)
     private var allLocationItems: LiveData<List<LocationItem>> = repository.getAllLocationItems()
 

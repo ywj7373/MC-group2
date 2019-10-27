@@ -23,6 +23,7 @@ class LocationAdapter : RecyclerView.Adapter<LocationAdapter.LocationItemHolder>
         val currentLocationItem = locationItems[position]
         holder.textViewName.text = currentLocationItem.name
         holder.textViewTime.text = currentLocationItem.time
+        holder.textViewTimeToDest.text = currentLocationItem.timeToDest
     }
 
     override fun getItemCount(): Int = locationItems.size
@@ -35,6 +36,7 @@ class LocationAdapter : RecyclerView.Adapter<LocationAdapter.LocationItemHolder>
     inner class LocationItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var textViewName: TextView = itemView.findViewById(R.id.location_item_name)
         var textViewTime: TextView = itemView.findViewById(R.id.location_item_time)
+        var textViewTimeToDest: TextView = itemView.findViewById(R.id.location_item_timeToDest)
     }
 
 }

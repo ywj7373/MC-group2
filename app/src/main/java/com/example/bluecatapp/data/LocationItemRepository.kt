@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.AsyncTask
 import androidx.lifecycle.LiveData
 
+//connect database with livedata with repository
 class LocationItemRepository(application: Application) {
 
     private var locationItemDao: LocationItemDao
@@ -11,21 +12,17 @@ class LocationItemRepository(application: Application) {
     private var allLocationItems: LiveData<List<LocationItem>>
 
     init {
-        val database: LocationItemDatabase = LocationItemDatabase.getInstance(
-            application.applicationContext
-        )!!
+        val database: LocationItemDatabase = LocationItemDatabase.getInstance(application.applicationContext)!!
         locationItemDao = database.locationItemDao()
         allLocationItems = locationItemDao.getAllLocationItems()
     }
 
     fun insert(locationItem: LocationItem) {
-        val insertNoteAsyncTask = InsertNoteAsyncTask(locationItemDao).execute(locationItem)
+        InsertNoteAsyncTask(locationItemDao).execute(locationItem)
     }
 
     fun deleteAllLocationItems() {
-        val deleteAllNotesAsyncTask = DeleteAllNotesAsyncTask(
-            locationItemDao
-        ).execute()
+        DeleteAllNotesAsyncTask(locationItemDao).execute()
     }
 
     fun getAllLocationItems(): LiveData<List<LocationItem>> {
@@ -40,12 +37,10 @@ class LocationItemRepository(application: Application) {
         }
     }
 
-
     private class DeleteAllNotesAsyncTask(val locationItemDao: LocationItemDao) : AsyncTask<Unit, Unit, Unit>() {
 
         override fun doInBackground(vararg p0: Unit?) {
             locationItemDao.deleteAllLocationItems()
         }
     }
-
 }

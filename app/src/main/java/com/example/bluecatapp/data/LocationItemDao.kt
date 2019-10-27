@@ -5,11 +5,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 
-// b. “Dao”
-//The Data Access Object (DAO) is an interface annotated with Dao.
-// This is where the database CRUD (create, read, update and delete) operations are defined.
-// Each method is annotated with “@Insert”, “@Delete”, “@Query(SELECT * FROM)”.
-
 @Dao
 interface LocationItemDao {
 

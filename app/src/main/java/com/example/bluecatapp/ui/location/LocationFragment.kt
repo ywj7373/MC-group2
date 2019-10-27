@@ -17,38 +17,24 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationItem
-import com.odsay.odsayandroidsdk.API
-import com.odsay.odsayandroidsdk.ODsayData
-import com.odsay.odsayandroidsdk.ODsayService
-import com.odsay.odsayandroidsdk.OnResultCallbackListener
 import kotlinx.android.synthetic.main.fragment_location.*
-import org.json.JSONException
-import org.json.JSONObject
 
 class LocationFragment : Fragment() {
     private val TAG = "Location Fragment"
     private lateinit var locationViewModel: LocationViewModel
     private val PERMISSION_ID = 270
-    private lateinit var odsayService : ODsayService
     private val locationAdapter = LocationAdapter()
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        //initialize view and viewmodel
-        val root = inflater.inflate(R.layout.fragment_location, container, false)
-        locationViewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
-
-
         setHasOptionsMenu(true)
 
-        //Initialize ODsayService
-        odsayService = ODsayService.init(requireContext(), getString(R.string.odsay_key))
-        odsayService.setConnectionTimeout(5000)
-        odsayService.setReadTimeout(5000)
+        //initialize view model
+        val root = inflater.inflate(R.layout.fragment_location, container, false)
+        locationViewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
 
         locationViewModel.getAllLocationItems().observe(this,
             Observer<List<LocationItem>> { t -> locationAdapter.setLocationItems(t!!) })
@@ -72,6 +58,7 @@ class LocationFragment : Fragment() {
 
         }
 
+        //call add location activity
         addItemButton.setOnClickListener {
             val intent = Intent(requireContext(), AddLocationActivity::class.java)
             startActivity(intent)
@@ -83,9 +70,9 @@ class LocationFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    //implement delete all items function
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        return when (item?.itemId) {
+        return when (item.itemId) {
             R.id.location_delete_all_locations -> {
                 locationViewModel.deleteAllLocationItems()
                 Toast.makeText(requireContext(), "All Location Items deleted!", Toast.LENGTH_SHORT).show()
@@ -97,17 +84,10 @@ class LocationFragment : Fragment() {
         }
     }
 
+    //get current location
     private fun getCurrentLocation() {
         if (checkLocationPermissions()) {
-            if (isLocationEnabled()) {
-                locationViewModel.getLocationData().observe(this, Observer {
-                    /*
-                    latAndLong.text = it.longitude.toString() + " " + it.latitude.toString()
-                    latitude = it.latitude
-                    longitude = it.longitude*/
-                })
-            }
-            else {
+            if (!isLocationEnabled()) {
                 Toast.makeText(requireActivity(), "Turn on location", Toast.LENGTH_LONG).show()
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
@@ -136,7 +116,8 @@ class LocationFragment : Fragment() {
         val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
         if (shouldProvideRationale) {
             Log.d(TAG, "Displaying permission rationale")
-            //permission rationale not yet implemented
+            //-----------------------permission rationale not yet implemented -------------------------------
+
         }
         else {
             Log.d(TAG, "Requesting Permission")
@@ -151,31 +132,5 @@ class LocationFragment : Fragment() {
                 getCurrentLocation()
             }
         }
-    }
-
-    //callback method to get json data from ODsay
-    private val onEstimateTimeResultCallbackListener = object : OnResultCallbackListener {
-
-        override fun onSuccess(odsayData: ODsayData?, api: API?) {
-            Log.d(TAG, "Connection to ODsay successful")
-            try {
-                if (api == API.SEARCH_PUB_TRANS_PATH) {
-                    val inquiryResult = (odsayData!!.getJson().getJSONObject("result").getJSONArray("path").get(0) as JSONObject).getJSONObject("info")
-                    //estimatedTime.text = inquiryResult.getInt("totalTime").toString()
-                }
-            } catch (e: JSONException) {
-                Log.d(TAG, "JSONException")
-                e.printStackTrace()
-            }
-        }
-
-        override fun onError(i: Int, s: String?, api: API?) {
-            Log.d(TAG, (i.toString()+", "+s) )
-        }
-    }
-
-    //call ODsay to estimate Travel time
-    private fun estimateTravelTime(sx: String, sy: String, ex: String, ey: String) {
-        odsayService.requestSearchPubTransPath(sx, sy, ex, ey, "0", "0", "0", onEstimateTimeResultCallbackListener)
     }
 }
