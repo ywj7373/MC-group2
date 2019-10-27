@@ -32,6 +32,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
     private lateinit var results: List<SearchPlacePlaces>
     private var mListener: OnButtonClick? = null
     private lateinit var place: SearchPlacePlaces
+    private var picked = false
     private val TAG = "SearchPlaceDialog"
 
     //new instance to pass data from activity to dialog
@@ -169,12 +170,17 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
         }
         //set current place to user's place
         this.place = place
+        picked = true
     }
 
     //pass the location user picked to activity
     private fun saveAddr() {
-        mListener!!.onDialogClickListener(isStart, place)
-        dismiss()
+        if (picked) {
+            mListener!!.onDialogClickListener(isStart, place)
+            dismiss()
+        }
+        else
+            Toast.makeText(context, "Please choose a location to add!", Toast.LENGTH_LONG).show()
     }
 
     private fun quitDialog() {
