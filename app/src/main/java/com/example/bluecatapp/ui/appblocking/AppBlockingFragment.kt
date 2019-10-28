@@ -73,8 +73,9 @@ class AppBlockingFragment : Fragment() {
             // Permission is not granted, show alert dialog to request for permission
             showAlertDialog()
         }
-//        val blockDuration: Long = Calendar.getInstance().timeInMillis + 1200000
+
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        // TODO: determine algorithm for querying app block duration
         // Retrieve blocking duration value in milliseconds
         val blockDuration: Long = (sharedPrefs.getString("block_duration", null)?.toLong()!!)
         // Deactivated if blocking duration is negative
@@ -84,6 +85,7 @@ class AppBlockingFragment : Fragment() {
             Toast.LENGTH_SHORT
         ).show()
 
+        // TODO: create app list with block duration based on settings configuration
         val currentlyBlockedApps: MutableMap<String, Long> = mutableMapOf(
             "com.android.chrome" to blockDuration,
             "com.google.android.youtube" to blockDuration
