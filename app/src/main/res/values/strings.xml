@@ -33,5 +33,7 @@
     <!-- TODO -->
 
     <!-- Location -->
-    <string name="odsay_key">PUT_API_KEY_HERE</string>
+    <string name="odsay_key">Qyb4YWtiFBd/Oz07uS+2273XmRFWFYOTXil+4C6QsPs</string>
+    <string name="naver_api_key_id">vdzq4ajyej</string>
+    <string name="naver_api_key">A6CoEzf661hYYJ7qBkvILYG7spFDQOR18SBgIh1N</string>
 </resources>

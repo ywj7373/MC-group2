@@ -15,7 +15,6 @@ import com.example.bluecatapp.R
 import com.example.bluecatapp.data.TodoItem
 import kotlinx.android.synthetic.main.fragment_todo.*
 
-
 class TodoFragment : Fragment() {
 
     private val ADD_TODO_REQUEST = 1
@@ -32,7 +31,7 @@ class TodoFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true);
+        setHasOptionsMenu(true)
         retainInstance = true
 
     }

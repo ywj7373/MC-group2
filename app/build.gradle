@@ -28,12 +28,11 @@ android {
 dependencies {
     def lifecycle_version = "1.1.1"
     def room_version = "1.1.1"
-
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.core:core-ktx:1.0.2'
-    implementation "androidx.preference:preference-ktx:1.1.0"
+    implementation 'androidx.preference:preference-ktx:1.1.0'
     implementation 'com.google.android.gms:play-services-location:17.0.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.google.code.gson:gson:2.8.6'
@@ -50,16 +49,16 @@ dependencies {
     // Room components
     implementation "android.arch.persistence.room:runtime:$room_version"
     kapt "android.arch.persistence.room:compiler:$room_version"
-
     // Lifecycle components
     implementation "android.arch.lifecycle:extensions:$lifecycle_version"
     kapt "android.arch.lifecycle:compiler:$lifecycle_version"
-
-    // DI Koin components
+    // DI Kotlin components
     implementation 'org.koin:koin-android:2.0.1'
     implementation 'org.koin:koin-android-viewmodel:2.0.1'
-
-    implementation "com.google.code.gson:gson:2.8.2"
+    implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'androidx.preference:preference:1.1.0-rc01'
     implementation project(path: ':SDK_release_v2.0.0')
+    implementation "com.naver.maps:map-sdk:3.6.1"
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
 }
