@@ -1,7 +1,9 @@
 <resources>
     <!-- App Blocking Preference -->
+    <!-- Maximum Time Limit for App Usage -->
     <string-array name="time_limit_entries">
         <item>Deactivate</item>
+        <item>10 secs (For testing)</item>
         <item>20 mins</item>
         <item>30 mins</item>
         <item>1 hour</item>
@@ -9,11 +11,31 @@
     </string-array>
 
     <string-array name="time_limit_values">
-        <item>deactivate_time_limit</item>
-        <item>first_time_limit</item>
-        <item>second_time_limit</item>
-        <item>third_time_limit</item>
-        <item>fourth_time_limit</item>
+        <item>-1</item>
+        <item>10000</item>
+        <item>1200000</item>
+        <item>1800000</item>
+        <item>3600000</item>
+        <item>7200000</item>
+    </string-array>
+
+    <!-- App Block Duration -->
+    <string-array name="block_duration_entries">
+        <item>Deactivate</item>
+        <item>5 mins</item>
+        <item>10 mins</item>
+        <item>30 mins</item>
+        <item>1 hour</item>
+        <item>2 hours</item>
+    </string-array>
+
+    <string-array name="block_duration_values">
+        <item>0</item>
+        <item>300000</item>
+        <item>600000</item>
+        <item>1800000</item>
+        <item>3600000</item>
+        <item>7200000</item>
     </string-array>
 
     <!-- Empty Default Array-->

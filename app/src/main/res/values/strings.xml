@@ -29,6 +29,7 @@
     <string name="smart_blocking_title">Smart Blocking</string>
     <string name="smart_blocking_summary">ADD ME</string>
     <string name="time_limit_title">Maximum Time Limit</string>
+    <string name="block_duration_title">Block Duration</string>
 
     <!-- TODO -->
 

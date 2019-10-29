@@ -45,11 +45,22 @@
         <ListPreference
             android:entries="@array/time_limit_entries"
             android:entryValues="@array/time_limit_values"
+            android:defaultValue="-1"
             android:selectable="true"
             app:dialogTitle="@string/time_limit_title"
             app:iconSpaceReserved="false"
             app:key="time_limit"
             app:title="@string/time_limit_title" />
+
+        <ListPreference
+            android:entries="@array/block_duration_entries"
+            android:entryValues="@array/block_duration_values"
+            android:defaultValue="0"
+            android:selectable="true"
+            app:dialogTitle="@string/block_duration_title"
+            app:iconSpaceReserved="false"
+            app:key="block_duration"
+            app:title="@string/block_duration_title" />
 
         <SwitchPreference
             android:selectable="true"
