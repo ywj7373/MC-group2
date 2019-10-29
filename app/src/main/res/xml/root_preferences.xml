@@ -45,7 +45,7 @@
         <ListPreference
             android:entries="@array/time_limit_entries"
             android:entryValues="@array/time_limit_values"
-            android:defaultValue="-1"
+            android:defaultValue="10000"
             android:selectable="true"
             app:dialogTitle="@string/time_limit_title"
             app:iconSpaceReserved="false"

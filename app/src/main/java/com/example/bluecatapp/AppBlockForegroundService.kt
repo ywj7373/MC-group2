@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -171,7 +172,8 @@ class AppBlockForegroundService : Service() {
             if (hasUsageDataAccessPermission()) {
                 val foregroundApp = getForegroundApp()
                 sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
-                val maxTimeLimit= sharedPrefs.getString("time_limit", "0")!!.toLong()
+                //test with 10s
+                val maxTimeLimit= 10000//sharedPrefs.getString("time_limit", "0")!!.toLong()
 
                 Log.d(
                     "bcat",
@@ -208,4 +210,17 @@ class AppBlockForegroundService : Service() {
             }
         }
     }
+
+    private fun setCountDownTimer(countDownFromTime: Long, interval: Long) {
+        val countDownTimer = object: CountDownTimer(countDownFromTime, interval){
+            override fun onTick(millisUntilFinished: Long) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onFinish() {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+        }
+    }
 }
+

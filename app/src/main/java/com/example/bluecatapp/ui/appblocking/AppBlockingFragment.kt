@@ -7,8 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.icu.util.Calendar
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.provider.Settings
 import android.text.SpannableStringBuilder
 import android.util.Log
@@ -16,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.text.bold
@@ -26,12 +27,14 @@ import androidx.preference.PreferenceManager
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
+import kotlinx.android.synthetic.main.fragment_appblocking.*
 
 class AppBlockingFragment : Fragment() {
     private lateinit var appOps: AppOpsManager
     private lateinit var appBlockingViewModel: AppBlockingViewModel
     private lateinit var usage: UsageStatsManager
     private lateinit var packageManager: PackageManager
+    private lateinit var countDownText: TextView
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -54,6 +57,8 @@ class AppBlockingFragment : Fragment() {
         })
         val startButton: Button = root.findViewById(R.id.start_foreground_service)
         val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
+        val countDownDisplay: ProgressBar = root.findViewById(R.id.countdownProgressBar)
+        countDownText = root.findViewById(R.id.countdown_number)
 
         startButton.setOnClickListener {
             AppBlockForegroundService.startService(context!!, "Monitoring.. ")
@@ -61,7 +66,7 @@ class AppBlockingFragment : Fragment() {
         stopButton.setOnClickListener {
             AppBlockForegroundService.stopService(context!!)
         }
-
+        setTimer(60000, 1000)
         return root
     }
 
@@ -107,24 +112,18 @@ class AppBlockingFragment : Fragment() {
 
     private fun showAlertDialog() {
         val alert = AlertDialog.Builder(activity!!)
-
-        // Set the alert dialog title
         val titleMessage = SpannableStringBuilder()
             .append("Allow ")
             .bold { append("Bluecat ") }
             .append("to access usage data?")
-        alert.setTitle(titleMessage)
 
-        // Display a message on alert dialog
+        alert.setTitle(titleMessage)
         alert.setMessage("In order to use the App Blocking feature, please enable \"Usage Access Permission\" on your device.")
 
-        // Set a positive button and its click listener on alert dialog
         alert.setPositiveButton("OK") { dialog, which ->
             // Redirect to settings to enable usage access permission
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         }
-
-        // Display a negative button on alert dialog
         alert.setNegativeButton("Cancel") { dialog, which ->
             Toast.makeText(
                 activity!!.applicationContext,
@@ -134,11 +133,26 @@ class AppBlockingFragment : Fragment() {
             activity!!.onBackPressed();
         }
 
-        // create alert dialog using builder
         val dialog: AlertDialog = alert.create()
+        dialog.show() // Display the alert dialog on app interface
+    }
 
-        // Display the alert dialog on app interface
-        dialog.show()
+    private fun setTimer(countDownFromTime: Long, countDownInterval: Long){
+        var count=0
+
+        val countDownTimer = object: CountDownTimer(countDownFromTime, countDownInterval){
+            override fun onTick(millisUntilFinished: Long) {
+                count += 1
+                val progressValue = (count * 100 / (countDownFromTime/countDownInterval)).toInt()
+                countDownText.setText(count)
+                countdownProgressBar.setProgress(progressValue)
+            }
+
+            override fun onFinish() {
+                countdownProgressBar.setProgress(100)
+            }
+        }
+        countDownTimer.start()
     }
 
     private fun blockApp() {
