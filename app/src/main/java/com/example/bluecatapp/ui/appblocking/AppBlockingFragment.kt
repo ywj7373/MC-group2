@@ -21,7 +21,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import com.example.bluecatapp.AppBlockForegroundService
@@ -29,12 +28,12 @@ import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
 import kotlinx.android.synthetic.main.fragment_appblocking.*
 
+
 class AppBlockingFragment : Fragment() {
     private lateinit var appOps: AppOpsManager
     private lateinit var appBlockingViewModel: AppBlockingViewModel
     private lateinit var usage: UsageStatsManager
     private lateinit var packageManager: PackageManager
-    private lateinit var countDownText: TextView
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -51,14 +50,14 @@ class AppBlockingFragment : Fragment() {
         appBlockingViewModel =
             ViewModelProviders.of(this).get(AppBlockingViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_appblocking, container, false)
-        val textView: TextView = root.findViewById(R.id.text_appblocking)
-        appBlockingViewModel.text.observe(this, Observer {
-            textView.text = it
-        })
+//        val textView: TextView = root.findViewById(R.id.text_appblocking)
+//        appBlockingViewModel.text.observe(this, Observer {
+//            textView.text = it
+//        })
         val startButton: Button = root.findViewById(R.id.start_foreground_service)
         val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
-        val countDownDisplay: ProgressBar = root.findViewById(R.id.countdownProgressBar)
-        countDownText = root.findViewById(R.id.countdown_number)
+        val countDownProgress: ProgressBar = root.findViewById(R.id.countdownProgressBar)
+        var countDownText: TextView = root.findViewById(R.id.countdownNumber)
 
         startButton.setOnClickListener {
             AppBlockForegroundService.startService(context!!, "Monitoring.. ")
@@ -66,7 +65,7 @@ class AppBlockingFragment : Fragment() {
         stopButton.setOnClickListener {
             AppBlockForegroundService.stopService(context!!)
         }
-        setTimer(60000, 1000)
+        setTimer(20000, 1000, countDownText, countDownProgress)
         return root
     }
 
@@ -82,7 +81,7 @@ class AppBlockingFragment : Fragment() {
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         // TODO: determine algorithm for querying app block duration
         // Retrieve blocking duration value in milliseconds
-        val blockDuration: Long = (sharedPrefs.getString("block_duration", null)?.toLong()!!)
+        val blockDuration: Long = 10;//(sharedPrefs.getString("block_duration", "0")?.toLong()!!)
         // Deactivated if blocking duration is negative
         Toast.makeText(
             activity!!.applicationContext,
@@ -137,23 +136,29 @@ class AppBlockingFragment : Fragment() {
         dialog.show() // Display the alert dialog on app interface
     }
 
-    private fun setTimer(countDownFromTime: Long, countDownInterval: Long){
-        var count=0
-
+    private fun setTimer(countDownFromTime: Long, countDownInterval: Long, countDownNumber: TextView, countDownProgress: ProgressBar){
         val countDownTimer = object: CountDownTimer(countDownFromTime, countDownInterval){
             override fun onTick(millisUntilFinished: Long) {
-                count += 1
-                val progressValue = (count * 100 / (countDownFromTime/countDownInterval)).toInt()
-                countDownText.setText(count)
-                countdownProgressBar.setProgress(progressValue)
+                val progressValue = (millisUntilFinished/countDownInterval).toInt()
+                countdownNumber.setText(getCountDownText(millisUntilFinished))
+                countDownProgress.setProgress(progressValue)
             }
 
             override fun onFinish() {
+                countDownNumber.setText("00:00")
                 countdownProgressBar.setProgress(100)
             }
         }
         countDownTimer.start()
     }
+
+    private fun getCountDownText(millisUntilFinished: Long): String{
+        val minutes = (millisUntilFinished/1000) / 60
+        val seconds = (millisUntilFinished/1000) % 60
+        return "${minutes.round(2)}:${seconds.round(2)}"
+    }
+
+    private fun Long.round(digits: Int = 2): String = "%0${digits}d".format(this)
 
     private fun blockApp() {
         // TODO: Use this function for showing user info about blocked app
