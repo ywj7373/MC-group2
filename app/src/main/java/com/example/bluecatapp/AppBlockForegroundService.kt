@@ -21,12 +21,17 @@ class AppBlockForegroundService : Service() {
     private val CHANNEL_ID = "AppBlockForegroundService"
     private lateinit var appOps: AppOpsManager
 //    private lateinit var usage: UsageStatsManager
-    private lateinit var usageStatsMap: MutableMap<String, UsageStats>
+    private lateinit var myUsageStatsMap: MutableMap<String, UsageStats>
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
     private val UPDATE_INTERVAL: Long = 1000
     private lateinit var sharedPrefs: SharedPreferences
     private var prevDetectedForegroundAppPackageName: String? = null
+    /**
+     * Mark time stamp when Start Service button is pressed
+     * App usage time limit for blocking based on when user manually starts monitoring
+     */
+    private var monitorStartTimeStamp: Long = 0
 
     companion object {
         fun startService(context: Context, message: String) {
@@ -48,6 +53,9 @@ class AppBlockForegroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("bcat", "Started app blocking service.")
+        monitorStartTimeStamp = System.currentTimeMillis()
+        // Load preferences
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
 
         val input = intent?.getStringExtra("inputExtra")
         createNotificationChannel()
@@ -75,13 +83,17 @@ class AppBlockForegroundService : Service() {
         handler = Handler()
         runnable = Runnable {
             checkIfShouldBlockForegroundApp()
+            /**
+             * TODO: improve algorithm for more efficient update interval
+             * Suggestion: calculate appropriate check in interval based on
+             * block duration current totaltimeinforground
+             */
             handler.postDelayed(runnable, UPDATE_INTERVAL)
             getForegroundApp()?.let { retryBlockIfFailed(it) }
         }
         handler.postDelayed(runnable, UPDATE_INTERVAL)
 
         return START_NOT_STICKY
-
     }
 
     override fun onDestroy() {
@@ -119,16 +131,15 @@ class AppBlockForegroundService : Service() {
 
     private fun getForegroundApp(): String? {
         var foregroundPackageName: String? = null
-        var timeInForeground: Long? = 0
 
         val usage = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-
+        //query usage time starting from when Start button was clicked
         val endTime = System.currentTimeMillis()
-        //query usage time for previous 2 hours
-        val beginTime = endTime - (1 * 60 * 60 * 1000)
+        val beginTime = monitorStartTimeStamp
+
+        myUsageStatsMap = usage.queryAndAggregateUsageStats(beginTime, endTime)
 
         val usageEvents = usage.queryEvents(beginTime, endTime)
-        val usageStatsMap = usage.queryAndAggregateUsageStats(beginTime, endTime)
         val event: UsageEvents.Event = UsageEvents.Event()
 
         while (usageEvents.hasNextEvent()) {
@@ -142,8 +153,10 @@ class AppBlockForegroundService : Service() {
 
     private fun getCurrentlyBlockedApps(): MutableMap<String, Long>? {
         val type = object : TypeToken<MutableMap<String, Long>>() {}.type
-        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         val blockedAppsJson = sharedPrefs.getString("currentlyBlockedApps", null)
+
+        //TODO: FIXME
+//        val blockDuration = sharedPrefs.getString("block_duration", "0")!!.toLong()
         val currentlyBlockedApps: MutableMap<String, Long>? =
             if (blockedAppsJson !== null) MainActivity.gson.fromJson(
                 blockedAppsJson,
@@ -170,21 +183,26 @@ class AppBlockForegroundService : Service() {
         if (currentlyBlockedApps !== null) {
             if (hasUsageDataAccessPermission()) {
                 val foregroundApp = getForegroundApp()
+                val totalUsageTime = (foregroundApp?.let { getUsageStatsForApp(it)?.totalTimeInForeground }) ?: 0
                 sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+                // Default maxTimeLimit set to 10s
+                // TODO: check when deactivated
                 val maxTimeLimit= sharedPrefs.getString("time_limit", "0")!!.toLong()
 
                 Log.d(
                     "bcat",
-                    "CHECK - ${if (!prevDetectedForegroundAppPackageName.equals(foregroundApp)) "APP CHANGED - " else ""}Prev app $prevDetectedForegroundAppPackageName, current app open $foregroundApp"
+                    "CHECK - ${if (!prevDetectedForegroundAppPackageName.equals(foregroundApp)) 
+                        "APP CHANGED - " else ""}Prev app $prevDetectedForegroundAppPackageName, current app open $foregroundApp"
                 )
+
                 if (!prevDetectedForegroundAppPackageName.equals(foregroundApp)) {
                     // A new app has been opened, check if it should be blocked
                     Log.d(
                         "bcat",
                         "App changed, block? ${if (currentlyBlockedApps.keys.contains(foregroundApp)) "YES" else "No"}"
                     )
-                    if (currentlyBlockedApps.keys.contains(foregroundApp)
-                        && (usageStatsMap.get(foregroundApp)!!.totalTimeInForeground >= maxTimeLimit)) {
+                    // && ((totalUsageTime?:0) >= maxTimeLimit)
+                    if (currentlyBlockedApps.keys.contains(foregroundApp) && (totalUsageTime >= maxTimeLimit)) {
                         foregroundApp?.let { blockApp(it) }
                     }
                 }
@@ -207,5 +225,15 @@ class AppBlockForegroundService : Service() {
                 blockApp(packageName)
             }
         }
+    }
+
+    // Queries all device's app usage stats in a given time interval
+    private fun getUsageStatsForApp(targetPackageName: String): UsageStats? {
+        myUsageStatsMap.forEach { (_,usageStats) ->
+            if (usageStats.packageName == targetPackageName) {
+                return usageStats
+            }
+        }
+        return null
     }
 }
