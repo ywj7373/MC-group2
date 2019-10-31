@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -16,6 +17,10 @@ import androidx.preference.PreferenceManager
 import com.google.gson.reflect.TypeToken
 import android.text.TextUtils
 import android.util.Log
+import android.widget.Toast
+import com.example.bluecatapp.ui.appblocking.AppBlockingFragment
+import java.util.*
+
 
 class AppBlockForegroundService : Service() {
     private val CHANNEL_ID = "AppBlockForegroundService"
@@ -53,7 +58,12 @@ class AppBlockForegroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("bcat", "Started app blocking service.")
-        monitorStartTimeStamp = System.currentTimeMillis()
+        monitorStartTimeStamp = Calendar.getInstance().timeInMillis
+        Toast.makeText(
+            this.applicationContext,
+            "Monitoring from $monitorStartTimeStamp : ${monitorStartTimeStamp/(1000*3600) % 24} ms",
+            Toast.LENGTH_SHORT
+        ).show()
         // Load preferences
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -135,6 +145,10 @@ class AppBlockForegroundService : Service() {
         val usage = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         //query usage time starting from when Start button was clicked
         val endTime = System.currentTimeMillis()
+        Log.d(
+            "bcat",
+            "Current End TIme is $endTime"
+        )
         val beginTime = monitorStartTimeStamp
 
         myUsageStatsMap = usage.queryAndAggregateUsageStats(beginTime, endTime)
@@ -188,7 +202,10 @@ class AppBlockForegroundService : Service() {
                 // Default maxTimeLimit set to 10s
                 // TODO: check when deactivated
                 val maxTimeLimit= sharedPrefs.getString("time_limit", "0")!!.toLong()
-
+                Log.d(
+                    "bcat",
+                    "MAX TIME LIMIT IS $maxTimeLimit"
+                )
                 Log.d(
                     "bcat",
                     "CHECK - ${if (!prevDetectedForegroundAppPackageName.equals(foregroundApp)) 
