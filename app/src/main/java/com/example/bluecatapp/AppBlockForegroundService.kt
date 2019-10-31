@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -246,11 +247,24 @@ class AppBlockForegroundService : Service() {
 
     // Queries all device's app usage stats in a given time interval
     private fun getUsageStatsForApp(targetPackageName: String): UsageStats? {
-        myUsageStatsMap.forEach { (_,usageStats) ->
+        myUsageStatsMap.forEach { (_, usageStats) ->
             if (usageStats.packageName == targetPackageName) {
                 return usageStats
             }
         }
         return null
     }
+
+    private fun setCountDownTimer(countDownFromTime: Long, interval: Long) {
+        val countDownTimer = object: CountDownTimer(countDownFromTime, interval){
+            override fun onTick(millisUntilFinished: Long) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onFinish() {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+        }
+    }
 }
+

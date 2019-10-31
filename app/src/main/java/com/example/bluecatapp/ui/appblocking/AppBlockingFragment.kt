@@ -7,8 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.icu.util.Calendar
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.provider.Settings
 import android.text.SpannableStringBuilder
 import android.util.Log
@@ -16,16 +16,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
+import kotlinx.android.synthetic.main.fragment_appblocking.*
+
 
 class AppBlockingFragment : Fragment() {
     private lateinit var appOps: AppOpsManager
@@ -48,12 +50,14 @@ class AppBlockingFragment : Fragment() {
         appBlockingViewModel =
             ViewModelProviders.of(this).get(AppBlockingViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_appblocking, container, false)
-        val textView: TextView = root.findViewById(R.id.text_appblocking)
-        appBlockingViewModel.text.observe(this, Observer {
-            textView.text = it
-        })
+//        val textView: TextView = root.findViewById(R.id.text_appblocking)
+//        appBlockingViewModel.text.observe(this, Observer {
+//            textView.text = it
+//        })
         val startButton: Button = root.findViewById(R.id.start_foreground_service)
         val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
+        val countDownProgress: ProgressBar = root.findViewById(R.id.countdownProgressBar)
+        var countDownText: TextView = root.findViewById(R.id.countdownNumber)
 
         startButton.setOnClickListener {
             AppBlockForegroundService.startService(context!!, "Monitoring.. ")
@@ -61,7 +65,7 @@ class AppBlockingFragment : Fragment() {
         stopButton.setOnClickListener {
             AppBlockForegroundService.stopService(context!!)
         }
-
+        setTimer(20000, 1000, countDownText, countDownProgress)
         return root
     }
 
@@ -77,7 +81,7 @@ class AppBlockingFragment : Fragment() {
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         // TODO: determine algorithm for querying app block duration
         // Retrieve blocking duration value in milliseconds
-        val blockDuration: Long = (sharedPrefs.getString("block_duration", null)?.toLong()!!)
+        val blockDuration: Long = 10;//(sharedPrefs.getString("block_duration", "0")?.toLong()!!)
         // Deactivated if blocking duration is negative
         Toast.makeText(
             activity!!.applicationContext,
@@ -86,6 +90,7 @@ class AppBlockingFragment : Fragment() {
         ).show()
 
         // TODO: create app list with block duration based on settings configuration
+        val appsToBlock = sharedPrefs.getString("currentlyBlockedApps", null)
         val currentlyBlockedApps: MutableMap<String, Long> = mutableMapOf(
             "com.android.chrome" to blockDuration,
             "com.google.android.youtube" to blockDuration
@@ -107,24 +112,18 @@ class AppBlockingFragment : Fragment() {
 
     private fun showAlertDialog() {
         val alert = AlertDialog.Builder(activity!!)
-
-        // Set the alert dialog title
         val titleMessage = SpannableStringBuilder()
             .append("Allow ")
             .bold { append("Bluecat ") }
             .append("to access usage data?")
-        alert.setTitle(titleMessage)
 
-        // Display a message on alert dialog
+        alert.setTitle(titleMessage)
         alert.setMessage("In order to use the App Blocking feature, please enable \"Usage Access Permission\" on your device.")
 
-        // Set a positive button and its click listener on alert dialog
         alert.setPositiveButton("OK") { dialog, which ->
             // Redirect to settings to enable usage access permission
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         }
-
-        // Display a negative button on alert dialog
         alert.setNegativeButton("Cancel") { dialog, which ->
             Toast.makeText(
                 activity!!.applicationContext,
@@ -134,12 +133,33 @@ class AppBlockingFragment : Fragment() {
             activity!!.onBackPressed();
         }
 
-        // create alert dialog using builder
         val dialog: AlertDialog = alert.create()
-
-        // Display the alert dialog on app interface
-        dialog.show()
+        dialog.show() // Display the alert dialog on app interface
     }
+
+    private fun setTimer(countDownFromTime: Long, countDownInterval: Long, countDownNumber: TextView, countDownProgress: ProgressBar){
+        val countDownTimer = object: CountDownTimer(countDownFromTime, countDownInterval){
+            override fun onTick(millisUntilFinished: Long) {
+                val progressValue = (millisUntilFinished/countDownInterval).toInt()
+                countdownNumber.setText(getCountDownText(millisUntilFinished))
+                countDownProgress.setProgress(progressValue)
+            }
+
+            override fun onFinish() {
+                countDownNumber.setText("00:00")
+                countdownProgressBar.setProgress(100)
+            }
+        }
+        countDownTimer.start()
+    }
+
+    private fun getCountDownText(millisUntilFinished: Long): String{
+        val minutes = (millisUntilFinished/1000) / 60
+        val seconds = (millisUntilFinished/1000) % 60
+        return "${minutes.round(2)}:${seconds.round(2)}"
+    }
+
+    private fun Long.round(digits: Int = 2): String = "%0${digits}d".format(this)
 
     private fun blockApp() {
         // TODO: Use this function for showing user info about blocked app
