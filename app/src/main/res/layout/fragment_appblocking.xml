@@ -61,28 +61,26 @@
         android:id="@+id/countdownProgressBar"
         style="?android:attr/progressBarStyle"
         android:max="100"
+        android:indeterminate="true"
         android:progress="0"
         android:layout_width="209dp"
         android:layout_height="210dp"
+        android:progressDrawable="@drawable/custom_progress"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/stop_foreground_service"
         app:layout_constraintVertical_bias="0.494" />
 
-    <TextView
-        android:id="@+id/countdownNumber"
+    <Chronometer
+        android:id="@+id/view_timer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="number"
-        android:text="0"
-        android:textSize="36sp"
-        android:textAlignment="center"
+        android:textSize="30sp"
+        android:countDown="true"
+        tools:targetApi="24"
         app:layout_constraintBottom_toBottomOf="@+id/countdownProgressBar"
         app:layout_constraintEnd_toEndOf="@+id/countdownProgressBar"
         app:layout_constraintStart_toStartOf="@+id/countdownProgressBar"
         app:layout_constraintTop_toTopOf="@+id/countdownProgressBar" />
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>

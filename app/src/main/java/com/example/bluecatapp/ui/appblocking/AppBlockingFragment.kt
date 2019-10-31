@@ -9,16 +9,14 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.SystemClock
 import android.provider.Settings
 import android.text.SpannableStringBuilder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -57,7 +55,7 @@ class AppBlockingFragment : Fragment() {
         val startButton: Button = root.findViewById(R.id.start_foreground_service)
         val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
         val countDownProgress: ProgressBar = root.findViewById(R.id.countdownProgressBar)
-        var countDownText: TextView = root.findViewById(R.id.countdownNumber)
+        val chrono: Chronometer = root.findViewById(R.id.view_timer)
 
         startButton.setOnClickListener {
             AppBlockForegroundService.startService(context!!, "Monitoring.. ")
@@ -65,7 +63,8 @@ class AppBlockingFragment : Fragment() {
         stopButton.setOnClickListener {
             AppBlockForegroundService.stopService(context!!)
         }
-        setTimer(20000, 1000, countDownText, countDownProgress)
+        setTimer(10000, 1000, chrono, countDownProgress)
+        
         return root
     }
 
@@ -137,17 +136,17 @@ class AppBlockingFragment : Fragment() {
         dialog.show() // Display the alert dialog on app interface
     }
 
-    private fun setTimer(countDownFromTime: Long, countDownInterval: Long, countDownNumber: TextView, countDownProgress: ProgressBar){
+    private fun setTimer(countDownFromTime: Long, countDownInterval: Long, chrono: Chronometer, countDownProgress: ProgressBar){
+        chrono.base = SystemClock.elapsedRealtime() + countDownFromTime
+        chrono.start()
         val countDownTimer = object: CountDownTimer(countDownFromTime, countDownInterval){
             override fun onTick(millisUntilFinished: Long) {
-                val progressValue = (millisUntilFinished/countDownInterval).toInt()
-                countdownNumber.setText(getCountDownText(millisUntilFinished))
-                countDownProgress.setProgress(progressValue)
+                countDownProgress.setProgress(((millisUntilFinished/10)/countDownFromTime).toInt())
             }
 
             override fun onFinish() {
-                countDownNumber.setText("00:00")
-                countdownProgressBar.setProgress(100)
+                chrono.stop()
+                countDownProgress.setProgress(100)
             }
         }
         countDownTimer.start()

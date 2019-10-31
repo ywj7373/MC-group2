@@ -8,8 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
-import android.os.Bundle
-import android.os.CountDownTimer
 import android.os.Handler
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -20,6 +18,8 @@ import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
 import com.example.bluecatapp.ui.appblocking.AppBlockingFragment
+import com.example.bluecatapp.ui.settings.RestrictAppsPreference
+import com.example.bluecatapp.ui.settings.RestrictAppsPreferenceFragmentCompat
 import java.util.*
 
 
@@ -59,7 +59,7 @@ class AppBlockForegroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("bcat", "Started app blocking service.")
-        monitorStartTimeStamp = Calendar.getInstance().timeInMillis
+        monitorStartTimeStamp = System.currentTimeMillis()
         Toast.makeText(
             this.applicationContext,
             "Monitoring from $monitorStartTimeStamp : ${monitorStartTimeStamp/(1000*3600) % 24} ms",
@@ -253,18 +253,6 @@ class AppBlockForegroundService : Service() {
             }
         }
         return null
-    }
-
-    private fun setCountDownTimer(countDownFromTime: Long, interval: Long) {
-        val countDownTimer = object: CountDownTimer(countDownFromTime, interval){
-            override fun onTick(millisUntilFinished: Long) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onFinish() {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-        }
     }
 }
 
