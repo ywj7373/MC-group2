@@ -35,42 +35,49 @@
         android:id="@+id/start_foreground_service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="248dp"
         android:background="@color/colorPrimary"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
         android:text="Start service"
         android:textColor="#fff"
-        app:layout_constraintBottom_toTopOf="@+id/stop_foreground_service"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_appblocking_data" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.166" />
 
     <Button
         android:id="@+id/stop_foreground_service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="400dp"
         android:background="@color/colorPrimary"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
         android:text="Stop service"
         android:textColor="#fff"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.689"
+        app:layout_constraintStart_toEndOf="@+id/start_foreground_service"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.166" />
 
     <ProgressBar
         android:id="@+id/countdownProgressBar"
         style="?android:attr/progressBarStyle"
-        android:max="100"
-        android:indeterminate="true"
-        android:progress="0"
         android:layout_width="209dp"
         android:layout_height="210dp"
+        android:indeterminate="true"
+        android:max="100"
+        android:progress="0"
         android:progressDrawable="@drawable/custom_progress"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/stop_foreground_service"
-        app:layout_constraintVertical_bias="0.494" />
+        app:layout_constraintVertical_bias="0.681" />
 
     <Chronometer
         android:id="@+id/view_timer"
@@ -83,4 +90,27 @@
         app:layout_constraintEnd_toEndOf="@+id/countdownProgressBar"
         app:layout_constraintStart_toStartOf="@+id/countdownProgressBar"
         app:layout_constraintTop_toTopOf="@+id/countdownProgressBar" />
+
+    <TextView
+        android:id="@+id/block_explanation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="Time left until app unblocked"
+        app:layout_constraintBottom_toTopOf="@+id/countdownProgressBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/currently_blocked_app"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No Currently Blocked Apps"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/block_explanation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_appblocking_data"
+        app:layout_constraintVertical_bias="0.689" />
 </androidx.constraintlayout.widget.ConstraintLayout>

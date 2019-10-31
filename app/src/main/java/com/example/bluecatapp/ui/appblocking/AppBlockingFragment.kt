@@ -32,6 +32,9 @@ class AppBlockingFragment : Fragment() {
     private lateinit var appBlockingViewModel: AppBlockingViewModel
     private lateinit var usage: UsageStatsManager
     private lateinit var packageManager: PackageManager
+    // test values
+    private val finishBlockingTimeStamp: Long = SystemClock.elapsedRealtime() + 15000
+    private val mockAppList: MutableMap<String, Long> = mutableMapOf("com.android.chrome" to finishBlockingTimeStamp)
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -54,8 +57,7 @@ class AppBlockingFragment : Fragment() {
 //        })
         val startButton: Button = root.findViewById(R.id.start_foreground_service)
         val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
-        val countDownProgress: ProgressBar = root.findViewById(R.id.countdownProgressBar)
-        val chrono: Chronometer = root.findViewById(R.id.view_timer)
+        val blockedAppName: TextView = root.findViewById(R.id.currently_blocked_app)
 
         startButton.setOnClickListener {
             AppBlockForegroundService.startService(context!!, "Monitoring.. ")
@@ -63,8 +65,21 @@ class AppBlockingFragment : Fragment() {
         stopButton.setOnClickListener {
             AppBlockForegroundService.stopService(context!!)
         }
-        setTimer(10000, 1000, chrono, countDownProgress)
-        
+
+        if (mockAppList.entries.count() == 0) {
+            blockedAppName.setText("No blocked apps at the moment")
+        } else {
+            mockAppList.forEach { (app, finishTimeStamp) ->
+                val timeLeftToBlock = finishTimeStamp - SystemClock.elapsedRealtime()
+                if (timeLeftToBlock > 1000) { //more than 1s left
+                    val countDownProgress: ProgressBar =
+                        root.findViewById(R.id.countdownProgressBar)
+                    val chrono: Chronometer = root.findViewById(R.id.view_timer)
+                    blockedAppName.setText(getAppNameFromPackage(app, context!!))
+                    setTimer(timeLeftToBlock, 1000, chrono, blockedAppName, countDownProgress)
+                }
+            }
+        }
         return root
     }
 
@@ -136,7 +151,8 @@ class AppBlockingFragment : Fragment() {
         dialog.show() // Display the alert dialog on app interface
     }
 
-    private fun setTimer(countDownFromTime: Long, countDownInterval: Long, chrono: Chronometer, countDownProgress: ProgressBar){
+    private fun setTimer(countDownFromTime: Long, countDownInterval: Long, chrono: Chronometer,
+                         blockedAppName: TextView,countDownProgress: ProgressBar){
         chrono.base = SystemClock.elapsedRealtime() + countDownFromTime
         chrono.start()
         val countDownTimer = object: CountDownTimer(countDownFromTime, countDownInterval){
@@ -146,19 +162,27 @@ class AppBlockingFragment : Fragment() {
 
             override fun onFinish() {
                 chrono.stop()
+                blockedAppName.setText("No blocked apps at the moment")
                 countDownProgress.setProgress(100)
             }
         }
         countDownTimer.start()
     }
 
-    private fun getCountDownText(millisUntilFinished: Long): String{
-        val minutes = (millisUntilFinished/1000) / 60
-        val seconds = (millisUntilFinished/1000) % 60
-        return "${minutes.round(2)}:${seconds.round(2)}"
-    }
+    private fun getAppNameFromPackage(packageName: String, context: Context): String? {
+        val mainIntent = Intent(Intent.ACTION_MAIN, null)
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
 
-    private fun Long.round(digits: Int = 2): String = "%0${digits}d".format(this)
+        val pkgAppsList = context.packageManager
+            .queryIntentActivities(mainIntent, 0)
+
+        for (app in pkgAppsList) {
+            if (app.activityInfo.packageName == packageName) {
+                return app.activityInfo.loadLabel(context.packageManager).toString()
+            }
+        }
+        return null
+    }
 
     private fun blockApp() {
         // TODO: Use this function for showing user info about blocked app
