@@ -24,13 +24,10 @@ import com.example.bluecatapp.data.TodoItemRepository
 class TodoViewModel(application: Application) : AndroidViewModel(application) {
     //    Here, we are using AndroidViewModel because we need an application context.
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is Todo Fragment"
-    }
-    val text: LiveData<String> = _text
-
     private var repository: TodoItemRepository = TodoItemRepository(application)
     private var allTodoItems: LiveData<List<TodoItem>> = repository.getAllTodoItems()
+    private var todoItemsNotDone: LiveData<List<TodoItem>> = repository.getTodoItemsNotDone()
+    private var todoItemsDone: LiveData<List<TodoItem>> = repository.getTodosItemsDone()
 
     fun insert(todoItem: TodoItem) {
         repository.insert(todoItem)
@@ -42,5 +39,17 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getAllTodoItems(): LiveData<List<TodoItem>> {
         return allTodoItems
+    }
+
+    fun getTodoItemsNotDone(): LiveData<List<TodoItem>> {
+        return todoItemsNotDone
+    }
+
+    fun getTodoItemsDone(): LiveData<List<TodoItem>> {
+        return todoItemsDone
+    }
+
+    fun updateTodoStatus(todoItem: TodoItem){
+        repository.updateTodoStatus(todoItem)
     }
 }

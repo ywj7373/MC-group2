@@ -5,12 +5,14 @@ import android.os.AsyncTask
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import java.text.SimpleDateFormat
 import java.util.*
 
 // version should be increased everytime scheme is changed.
-@Database(entities = [TodoItem::class], version = 2)
+@Database(entities = [TodoItem::class], version = 4)
+@TypeConverters(Converters::class)
 abstract class TodoItemDatabase : RoomDatabase() {
 
     abstract fun todoItemDao(): TodoItemDao
@@ -54,6 +56,7 @@ abstract class TodoItemDatabase : RoomDatabase() {
             todoItemDao?.insert(TodoItem("Task 1", timeStamp,false))
             todoItemDao?.insert(TodoItem("Task 2", timeStamp,false))
             todoItemDao?.insert(TodoItem("Task 3", timeStamp,false))
+            todoItemDao?.insert(TodoItem("Task 4", timeStamp,true))
         }
     }
 
