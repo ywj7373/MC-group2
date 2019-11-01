@@ -28,7 +28,7 @@
             android:layout_width="fill_parent"
             android:layout_height="7dp"
             android:layout_below="@id/todo_item_task"
-            android:background="#121212"/>
+            android:background="#ff0000"/>
 
         <TextView
             android:id="@+id/todo_item_date"

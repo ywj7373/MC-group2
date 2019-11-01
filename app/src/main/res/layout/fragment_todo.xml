@@ -70,20 +70,31 @@
             android:visibility="visible">
         </TextClock>
 
-        <TextView
-            android:id="@+id/text_hw_timer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/text_homework"
+        <Chronometer
+            android:id="@+id/view_timer"
+            tools:targetApi="29"
             android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:textAlignment="center"
             android:textColor="#80CC28"
             android:textSize="45dp"
             android:textStyle="bold"
-            android:textAlignment="center"
-            android:text="45:00"
-            android:visibility="invisible">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible" />
 
-        </TextView>
+<!--        <TextView-->
+<!--            android:id="@+id/text_hw_timer"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_below="@+id/text_homework"-->
+<!--            android:layout_marginTop="@dimen/activity_vertical_margin"-->
+<!--            android:textColor="#80CC28"-->
+<!--            android:textSize="45dp"-->
+<!--            android:textStyle="bold"-->
+<!--            android:textAlignment="center"-->
+<!--            android:text="45:00"-->
+<!--            android:visibility="invisible">-->
+<!--        </TextView>-->
 
 
     </androidx.cardview.widget.CardView>
