@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -24,6 +25,8 @@ class TodoFragment : Fragment(){
     private val todoAdapter2 = TodoAdapter()
 
     private var isHomeworkMode = false;
+
+    private var hwModeTime = 1000*60*45 // 45 minutes @todo should be changed as set on the settings page
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,18 +88,32 @@ class TodoFragment : Fragment(){
 
         container_hwmode.setOnClickListener{view->
             if(isHomeworkMode){
+                view_timer.isCountDown = false
+                view_timer.base = SystemClock.elapsedRealtime() + hwModeTime // 45 minutes
+                view_timer.stop()
+
                 isHomeworkMode = false;
                 text_homework.text = "Turn Homework Mode ON"
+                text_homework.setBackgroundColor(Color.parseColor("#111111"))
+                text_homework.setTextColor(Color.parseColor("#ffffff"))
                 todo_ll_container.setBackgroundColor(Color.parseColor("#ffffff"))
                 clock_homework.visibility = View.VISIBLE
-                text_hw_timer.visibility = View.GONE
+//                text_hw_timer.visibility = View.GONE
+                view_timer.visibility = View.GONE
 
             }else{
+                view_timer.isCountDown = true
+                view_timer.base = SystemClock.elapsedRealtime() + hwModeTime
+                view_timer.start()
+
                 isHomeworkMode = true
                 text_homework.text = "Turn Homework Mode OFF"
+                text_homework.setBackgroundColor(Color.parseColor("#dddddd"))
+                text_homework.setTextColor(Color.parseColor("#111111"))
                 todo_ll_container.setBackgroundColor(Color.parseColor("#111111"))
                 clock_homework.visibility = View.GONE
-                text_hw_timer.visibility = View.VISIBLE
+//                text_hw_timer.visibility = View.VISIBLE
+                view_timer.visibility = View.VISIBLE
 
             }
         }
