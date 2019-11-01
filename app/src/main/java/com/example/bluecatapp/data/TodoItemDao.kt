@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 
 // b. “Dao”
 //The Data Access Object (DAO) is an interface annotated with Dao.
@@ -19,7 +20,19 @@ interface TodoItemDao {
     @Query("DELETE FROM todo_items")
     fun deleteAllTodoItems()
 
-    @Query("SELECT * FROM todo_items ")
+    @Query("SELECT * FROM todo_items")
     fun getAllTodoItems(): LiveData<List<TodoItem>>
+
+    @Query("SELECT * FROM todo_items WHERE done=0")
+    fun getTodoItemsNotDone(): LiveData<List<TodoItem>>
+
+    @Query("SELECT * FROM todo_items WHERE done=1")
+    fun getTodoItemsDone(): LiveData<List<TodoItem>>
+
+    @Query("UPDATE todo_items SET done=1 WHERE id LIKE :id")
+    fun makeDone(id: Int)
+
+    @Query("UPDATE todo_items SET done=0 WHERE id LIKE :id")
+    fun makeUnDone(id: Int)
 
 }

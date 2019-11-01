@@ -1,21 +1,26 @@
 package com.example.bluecatapp.ui.todo
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.bluecatapp.AddTodoActivity
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.TodoItem
+import com.example.bluecatapp.data.TodoItemRepository
 
-class TodoAdapter : RecyclerView.Adapter<TodoAdapter.TodoItemHolder>() {
+class TodoAdapter : RecyclerView.Adapter<TodoAdapter.TodoItemHolder>(){
 
+    var onItemClick: ((TodoItem) -> Unit)? = null
     private var todoItems: List<TodoItem> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoItemHolder {
         val itemView = LayoutInflater.from(parent.context)
             .inflate(R.layout.todo_task_item, parent, false)
+
         return TodoItemHolder(itemView)
     }
 
@@ -39,6 +44,22 @@ class TodoAdapter : RecyclerView.Adapter<TodoAdapter.TodoItemHolder>() {
         var textViewDate: TextView = itemView.findViewById(R.id.todo_item_date)
 //        var textViewLocation: TextView = itemView.findViewById(R.id.todo_item_location)
         var checkBoxDone: CheckBox = itemView.findViewById(R.id.todo_item_done)
+        var lineDone: View = itemView.findViewById(R.id.todo_item_line_done)
+
+        // view 에서 변하는건 여기서 처리
+        init {
+            checkBoxDone.setOnClickListener {
+                if(checkBoxDone.isChecked){
+                    lineDone.visibility = View.GONE
+                }else{
+                    lineDone.visibility = View.VISIBLE
+                }
+                onItemClick?.invoke(todoItems[adapterPosition])
+            }
+//            itemView.setOnClickListener{
+//                onItemClick?.invoke(todoItems[adapterPosition])
+//            }
+        }
 
     }
 

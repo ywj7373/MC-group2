@@ -18,18 +18,18 @@ class LocationItemRepository(application: Application) {
     }
 
     fun insert(locationItem: LocationItem) {
-        InsertNoteAsyncTask(locationItemDao).execute(locationItem)
+        InsertTodoAsyncTask(locationItemDao).execute(locationItem)
     }
 
     fun deleteAllLocationItems() {
-        DeleteAllNotesAsyncTask(locationItemDao).execute()
+        DeleteAllTodosAsyncTask(locationItemDao).execute()
     }
 
     fun getAllLocationItems(): LiveData<List<LocationItem>> {
         return allLocationItems
     }
 
-    private class InsertNoteAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItem, Unit, Unit>() {
+    private class InsertTodoAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItem, Unit, Unit>() {
         val locationItemDao = locationItemDao
 
         override fun doInBackground(vararg p0: LocationItem?) {
@@ -37,7 +37,7 @@ class LocationItemRepository(application: Application) {
         }
     }
 
-    private class DeleteAllNotesAsyncTask(val locationItemDao: LocationItemDao) : AsyncTask<Unit, Unit, Unit>() {
+    private class DeleteAllTodosAsyncTask(val locationItemDao: LocationItemDao) : AsyncTask<Unit, Unit, Unit>() {
 
         override fun doInBackground(vararg p0: Unit?) {
             locationItemDao.deleteAllLocationItems()

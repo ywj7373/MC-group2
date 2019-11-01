@@ -2,12 +2,14 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_marginStart="8dp"
     android:layout_marginTop="8dp"
     android:layout_marginEnd="8dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".MainActivity">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout
         android:id="@+id/todo_task_item_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,6 +21,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Task description" />
+
+        <View
+            android:id="@+id/todo_item_line_done"
+            android:visibility="gone"
+            android:layout_width="fill_parent"
+            android:layout_height="7dp"
+            android:layout_below="@id/todo_item_task"
+            android:background="#121212"/>
 
         <TextView
             android:id="@+id/todo_item_date"
@@ -40,7 +50,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:checked="false"
-            android:text="Done" />
+            android:text="Done"
+            />
 
 
     </RelativeLayout>
