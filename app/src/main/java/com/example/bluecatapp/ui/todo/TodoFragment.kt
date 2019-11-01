@@ -94,6 +94,8 @@ class TodoFragment : Fragment(){
 
                 isHomeworkMode = false;
                 text_homework.text = "Turn Homework Mode ON"
+                text_homework.setBackgroundColor(Color.parseColor("#111111"))
+                text_homework.setTextColor(Color.parseColor("#ffffff"))
                 todo_ll_container.setBackgroundColor(Color.parseColor("#ffffff"))
                 clock_homework.visibility = View.VISIBLE
 //                text_hw_timer.visibility = View.GONE
@@ -106,6 +108,8 @@ class TodoFragment : Fragment(){
 
                 isHomeworkMode = true
                 text_homework.text = "Turn Homework Mode OFF"
+                text_homework.setBackgroundColor(Color.parseColor("#dddddd"))
+                text_homework.setTextColor(Color.parseColor("#111111"))
                 todo_ll_container.setBackgroundColor(Color.parseColor("#111111"))
                 clock_homework.visibility = View.GONE
 //                text_hw_timer.visibility = View.VISIBLE
