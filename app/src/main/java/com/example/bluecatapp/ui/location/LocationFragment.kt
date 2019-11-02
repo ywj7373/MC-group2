@@ -1,6 +1,8 @@
 package com.example.bluecatapp.ui.location
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -18,12 +20,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationItem
 import kotlinx.android.synthetic.main.fragment_location.*
+import java.util.*
 
 class LocationFragment : Fragment() {
     private val TAG = "Location Fragment"
     private lateinit var locationViewModel: LocationViewModel
     private val PERMISSION_ID = 270
     private val locationAdapter = LocationAdapter()
+    private lateinit var alarmManager: AlarmManager
+    private val mAlarmIntent = Intent("")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,6 +46,10 @@ class LocationFragment : Fragment() {
 
         //Start receiving current location every 5 second
         getCurrentLocation()
+
+        var s = RoutineReceiver()
+        s.setRoutine(requireContext())
+        //setRoutineCheck(requireContext())
 
         return root
     }
@@ -134,3 +143,25 @@ class LocationFragment : Fragment() {
         }
     }
 }
+
+/*
+fun setRoutineCheck(context: Context) {
+    var mCalander: Calendar = Calendar.getInstance();
+    Log.d("RoutineDebug", mCalander.timeInMillis.toString())
+    mCalander.set(Calendar.HOUR_OF_DAY, 10)
+    mCalander.set(Calendar.MINUTE, 51)
+    mCalander.set(Calendar.SECOND, 8)
+    Log.d("RoutineDebug", mCalander.timeInMillis.toString())
+    val requestCode = 3000
+    Toast.makeText(context, "AlarmSet", Toast.LENGTH_SHORT).show()
+    Log.d("RoutineDebug", "setRoutineCheck called")
+
+    var mAlarmIntent = Intent("com.example.bluecatapp.ALARM_START")
+    var mPendingIntent = PendingIntent.getBroadcast(
+        context, requestCode, mAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT
+    )
+    var mAlarmManager : AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    mAlarmManager.set(AlarmManager.RTC_WAKEUP, mCalander.timeInMillis,  mPendingIntent)
+}
+*/
+
