@@ -37,10 +37,9 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
 
     //new instance to pass data from activity to dialog
     companion object {
-        fun newInstance(str: String, isStart: Int) = SearchPlaceDialog().apply {
+        fun newInstance(str: String) = SearchPlaceDialog().apply {
             arguments = Bundle().apply {
                 putString("EXTRA_DATA", str)
-                putInt("EXTRA_INT", isStart)
             }
         }
     }
@@ -113,7 +112,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
                 Log.e(TAG, response.body().toString())
                 var len = response.body()!!.meta.totalCount - 1
                 if (len > 4) len = 4
-                if (len == -1) Toast.makeText(context, "No result!\"", Toast.LENGTH_SHORT).show()
+                if (len == -1) Toast.makeText(context, "No result!", Toast.LENGTH_SHORT).show()
                 results = response.body()!!.places
                 for (i in 0..len) {
                     when (i) {
@@ -176,7 +175,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
     //pass the location user picked to activity
     private fun saveAddr() {
         if (picked) {
-            mListener!!.onDialogClickListener(isStart, place)
+            mListener!!.onDialogClickListener(place)
             dismiss()
         }
         else

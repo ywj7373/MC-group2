@@ -6,26 +6,13 @@ import android.content.Intent
 import android.util.Log
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.widget.Toast
-import java.util.*
-import androidx.core.content.ContextCompat.startForegroundService
+import java.util.Calendar
 import android.os.Build
 
-
-
-/*
 class RoutineReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context?, intent: Intent?) {
-        Log.d("RoutineDebug", "onReceive called")
-        val mServiceIntent = Intent(context, RoutineService::class.java )
-        context?.startService(mServiceIntent)
-    }
-}
-*/
-class RoutineReceiver : BroadcastReceiver() {
-
+    private val TAG = "RoutineReceiver"
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("RoutineDebug", "onReceive called")
+        Log.d(TAG, "onReceive called")
         val mServiceIntent = Intent(context, RoutineService::class.java)
         //context?.startService(mServiceIntent)
 
@@ -39,7 +26,7 @@ class RoutineReceiver : BroadcastReceiver() {
     // Set AlarmManager
     fun setRoutine(context: Context) {
         // get a Calendar object with current time
-        Log.d("RoutineDebug", "setRoutine called")
+        Log.d(TAG, "setRoutine called")
         val cal = Calendar.getInstance()
         val intent = Intent(context, RoutineReceiver::class.java)
         val sender = PendingIntent.getBroadcast(context, 486486, intent, PendingIntent.FLAG_UPDATE_CURRENT)

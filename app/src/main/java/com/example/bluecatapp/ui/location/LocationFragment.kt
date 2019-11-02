@@ -44,12 +44,7 @@ class LocationFragment : Fragment() {
         locationViewModel.getAllLocationItems().observe(this,
             Observer<List<LocationItem>> { t -> locationAdapter.setLocationItems(t!!) })
 
-        //Start receiving current location every 5 second
-        getCurrentLocation()
-
-        var s = RoutineReceiver()
-        s.setRoutine(requireContext())
-        //setRoutineCheck(requireContext())
+        startLocationService()
 
         return root
     }
@@ -93,13 +88,17 @@ class LocationFragment : Fragment() {
         }
     }
 
-    //get current location
-    private fun getCurrentLocation() {
+    //start location service
+    private fun startLocationService() {
         if (checkLocationPermissions()) {
             if (!isLocationEnabled()) {
                 Toast.makeText(requireActivity(), "Turn on location", Toast.LENGTH_LONG).show()
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
+            }
+            else {
+                var s = RoutineReceiver()
+                s.setRoutine(requireContext())
             }
         }
         else {
@@ -138,30 +137,8 @@ class LocationFragment : Fragment() {
     override fun onRequestPermissionsResult(requestCode: Int, permission: Array<String>, grantResults: IntArray) {
         if (requestCode == PERMISSION_ID) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                getCurrentLocation()
+                startLocationService()
             }
         }
     }
 }
-
-/*
-fun setRoutineCheck(context: Context) {
-    var mCalander: Calendar = Calendar.getInstance();
-    Log.d("RoutineDebug", mCalander.timeInMillis.toString())
-    mCalander.set(Calendar.HOUR_OF_DAY, 10)
-    mCalander.set(Calendar.MINUTE, 51)
-    mCalander.set(Calendar.SECOND, 8)
-    Log.d("RoutineDebug", mCalander.timeInMillis.toString())
-    val requestCode = 3000
-    Toast.makeText(context, "AlarmSet", Toast.LENGTH_SHORT).show()
-    Log.d("RoutineDebug", "setRoutineCheck called")
-
-    var mAlarmIntent = Intent("com.example.bluecatapp.ALARM_START")
-    var mPendingIntent = PendingIntent.getBroadcast(
-        context, requestCode, mAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT
-    )
-    var mAlarmManager : AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    mAlarmManager.set(AlarmManager.RTC_WAKEUP, mCalander.timeInMillis,  mPendingIntent)
-}
-*/
-

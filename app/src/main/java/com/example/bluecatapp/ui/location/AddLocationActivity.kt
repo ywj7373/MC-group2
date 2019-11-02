@@ -24,7 +24,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 interface OnButtonClick {
-    fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces)
+    fun onDialogClickListener(place: SearchPlacePlaces)
 }
 
 class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonClick {
@@ -32,16 +32,13 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var odsayService : ODsayService
     private lateinit var titleEdit: EditText
-    private lateinit var startLocText: TextView
     private lateinit var endLocText: TextView
     private lateinit var dateText: TextView
     private lateinit var timeText: TextView
-    private lateinit var changeStartLoc: Button
     private lateinit var changeDestLoc: Button
     private lateinit var cancelButton: Button
     private lateinit var addButton: Button
     private lateinit var location: String
-    private var startPlace : SearchPlacePlaces? = null
     private var endPlace : SearchPlacePlaces? = null
     private var srcX: String = ""
     private var srcY: String = ""
@@ -55,8 +52,6 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     private var hourOfDay:Int = 0
     private var minute: Int = 0
 
-    private var userEditStartLocation = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_location)
@@ -69,59 +64,14 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
 
         //initialize layout components
         titleEdit = findViewById(R.id.titleEdit)
-        startLocText = findViewById(R.id.startLocText)
         endLocText = findViewById(R.id.endLocText)
         dateText = findViewById(R.id.dateText)
         timeText = findViewById(R.id.timeText)
-        changeStartLoc = findViewById(R.id.changeStartLoc)
         changeDestLoc = findViewById(R.id.changeDestLoc)
         cancelButton = findViewById(R.id.cancelButton)
         addButton = findViewById(R.id.addButton)
 
-        //get address of my current location
-        locationViewModel.getLocationData().observe(this, Observer {
-            //if the user doesn't edit his or her location, keep receiving
-            if (!userEditStartLocation) {
-                //set longitude and latitude of the current location
-                srcX = it.longitude.toString()
-                srcY = it.latitude.toString()
-
-                //Get address of user's current location
-                location = it.longitude.toString() + "," + it.latitude.toString()
-                Log.e(TAG, location)
-                NaverRetrofit.getService().requestReverseGeocode(location)
-                    .enqueue(object : Callback<CoordToAddrData> {
-                        override fun onFailure(call: Call<CoordToAddrData>, t: Throwable) {
-                            Log.e(TAG, "Error requesting reverse geocode")
-                            Toast.makeText(
-                                this@AddLocationActivity,
-                                "Unavailable to connect! Please check wifi",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-
-                        override fun onResponse(
-                            call: Call<CoordToAddrData>,
-                            response: Response<CoordToAddrData>
-                        ) {
-                            Log.e(TAG, response.body().toString())
-                            //set result as my current location address if the status code is 0
-                            if (response.body()!!.status.code == 0)
-                                startLocText.text =
-                                    response.body()!!.results[0].land.addition0.value
-                            else
-                                Toast.makeText(
-                                    this@AddLocationActivity,
-                                    "Unavailable to get current address!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                        }
-                    })
-            }
-        })
-
         //set click listener
-        changeStartLoc.setOnClickListener(this)
         changeDestLoc.setOnClickListener(this)
         dateText.setOnClickListener(this)
         timeText.setOnClickListener(this)
@@ -131,8 +81,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.changeStartLoc -> openSearchPlaceDialog(0)
-            R.id.changeDestLoc -> openSearchPlaceDialog(1)
+            R.id.changeDestLoc -> openSearchPlaceDialog()
             R.id.dateText -> openDatePickDialog()
             R.id.timeText -> openTimePickDialog()
             R.id.addButton -> addNewSchedule()
@@ -141,26 +90,17 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     }
 
     //show search place dialog
-    private fun openSearchPlaceDialog(isStart: Int) {
-        val searchPlaceDialog = SearchPlaceDialog.newInstance(location, isStart)
+    private fun openSearchPlaceDialog() {
+        val searchPlaceDialog = SearchPlaceDialog.newInstance(location)
         searchPlaceDialog.show(supportFragmentManager, null)
     }
 
     //create click listener to pass data from dialog to activity
-    override fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces) {
-        if (isStart == 0) {
-            userEditStartLocation = true
-            startLocText.text = place.name
-            startPlace = place
-            srcX = place.x
-            srcY = place.y
-        }
-        else {
-            endLocText.text = place.name
-            endPlace = place
-            desX = place.x
-            desY = place.y
-        }
+    override fun onDialogClickListener(place: SearchPlacePlaces) {
+        endLocText.text = place.name
+        endPlace = place
+        desX = place.x
+        desY = place.y
     }
 
     //open date pick dialog
