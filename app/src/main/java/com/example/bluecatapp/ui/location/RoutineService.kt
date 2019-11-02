@@ -62,7 +62,7 @@ class RoutineService : Service {
     private lateinit var lm : LocationManager
 
     override fun onBind(p0: Intent?): IBinder? {
-        null
+        return null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
