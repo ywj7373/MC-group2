@@ -9,4 +9,7 @@
     <color name="color_todo_hw_off">#ffffff</color>
     <color name="color_todo_hw_on">#111111</color>
 
+    <color name="color_location_day_on">#ff0000</color>
+    <color name="color_location_day_off">#dddddd</color>
+
 </resources>
