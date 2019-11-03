@@ -35,8 +35,16 @@ class LocationRepository(application: Application) {
         return allLocationItems
     }
 
-    fun getCurrentLocation(): CurrentLocationData {
+    fun getCurrentLocation(): LiveData<CurrentLocationData> {
         return currentLocationDao.getCurrentLocation()
+    }
+
+    fun getPriorityDestination(): LocationItemData {
+        return locationItemDao.getPriorityDestination()
+    }
+
+    fun updateEstimatedTime(newTime: String, id: Int) {
+        locationItemDao.updateEstimatedTime(newTime, id)
     }
 
     private class InsertLocationItemAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItemData, Unit, Unit>() {

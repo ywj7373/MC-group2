@@ -1,10 +1,7 @@
 package com.example.bluecatapp.data
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
 interface LocationItemDao {
@@ -18,6 +15,11 @@ interface LocationItemDao {
     @Query("SELECT * FROM location_items ")
     fun getAllLocationItems(): LiveData<List<LocationItemData>>
 
+    @Query("SELECT * FROM location_items WHERE time > dateTime('now', 'localtime') ORDER BY dateTime(time) ASC Limit 1")
+    fun getPriorityDestination(): LocationItemData
+
+    @Query("UPDATE location_items SET timeToDest = :value1 WHERE id = :value2")
+    fun updateEstimatedTime(value1: String, value2: Int)
 }
 
 @Dao
@@ -26,5 +28,5 @@ interface CurrentLocationDao {
     fun insert(currentLocation: CurrentLocationData)
 
     @Query("SELECT * FROM current_location")
-    fun getCurrentLocation(): CurrentLocationData
+    fun getCurrentLocation(): LiveData<CurrentLocationData>
 }

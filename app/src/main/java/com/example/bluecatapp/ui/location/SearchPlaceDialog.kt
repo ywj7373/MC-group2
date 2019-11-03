@@ -99,6 +99,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
 
     //search for place name using naver api
     private fun requestSearch() {
+        clearAll()
         NaverRetrofit.getService().requestSearchPlace(placeText.text.toString(), currentLocation).enqueue(object: Callback<SearchPlaceData>{
             override fun onFailure(call: Call<SearchPlaceData>, t: Throwable) {
                 Log.e(TAG, "Connection failed")
@@ -124,6 +125,14 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
                 }
             }
         })
+    }
+
+    private fun clearAll() {
+        loc1.setBackgroundColor(Color.WHITE)
+        loc2.setBackgroundColor(Color.WHITE)
+        loc3.setBackgroundColor(Color.WHITE)
+        loc4.setBackgroundColor(Color.WHITE)
+        loc5.setBackgroundColor(Color.WHITE)
     }
 
     //save place user clicked

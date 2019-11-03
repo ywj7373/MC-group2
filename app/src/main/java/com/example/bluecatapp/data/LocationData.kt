@@ -10,9 +10,6 @@ data class LocationItemData(
     @field:SerializedName("name")
     val name: String,
 
-    @field:SerializedName("timeStamp")
-    val dateTime: String,
-
     @field:SerializedName("x")
     val x: String,
 
@@ -20,7 +17,10 @@ data class LocationItemData(
     val y: String,
 
     @field:SerializedName("time")
-    val time: String
+    val time: String,
+
+    @field:SerializedName("timeToDest")
+    val timeToDest: String
 )
 {
     @PrimaryKey(autoGenerate = true)

@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 //Create Room Database
-@Database(entities = [LocationItemData::class], version = 4)
+@Database(entities = [LocationItemData::class], version = 10)
 abstract class LocationItemDatabase : RoomDatabase() {
 
     abstract fun locationItemDao(): LocationItemDao
