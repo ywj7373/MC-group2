@@ -33,7 +33,6 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
     private var mListener: OnButtonClick? = null
     private lateinit var place: SearchPlacePlaces
     private var picked = false
-    private val TAG = "SearchPlaceDialog"
 
     //new instance to pass data from activity to dialog
     companion object {
@@ -110,17 +109,19 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
 
             override fun onResponse(call: Call<SearchPlaceData>, response: Response<SearchPlaceData>) {
                 Log.e(TAG, response.body().toString())
-                var len = response.body()!!.meta.totalCount - 1
-                if (len > 4) len = 4
-                if (len == -1) Toast.makeText(context, "No result!", Toast.LENGTH_SHORT).show()
-                results = response.body()!!.places
-                for (i in 0..len) {
-                    when (i) {
-                        0 -> loc1.text = results[i].name
-                        1 -> loc2.text = results[i].name
-                        2 -> loc3.text = results[i].name
-                        3 -> loc4.text = results[i].name
-                        4 -> loc5.text = results[i].name
+                if (response.body()!!.meta != null) {
+                    var len = response.body()!!.meta.totalCount - 1
+                    if (len > 4) len = 4
+                    if (len == -1) Toast.makeText(context, "No result!", Toast.LENGTH_SHORT).show()
+                    results = response.body()!!.places
+                    for (i in 0..len) {
+                        when (i) {
+                            0 -> loc1.text = results[i].name
+                            1 -> loc2.text = results[i].name
+                            2 -> loc3.text = results[i].name
+                            3 -> loc4.text = results[i].name
+                            4 -> loc5.text = results[i].name
+                        }
                     }
                 }
             }

@@ -14,12 +14,11 @@ class RoutineReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "onReceive called")
         val mServiceIntent = Intent(context, RoutineService::class.java)
-        //context?.startService(mServiceIntent)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(Intent(context, RoutineService::class.java))
+            context.startForegroundService(mServiceIntent)
         } else {
-            context.startService(Intent(context, RoutineService::class.java))
+            context.startService(mServiceIntent)
         }
     }
 

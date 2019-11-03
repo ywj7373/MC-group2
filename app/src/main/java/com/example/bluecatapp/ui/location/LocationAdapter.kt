@@ -3,15 +3,14 @@ package com.example.bluecatapp.ui.location
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bluecatapp.R
-import com.example.bluecatapp.data.LocationItem
+import com.example.bluecatapp.data.LocationItemData
 
 class LocationAdapter : RecyclerView.Adapter<LocationAdapter.LocationItemHolder>() {
 
-    private var locationItems: List<LocationItem> = ArrayList()
+    private var locationItems: List<LocationItemData> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationItemHolder {
         val itemView = LayoutInflater.from(parent.context)
@@ -23,12 +22,11 @@ class LocationAdapter : RecyclerView.Adapter<LocationAdapter.LocationItemHolder>
         val currentLocationItem = locationItems[position]
         holder.textViewName.text = currentLocationItem.name
         holder.textViewTime.text = currentLocationItem.time
-        holder.textViewTimeToDest.text = currentLocationItem.timeToDest
     }
 
     override fun getItemCount(): Int = locationItems.size
 
-    fun setLocationItems(locationItems: List<LocationItem>) {
+    fun setLocationItems(locationItems: List<LocationItemData>) {
         this.locationItems = locationItems
         notifyDataSetChanged()
     }
@@ -36,7 +34,6 @@ class LocationAdapter : RecyclerView.Adapter<LocationAdapter.LocationItemHolder>
     inner class LocationItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var textViewName: TextView = itemView.findViewById(R.id.location_item_name)
         var textViewTime: TextView = itemView.findViewById(R.id.location_item_time)
-        var textViewTimeToDest: TextView = itemView.findViewById(R.id.location_item_timeToDest)
     }
 
 }

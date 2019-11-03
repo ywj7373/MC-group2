@@ -2,7 +2,6 @@ package com.example.bluecatapp.ui.location
 
 import android.Manifest
 import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -18,9 +17,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.R
-import com.example.bluecatapp.data.LocationItem
+import com.example.bluecatapp.data.LocationItemData
 import kotlinx.android.synthetic.main.fragment_location.*
-import java.util.*
 
 class LocationFragment : Fragment() {
     private val TAG = "Location Fragment"
@@ -42,7 +40,7 @@ class LocationFragment : Fragment() {
         locationViewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
 
         locationViewModel.getAllLocationItems().observe(this,
-            Observer<List<LocationItem>> { t -> locationAdapter.setLocationItems(t!!) })
+            Observer<List<LocationItemData>> { t -> locationAdapter.setLocationItems(t!!) })
 
         startLocationService()
 
@@ -97,8 +95,7 @@ class LocationFragment : Fragment() {
                 startActivity(intent)
             }
             else {
-                var s = RoutineReceiver()
-                s.setRoutine(requireContext())
+                RoutineReceiver().setRoutine(requireContext())
             }
         }
         else {
@@ -137,7 +134,7 @@ class LocationFragment : Fragment() {
     override fun onRequestPermissionsResult(requestCode: Int, permission: Array<String>, grantResults: IntArray) {
         if (requestCode == PERMISSION_ID) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                startLocationService()
+                RoutineReceiver().setRoutine(requireContext())
             }
         }
     }

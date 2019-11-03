@@ -25,13 +25,5 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/location_item_name"
             android:text="Location Time" />
-
-        <TextView
-            android:id="@+id/location_item_timeToDest"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/location_item_time"
-            android:text="Estimated time" />
-
     </RelativeLayout>
 </androidx.cardview.widget.CardView>
