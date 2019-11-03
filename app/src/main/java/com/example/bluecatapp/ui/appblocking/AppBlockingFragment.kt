@@ -71,13 +71,13 @@ class AppBlockingFragment : Fragment() {
         } else {
             mockAppList.forEach { (app, finishTimeStamp) ->
                 val timeLeftToBlock = finishTimeStamp - SystemClock.elapsedRealtime()
-                if (timeLeftToBlock > 1000) { //more than 1s left
+//                if (timeLeftToBlock > 1000) { //more than 1s left
                     val countDownProgress: ProgressBar =
                         root.findViewById(R.id.countdownProgressBar)
                     val chrono: Chronometer = root.findViewById(R.id.view_timer)
                     blockedAppName.setText(getAppNameFromPackage(app, context!!))
                     setTimer(timeLeftToBlock, 1000, chrono, blockedAppName, countDownProgress)
-                }
+//                }
             }
         }
         return root
@@ -154,19 +154,21 @@ class AppBlockingFragment : Fragment() {
     private fun setTimer(countDownFromTime: Long, countDownInterval: Long, chrono: Chronometer,
                          blockedAppName: TextView,countDownProgress: ProgressBar){
         chrono.base = SystemClock.elapsedRealtime() + countDownFromTime
-        chrono.start()
+
         val countDownTimer = object: CountDownTimer(countDownFromTime, countDownInterval){
             override fun onTick(millisUntilFinished: Long) {
-                countDownProgress.setProgress(((millisUntilFinished/10)/countDownFromTime).toInt())
+                countDownProgress.setProgress((millisUntilFinished*100/countDownFromTime).toInt())
             }
 
             override fun onFinish() {
+                countDownProgress.setProgress(0)
                 chrono.stop()
                 blockedAppName.setText("No blocked apps at the moment")
-                countDownProgress.setProgress(100)
+//                countDownProgress.setProgress(100)
             }
         }
         countDownTimer.start()
+        chrono.start()
     }
 
     private fun getAppNameFromPackage(packageName: String, context: Context): String? {
