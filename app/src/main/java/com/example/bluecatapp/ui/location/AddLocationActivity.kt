@@ -17,6 +17,7 @@ import com.odsay.odsayandroidsdk.ODsayService
 import com.odsay.odsayandroidsdk.OnResultCallbackListener
 import org.json.JSONException
 import org.json.JSONObject
+import org.w3c.dom.Text
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -31,16 +32,16 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     private val TAG = "AddLocationActivity"
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var odsayService : ODsayService
-    private lateinit var titleEdit: EditText
-    private lateinit var startLocText: TextView
+    private lateinit var titleEdit: TextView                //
     private lateinit var endLocText: TextView
     private lateinit var dateText: TextView
-    private lateinit var timeText: TextView
-    private lateinit var changeStartLoc: Button
+    private lateinit var dateButton: ImageButton
+    //private lateinit var timeText: TextView
     private lateinit var changeDestLoc: Button
     private lateinit var cancelButton: Button
     private lateinit var addButton: Button
     private lateinit var location: String
+    private lateinit var dayButtons : Array<ToggleButton>
     private var startPlace : SearchPlacePlaces? = null
     private var endPlace : SearchPlacePlaces? = null
     private var srcX: String = ""
@@ -69,14 +70,30 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
 
         //initialize layout components
         titleEdit = findViewById(R.id.titleEdit)
-        startLocText = findViewById(R.id.startLocText)
         endLocText = findViewById(R.id.endLocText)
         dateText = findViewById(R.id.dateText)
-        timeText = findViewById(R.id.timeText)
-        changeStartLoc = findViewById(R.id.changeStartLoc)
+        dateButton = findViewById(R.id.dateButton)
+        //timeText = findViewById(R.id.timeText)
         changeDestLoc = findViewById(R.id.changeDestLoc)
         cancelButton = findViewById(R.id.cancelButton)
         addButton = findViewById(R.id.addButton)
+        dayButtons = arrayOf(findViewById(R.id.toggleButton1) as ToggleButton,
+            findViewById(R.id.toggleButton2) as ToggleButton,
+            findViewById(R.id.toggleButton3) as ToggleButton,
+            findViewById(R.id.toggleButton4) as ToggleButton,
+            findViewById(R.id.toggleButton5) as ToggleButton,
+            findViewById(R.id.toggleButton6) as ToggleButton,
+            findViewById(R.id.toggleButton7) as ToggleButton)
+
+
+
+        // At first, date is today
+        val current = Calendar.getInstance()
+        year = current.get(Calendar.YEAR)
+        monthOfYear = current.get(Calendar.MONTH)
+        dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
+        dateText.text = SimpleDateFormat("yyyy-MM-dd").format(current.time)
+
 
         //get address of my current location
         locationViewModel.getLocationData().observe(this, Observer {
@@ -107,8 +124,9 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
                             Log.e(TAG, response.body().toString())
                             //set result as my current location address if the status code is 0
                             if (response.body()!!.status.code == 0)
-                                startLocText.text =
-                                    response.body()!!.results[0].land.addition0.value
+                            {
+
+                            }
                             else
                                 Toast.makeText(
                                     this@AddLocationActivity,
@@ -121,22 +139,25 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
         })
 
         //set click listener
-        changeStartLoc.setOnClickListener(this)
         changeDestLoc.setOnClickListener(this)
-        dateText.setOnClickListener(this)
-        timeText.setOnClickListener(this)
+        dateButton.setOnClickListener(this)
+        //timeText.setOnClickListener(this)
         addButton.setOnClickListener(this)
         cancelButton.setOnClickListener(this)
+        for (tb in dayButtons)
+            tb.setOnClickListener(this)
     }
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.changeStartLoc -> openSearchPlaceDialog(0)
             R.id.changeDestLoc -> openSearchPlaceDialog(1)
-            R.id.dateText -> openDatePickDialog()
-            R.id.timeText -> openTimePickDialog()
+            R.id.dateButton -> openDatePickDialog()
+            //R.id.timeText -> openTimePickDialog()
             R.id.addButton -> addNewSchedule()
             R.id.cancelButton -> finish()
+
+            R.id.toggleButton1, R.id.toggleButton2, R.id.toggleButton3, R.id.toggleButton4,
+            R.id.toggleButton5, R.id.toggleButton6, R.id.toggleButton7 -> daysMode()
         }
     }
 
@@ -150,7 +171,6 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     override fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces) {
         if (isStart == 0) {
             userEditStartLocation = true
-            startLocText.text = place.name
             startPlace = place
             srcX = place.x
             srcY = place.y
@@ -171,12 +191,39 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
                 this@AddLocationActivity.year = year
                 this@AddLocationActivity.monthOfYear = monthOfYear
                 this@AddLocationActivity.dayOfMonth = dayOfMonth
-                dateText.text = (String.format("%04d%02d%02d", year, monthOfYear, dayOfMonth))
+                dateText.text = (String.format("%04d-%02d-%02d", year, monthOfYear, dayOfMonth))
+                clearDays()
             }
         }, Integer.parseInt(current.substring(0,4)), Integer.parseInt(current.substring(4,6)), Integer.parseInt(current.substring(6,8)) )
         dialog.show()
     }
+    private fun clearDays() {
+        for (tb in dayButtons) {
+            tb.setChecked(false)
+        }
+    }
+    private fun daysMode() {
+        var str = ""
+        for (tb in dayButtons) {
+            if(tb.isChecked) {
+                str = str + tb.textOn + ","
+            }
+        }
 
+        // if there is no day checked
+        if(str == "") {
+            val current = Calendar.getInstance()
+            year = current.get(Calendar.YEAR)
+            monthOfYear = current.get(Calendar.MONTH)
+            dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
+            dateText.text = SimpleDateFormat("yyyy-MM-dd").format(current.time)
+        }
+        // if there is at least one day checked
+        else {
+            dateText.text = str.substring(0, str.length-1)
+        }
+    }
+/*
     //open time pick dialog
     private fun openTimePickDialog() {
         val dialog = TimePickerDialog(this, object:TimePickerDialog.OnTimeSetListener {
@@ -188,7 +235,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
         }, 12, 0, true)
         dialog.show()
     }
-
+ */
     // Save data to database
     private fun addNewSchedule() {
         //get estimated travel time
