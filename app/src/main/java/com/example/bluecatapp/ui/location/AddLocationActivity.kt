@@ -11,12 +11,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationItemData
 import com.example.bluecatapp.data.LocationRepository
-import com.odsay.odsayandroidsdk.API
-import com.odsay.odsayandroidsdk.ODsayData
 import com.odsay.odsayandroidsdk.ODsayService
-import com.odsay.odsayandroidsdk.OnResultCallbackListener
-import org.json.JSONException
-import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
@@ -140,30 +135,5 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
         finish()
     }
 
-    //callback method to get json data from ODsay
-    private val onEstimateTimeResultCallbackListener = object : OnResultCallbackListener {
-        override fun onSuccess(odsayData: ODsayData?, api: API?) {
-            Log.d(TAG, "Connection to ODsay successful")
-            try {
-                if (api == API.SEARCH_PUB_TRANS_PATH) {
-                    val inquiryResult = (odsayData!!.json.getJSONObject("result").getJSONArray("path").get(0) as JSONObject).getJSONObject("info")
-                    timeToDest = inquiryResult.getInt("totalTime").toString()
 
-                }
-            } catch (e: JSONException) {
-                Log.d(TAG, "JSONException")
-                Toast.makeText(this@AddLocationActivity, "Unable to calculate time distance", Toast.LENGTH_LONG).show()
-            }
-        }
-
-        override fun onError(i: Int, s: String?, api: API?) {
-            Log.d(TAG, "Connection to ODsay failed")
-            Toast.makeText(this@AddLocationActivity, "Unable to calculate time distance", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    //call ODsay to estimate Travel time
-    private fun estimateTravelTime(sx: String, sy: String, ex: String, ey: String) {
-        odsayService.requestSearchPubTransPath(sx, sy, ex, ey, "0", "0", "0", onEstimateTimeResultCallbackListener)
-    }
 }

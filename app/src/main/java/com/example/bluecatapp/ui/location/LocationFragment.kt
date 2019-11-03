@@ -1,7 +1,6 @@
 package com.example.bluecatapp.ui.location
 
 import android.Manifest
-import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -25,14 +24,11 @@ class LocationFragment : Fragment() {
     private lateinit var locationViewModel: LocationViewModel
     private val PERMISSION_ID = 270
     private val locationAdapter = LocationAdapter()
-    private lateinit var alarmManager: AlarmManager
-    private val mAlarmIntent = Intent("")
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+        savedInstanceState: Bundle?): View? {
         setHasOptionsMenu(true)
 
         //initialize view model
@@ -94,13 +90,9 @@ class LocationFragment : Fragment() {
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
             }
-            else {
-                RoutineReceiver().setRoutine(requireContext())
-            }
+            else RoutineReceiver().setRoutine(requireContext())
         }
-        else {
-            requestLocationPermission()
-        }
+        else requestLocationPermission()
     }
 
     //Check if the location tracker is enabled in the setting
@@ -135,6 +127,9 @@ class LocationFragment : Fragment() {
         if (requestCode == PERMISSION_ID) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 RoutineReceiver().setRoutine(requireContext())
+            }
+            else {
+                //-----------------------not yet implemented -------------------------------
             }
         }
     }

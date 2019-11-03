@@ -28,7 +28,6 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
     private lateinit var btn_no: Button
     private lateinit var btn_yes: Button
     private lateinit var currentLocation: String
-    private var isStart: Int = 0
     private lateinit var results: List<SearchPlacePlaces>
     private var mListener: OnButtonClick? = null
     private lateinit var place: SearchPlacePlaces
@@ -43,7 +42,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
         }
     }
 
-    //attch listener to pass data from dialog to activity
+    //attach listener to pass data from dialog to activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
         mListener = context as OnButtonClick
@@ -57,7 +56,6 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
             if (str != null) {
                 currentLocation = str
             }
-            isStart = it.getInt("EXTRA_INT")
         }
     }
 
