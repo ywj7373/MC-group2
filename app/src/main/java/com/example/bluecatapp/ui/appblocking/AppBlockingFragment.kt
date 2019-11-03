@@ -7,31 +7,34 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.icu.util.Calendar
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.os.SystemClock
 import android.provider.Settings
 import android.text.SpannableStringBuilder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
+import kotlinx.android.synthetic.main.fragment_appblocking.*
+
 
 class AppBlockingFragment : Fragment() {
     private lateinit var appOps: AppOpsManager
     private lateinit var appBlockingViewModel: AppBlockingViewModel
     private lateinit var usage: UsageStatsManager
     private lateinit var packageManager: PackageManager
+    // test values
+    private val finishBlockingTimeStamp: Long = SystemClock.elapsedRealtime() + 15000
+    private val mockAppList: MutableMap<String, Long> = mutableMapOf("com.android.chrome" to finishBlockingTimeStamp)
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -48,12 +51,13 @@ class AppBlockingFragment : Fragment() {
         appBlockingViewModel =
             ViewModelProviders.of(this).get(AppBlockingViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_appblocking, container, false)
-        val textView: TextView = root.findViewById(R.id.text_appblocking)
-        appBlockingViewModel.text.observe(this, Observer {
-            textView.text = it
-        })
+//        val textView: TextView = root.findViewById(R.id.text_appblocking)
+//        appBlockingViewModel.text.observe(this, Observer {
+//            textView.text = it
+//        })
         val startButton: Button = root.findViewById(R.id.start_foreground_service)
         val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
+        val blockedAppName: TextView = root.findViewById(R.id.currently_blocked_app)
 
         startButton.setOnClickListener {
             AppBlockForegroundService.startService(context!!, "Monitoring.. ")
@@ -62,6 +66,20 @@ class AppBlockingFragment : Fragment() {
             AppBlockForegroundService.stopService(context!!)
         }
 
+        if (mockAppList.entries.count() == 0) {
+            blockedAppName.setText("No blocked apps at the moment")
+        } else {
+            mockAppList.forEach { (app, finishTimeStamp) ->
+                val timeLeftToBlock = finishTimeStamp - SystemClock.elapsedRealtime()
+//                if (timeLeftToBlock > 1000) { //more than 1s left
+                    val countDownProgress: ProgressBar =
+                        root.findViewById(R.id.countdownProgressBar)
+                    val chrono: Chronometer = root.findViewById(R.id.view_timer)
+                    blockedAppName.setText(getAppNameFromPackage(app, context!!))
+                    setTimer(timeLeftToBlock, 1000, chrono, blockedAppName, countDownProgress)
+//                }
+            }
+        }
         return root
     }
 
@@ -77,7 +95,7 @@ class AppBlockingFragment : Fragment() {
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         // TODO: determine algorithm for querying app block duration
         // Retrieve blocking duration value in milliseconds
-        val blockDuration: Long = (sharedPrefs.getString("block_duration", null)?.toLong()!!)
+        val blockDuration: Long = 10;//(sharedPrefs.getString("block_duration", "0")?.toLong()!!)
         // Deactivated if blocking duration is negative
         Toast.makeText(
             activity!!.applicationContext,
@@ -86,6 +104,7 @@ class AppBlockingFragment : Fragment() {
         ).show()
 
         // TODO: create app list with block duration based on settings configuration
+        val appsToBlock = sharedPrefs.getString("currentlyBlockedApps", null)
         val currentlyBlockedApps: MutableMap<String, Long> = mutableMapOf(
             "com.android.chrome" to blockDuration,
             "com.google.android.youtube" to blockDuration
@@ -107,24 +126,18 @@ class AppBlockingFragment : Fragment() {
 
     private fun showAlertDialog() {
         val alert = AlertDialog.Builder(activity!!)
-
-        // Set the alert dialog title
         val titleMessage = SpannableStringBuilder()
             .append("Allow ")
             .bold { append("Bluecat ") }
             .append("to access usage data?")
-        alert.setTitle(titleMessage)
 
-        // Display a message on alert dialog
+        alert.setTitle(titleMessage)
         alert.setMessage("In order to use the App Blocking feature, please enable \"Usage Access Permission\" on your device.")
 
-        // Set a positive button and its click listener on alert dialog
         alert.setPositiveButton("OK") { dialog, which ->
             // Redirect to settings to enable usage access permission
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         }
-
-        // Display a negative button on alert dialog
         alert.setNegativeButton("Cancel") { dialog, which ->
             Toast.makeText(
                 activity!!.applicationContext,
@@ -134,11 +147,43 @@ class AppBlockingFragment : Fragment() {
             activity!!.onBackPressed();
         }
 
-        // create alert dialog using builder
         val dialog: AlertDialog = alert.create()
+        dialog.show() // Display the alert dialog on app interface
+    }
 
-        // Display the alert dialog on app interface
-        dialog.show()
+    private fun setTimer(countDownFromTime: Long, countDownInterval: Long, chrono: Chronometer,
+                         blockedAppName: TextView,countDownProgress: ProgressBar){
+        chrono.base = SystemClock.elapsedRealtime() + countDownFromTime
+
+        val countDownTimer = object: CountDownTimer(countDownFromTime, countDownInterval){
+            override fun onTick(millisUntilFinished: Long) {
+                countDownProgress.setProgress((millisUntilFinished*100/countDownFromTime).toInt())
+            }
+
+            override fun onFinish() {
+                countDownProgress.setProgress(0)
+                chrono.stop()
+                blockedAppName.setText("No blocked apps at the moment")
+//                countDownProgress.setProgress(100)
+            }
+        }
+        countDownTimer.start()
+        chrono.start()
+    }
+
+    private fun getAppNameFromPackage(packageName: String, context: Context): String? {
+        val mainIntent = Intent(Intent.ACTION_MAIN, null)
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+
+        val pkgAppsList = context.packageManager
+            .queryIntentActivities(mainIntent, 0)
+
+        for (app in pkgAppsList) {
+            if (app.activityInfo.packageName == packageName) {
+                return app.activityInfo.loadLabel(context.packageManager).toString()
+            }
+        }
+        return null
     }
 
     private fun blockApp() {

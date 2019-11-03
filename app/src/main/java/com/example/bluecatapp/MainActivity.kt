@@ -25,7 +25,7 @@ object FragmentToLoad {
 }
 
 class MainActivity : AppCompatActivity() {
-  private val ADD_TODO_REQUEST = 1
+    private val ADD_TODO_REQUEST = 1
     private lateinit var todoViewModel: TodoViewModel
 
     companion object {
