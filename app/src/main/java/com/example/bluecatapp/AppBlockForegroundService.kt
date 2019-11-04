@@ -92,6 +92,7 @@ class AppBlockForegroundService : Service() {
         runnable = Runnable {
             checkIfShouldBlockForegroundApp()
             checkForAppsToUnblock()
+            checkForAppUsagesToReset()
             /**
              * TODO: improve algorithm for more efficient update interval
              * Suggestion: calculate appropriate check in interval based on
@@ -144,7 +145,10 @@ class AppBlockForegroundService : Service() {
         val usage = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val endTime = System.currentTimeMillis()
         val beginTime = endTime - (1 * 60 * 1000)
-
+        myUsageStatsMap = usage.queryAndAggregateUsageStats(
+            System.currentTimeMillis() - (24 * 60 * 60 * 1000),
+            endTime
+        )
         val usageEvents = usage.queryEvents(beginTime, endTime)
         val event: UsageEvents.Event = UsageEvents.Event()
 
@@ -210,9 +214,9 @@ class AppBlockForegroundService : Service() {
                 )} | Blocked apps: $currentlyBlockedApps | Restricted app usage: $currentAppUsage | Max time: ${maxTimeLimit / 1000}s | Block duration: ${blockDuration / 1000}s |"
             )
 
-            if (!prevDetectedForegroundAppPackageName.equals(foregroundApp) && foregroundApp != null) {
+            if (!prevDetectedForegroundAppPackageName.equals(foregroundApp)) {
                 // A new app has been opened
-                // Stop the timer for the old restricted app, if any. Hope that removecallbacks wont throw if never started.
+                // Stop the timer for the old restricted app, if any.
                 onCloseRestrictedApp()
                 Log.d("bcat", "Cleaned up old timer (that might never have been started btw)")
                 if (restrictedApps.contains(foregroundApp)) {
@@ -313,6 +317,26 @@ class AppBlockForegroundService : Service() {
         }
     }
 
+    private fun checkForAppUsagesToReset() {
+        val blockDuration: Long =
+            sharedPrefs.getString("block_duration", "${10 * 60 * 1000}")?.toLong() ?: (10 * 60
+                    * 1000) // Default 10 seconds
+        val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
+
+        appUsageTimers.forEach { (packageName: String, usageTime: Long) ->
+            val usageStats: UsageStats? = getUsageStatsForApp(packageName)
+            if (usageTime > 0 && restrictedApps.contains(packageName) && usageStats?.lastTimeUsed != null && System.currentTimeMillis() - usageStats.lastTimeUsed > blockDuration) {
+                resetTimer(packageName)
+                Toast.makeText(
+                    this.applicationContext, "Reset app usage for ${getAppNameFromPackage(
+                        packageName,
+                        this.applicationContext
+                    )}", Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
     private fun onCloseRestrictedApp() {
 
         currentAppUsageTimerHandler.removeCallbacks(currentAppUsageTimerRunnable)
@@ -329,7 +353,7 @@ class AppBlockForegroundService : Service() {
     private fun addToBlockList(packageName: String) {
         val blockDuration: Long =
             sharedPrefs.getString("block_duration", "${10 * 60 * 1000}")?.toLong() ?: (10 * 60
-                    * 1000) // Default 10 minutes
+                    * 1000) // Default 10 seconds
 
         currentlyBlockedApps[packageName] =
             System.currentTimeMillis() + blockDuration
