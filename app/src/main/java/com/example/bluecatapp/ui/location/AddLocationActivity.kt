@@ -60,9 +60,11 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
         //set current location
         locationViewModel.getCurrentLocation().observe(this,
             Observer<CurrentLocationData> {
-                srcX = it.longitude.toString()
-                srcY = it.latitude.toString()
-                location = it.longitude.toString() + "," + it.latitude.toString()
+                if (it != null) {
+                    srcX = it.longitude.toString()
+                    srcY = it.latitude.toString()
+                    location = it.longitude.toString() + "," + it.latitude.toString()
+                }
             })
 
         //Initialize ODsayService
@@ -201,6 +203,10 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
 
                     locationViewModel.insert(newLocationItem)
                     Toast.makeText(this@AddLocationActivity, "Location saved!", Toast.LENGTH_SHORT).show()
+                    //For test
+
+
+                    ///
                     finish()
                 }
             } catch (e: JSONException) {
