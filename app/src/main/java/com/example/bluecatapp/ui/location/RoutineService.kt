@@ -54,9 +54,11 @@ class RoutineService : Service, LifecycleOwner {
 
         locationViewModel = LocationViewModel(application)
         locationViewModel.getCurrentLocation().observeForever( object : Observer<CurrentLocationData> {
-            override fun onChanged(t: CurrentLocationData) {
-                srcLong = t.longitude
-                srcLat = t.latitude
+            override fun onChanged(t: CurrentLocationData?) {
+                if (t != null) {
+                    srcLong = t.longitude
+                    srcLat = t.latitude
+                }
             }
         })
 
