@@ -32,6 +32,8 @@
         </activity>
         <activity android:name=".AddTodoActivity"/>
         <activity android:name=".ui.location.AddLocationActivity"/>
+        <receiver android:name=".ui.location.RoutineReceiver" />
+        <service android:name=".ui.location.RoutineService" />
     </application>
 
 </manifest>

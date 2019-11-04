@@ -16,7 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.R
-import com.example.bluecatapp.data.LocationItem
+import com.example.bluecatapp.data.LocationItemData
 import kotlinx.android.synthetic.main.fragment_location.*
 
 class LocationFragment : Fragment() {
@@ -28,8 +28,7 @@ class LocationFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+        savedInstanceState: Bundle?): View? {
         setHasOptionsMenu(true)
 
         //initialize view model
@@ -37,10 +36,9 @@ class LocationFragment : Fragment() {
         locationViewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
 
         locationViewModel.getAllLocationItems().observe(this,
-            Observer<List<LocationItem>> { t -> locationAdapter.setLocationItems(t!!) })
+            Observer<List<LocationItemData>> { t -> locationAdapter.setLocationItems(t!!) })
 
-        //Start receiving current location every 5 second
-        getCurrentLocation()
+        startLocationService()
 
         return root
     }
@@ -84,18 +82,17 @@ class LocationFragment : Fragment() {
         }
     }
 
-    //get current location
-    private fun getCurrentLocation() {
+    //start location service
+    private fun startLocationService() {
         if (checkLocationPermissions()) {
             if (!isLocationEnabled()) {
                 Toast.makeText(requireActivity(), "Turn on location", Toast.LENGTH_LONG).show()
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
             }
+            else RoutineReceiver().setRoutine(requireContext())
         }
-        else {
-            requestLocationPermission()
-        }
+        else requestLocationPermission()
     }
 
     //Check if the location tracker is enabled in the setting
@@ -129,7 +126,10 @@ class LocationFragment : Fragment() {
     override fun onRequestPermissionsResult(requestCode: Int, permission: Array<String>, grantResults: IntArray) {
         if (requestCode == PERMISSION_ID) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                getCurrentLocation()
+                RoutineReceiver().setRoutine(requireContext())
+            }
+            else {
+                //-----------------------not yet implemented -------------------------------
             }
         }
     }

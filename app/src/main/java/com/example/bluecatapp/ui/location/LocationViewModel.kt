@@ -1,30 +1,31 @@
 package com.example.bluecatapp.ui.location
 
 import android.app.Application
-import android.location.Location
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import com.example.bluecatapp.data.LocationItemRepository
-import com.example.bluecatapp.data.LocationItem
+import com.example.bluecatapp.data.CurrentLocationData
+import com.example.bluecatapp.data.LocationRepository
+import com.example.bluecatapp.data.LocationItemData
 
 class LocationViewModel(application: Application) : AndroidViewModel(application) {
-    //track changes in current location
-    private val locationData : LiveData<Location> = TrackLocation(application)
-    fun getLocationData() = locationData
-
     //track changes in the database
-    private var repository: LocationItemRepository = LocationItemRepository(application)
-    private var allLocationItems: LiveData<List<LocationItem>> = repository.getAllLocationItems()
+    private var repository: LocationRepository = LocationRepository(application)
+    private var allLocationItems: LiveData<List<LocationItemData>> = repository.getAllLocationItems()
+    private var currentLocation: LiveData<CurrentLocationData> = repository.getCurrentLocation()
 
-    fun insert(locationItem: LocationItem) {
-        repository.insert(locationItem)
+    fun insert(locationItem: LocationItemData) {
+        repository.insertLocationItem(locationItem)
     }
 
     fun deleteAllLocationItems() {
         repository.deleteAllLocationItems()
     }
 
-    fun getAllLocationItems(): LiveData<List<LocationItem>> {
+    fun getAllLocationItems(): LiveData<List<LocationItemData>> {
         return allLocationItems
+    }
+
+    fun getCurrentLocation(): LiveData<CurrentLocationData> {
+        return currentLocation
     }
 }

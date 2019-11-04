@@ -28,24 +28,21 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
     private lateinit var btn_no: Button
     private lateinit var btn_yes: Button
     private lateinit var currentLocation: String
-    private var isStart: Int = 0
     private lateinit var results: List<SearchPlacePlaces>
     private var mListener: OnButtonClick? = null
     private lateinit var place: SearchPlacePlaces
     private var picked = false
-    private val TAG = "SearchPlaceDialog"
 
     //new instance to pass data from activity to dialog
     companion object {
-        fun newInstance(str: String, isStart: Int) = SearchPlaceDialog().apply {
+        fun newInstance(str: String) = SearchPlaceDialog().apply {
             arguments = Bundle().apply {
                 putString("EXTRA_DATA", str)
-                putInt("EXTRA_INT", isStart)
             }
         }
     }
 
-    //attch listener to pass data from dialog to activity
+    //attach listener to pass data from dialog to activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
         mListener = context as OnButtonClick
@@ -59,7 +56,6 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
             if (str != null) {
                 currentLocation = str
             }
-            isStart = it.getInt("EXTRA_INT")
         }
     }
 
@@ -103,6 +99,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
 
     //search for place name using naver api
     private fun requestSearch() {
+        clearAll()
         NaverRetrofit.getService().requestSearchPlace(placeText.text.toString(), currentLocation).enqueue(object: Callback<SearchPlaceData>{
             override fun onFailure(call: Call<SearchPlaceData>, t: Throwable) {
                 Log.e(TAG, "Connection failed")
@@ -111,21 +108,31 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
 
             override fun onResponse(call: Call<SearchPlaceData>, response: Response<SearchPlaceData>) {
                 Log.e(TAG, response.body().toString())
-                var len = response.body()!!.meta.totalCount - 1
-                if (len > 4) len = 4
-                if (len == -1) Toast.makeText(context, "No result!\"", Toast.LENGTH_SHORT).show()
-                results = response.body()!!.places
-                for (i in 0..len) {
-                    when (i) {
-                        0 -> loc1.text = results[i].name
-                        1 -> loc2.text = results[i].name
-                        2 -> loc3.text = results[i].name
-                        3 -> loc4.text = results[i].name
-                        4 -> loc5.text = results[i].name
+                if (response.body()!!.meta != null) {
+                    var len = response.body()!!.meta.totalCount - 1
+                    if (len > 4) len = 4
+                    if (len == -1) Toast.makeText(context, "No result!", Toast.LENGTH_SHORT).show()
+                    results = response.body()!!.places
+                    for (i in 0..len) {
+                        when (i) {
+                            0 -> loc1.text = results[i].name
+                            1 -> loc2.text = results[i].name
+                            2 -> loc3.text = results[i].name
+                            3 -> loc4.text = results[i].name
+                            4 -> loc5.text = results[i].name
+                        }
                     }
                 }
             }
         })
+    }
+
+    private fun clearAll() {
+        loc1.setBackgroundColor(Color.WHITE)
+        loc2.setBackgroundColor(Color.WHITE)
+        loc3.setBackgroundColor(Color.WHITE)
+        loc4.setBackgroundColor(Color.WHITE)
+        loc5.setBackgroundColor(Color.WHITE)
     }
 
     //save place user clicked
@@ -176,7 +183,7 @@ class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
     //pass the location user picked to activity
     private fun saveAddr() {
         if (picked) {
-            mListener!!.onDialogClickListener(isStart, place)
+            mListener!!.onDialogClickListener(place)
             dismiss()
         }
         else

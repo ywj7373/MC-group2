@@ -1,7 +1,6 @@
 package com.example.bluecatapp.ui.location
 
 import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -10,57 +9,63 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.bluecatapp.R
-import com.example.bluecatapp.data.LocationItem
+import com.example.bluecatapp.data.CurrentLocationData
+import com.example.bluecatapp.data.LocationItemData
+import com.example.bluecatapp.data.LocationRepository
 import com.odsay.odsayandroidsdk.API
 import com.odsay.odsayandroidsdk.ODsayData
 import com.odsay.odsayandroidsdk.ODsayService
 import com.odsay.odsayandroidsdk.OnResultCallbackListener
+import kotlinx.android.synthetic.main.activity_add_location.*
 import org.json.JSONException
 import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import kotlin.concurrent.thread
 
 interface OnButtonClick {
-    fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces)
+    fun onDialogClickListener(place: SearchPlacePlaces)
 }
 
 class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonClick {
     private val TAG = "AddLocationActivity"
-    private lateinit var locationViewModel: LocationViewModel
     private lateinit var odsayService : ODsayService
-    private lateinit var titleEdit: EditText
-    private lateinit var startLocText: TextView
+    private lateinit var locationViewModel: LocationViewModel
+    private lateinit var titleEdit: TextView
     private lateinit var endLocText: TextView
     private lateinit var dateText: TextView
-    private lateinit var timeText: TextView
-    private lateinit var changeStartLoc: Button
+    private lateinit var dateButton: ImageButton
     private lateinit var changeDestLoc: Button
     private lateinit var cancelButton: Button
     private lateinit var addButton: Button
-    private lateinit var location: String
-    private var startPlace : SearchPlacePlaces? = null
-    private var endPlace : SearchPlacePlaces? = null
-    private var srcX: String = ""
-    private var srcY: String = ""
+    private var srcX: String = "126.952162"
+    private var srcY: String = "37.459553"
     private var desX: String = ""
     private var desY: String = ""
+    private var location: String = "126.952162" + "," + "37.459553"
+    private lateinit var dayButtons : Array<ToggleButton>
+    private var endPlace : SearchPlacePlaces? = null
     private var timeToDest : String? = null
 
     private var year:Int = 0
     private var monthOfYear:Int = 0
     private var dayOfMonth:Int = 0
-    private var hourOfDay:Int = 0
-    private var minute: Int = 0
-
-    private var userEditStartLocation = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_location)
         locationViewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
+
+        //set current location
+        locationViewModel.getCurrentLocation().observe(this,
+            Observer<CurrentLocationData> {
+                if (it != null) {
+                    srcX = it.longitude.toString()
+                    srcY = it.latitude.toString()
+                    location = it.longitude.toString() + "," + it.latitude.toString()
+                }
+            })
 
         //Initialize ODsayService
         odsayService = ODsayService.init(this, getString(R.string.odsay_key))
@@ -69,98 +74,62 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
 
         //initialize layout components
         titleEdit = findViewById(R.id.titleEdit)
-        startLocText = findViewById(R.id.startLocText)
         endLocText = findViewById(R.id.endLocText)
         dateText = findViewById(R.id.dateText)
-        timeText = findViewById(R.id.timeText)
-        changeStartLoc = findViewById(R.id.changeStartLoc)
+        dateButton = findViewById(R.id.dateButton)
         changeDestLoc = findViewById(R.id.changeDestLoc)
         cancelButton = findViewById(R.id.cancelButton)
         addButton = findViewById(R.id.addButton)
+        dayButtons = arrayOf(findViewById(R.id.toggleButton1),
+            findViewById(R.id.toggleButton2),
+            findViewById(R.id.toggleButton3),
+            findViewById(R.id.toggleButton4),
+            findViewById(R.id.toggleButton5),
+            findViewById(R.id.toggleButton6),
+            findViewById(R.id.toggleButton7))
 
-        //get address of my current location
-        locationViewModel.getLocationData().observe(this, Observer {
-            //if the user doesn't edit his or her location, keep receiving
-            if (!userEditStartLocation) {
-                //set longitude and latitude of the current location
-                srcX = it.longitude.toString()
-                srcY = it.latitude.toString()
-
-                //Get address of user's current location
-                location = it.longitude.toString() + "," + it.latitude.toString()
-                Log.e(TAG, location)
-                NaverRetrofit.getService().requestReverseGeocode(location)
-                    .enqueue(object : Callback<CoordToAddrData> {
-                        override fun onFailure(call: Call<CoordToAddrData>, t: Throwable) {
-                            Log.e(TAG, "Error requesting reverse geocode")
-                            Toast.makeText(
-                                this@AddLocationActivity,
-                                "Unavailable to connect! Please check wifi",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-
-                        override fun onResponse(
-                            call: Call<CoordToAddrData>,
-                            response: Response<CoordToAddrData>
-                        ) {
-                            Log.e(TAG, response.body().toString())
-                            //set result as my current location address if the status code is 0
-                            if (response.body()!!.status.code == 0)
-                                startLocText.text =
-                                    response.body()!!.results[0].land.addition0.value
-                            else
-                                Toast.makeText(
-                                    this@AddLocationActivity,
-                                    "Unavailable to get current address!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                        }
-                    })
-            }
-        })
+        // At first, date is today
+        val current = Calendar.getInstance()
+        year = current.get(Calendar.YEAR)
+        monthOfYear = current.get(Calendar.MONTH)
+        dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
+        dateText.text = SimpleDateFormat("yyyy-MM-dd").format(current.time)
 
         //set click listener
-        changeStartLoc.setOnClickListener(this)
         changeDestLoc.setOnClickListener(this)
-        dateText.setOnClickListener(this)
-        timeText.setOnClickListener(this)
+        dateButton.setOnClickListener(this)
         addButton.setOnClickListener(this)
         cancelButton.setOnClickListener(this)
+        for (tb in dayButtons)
+            tb.setOnClickListener(this)
     }
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.changeStartLoc -> openSearchPlaceDialog(0)
-            R.id.changeDestLoc -> openSearchPlaceDialog(1)
-            R.id.dateText -> openDatePickDialog()
-            R.id.timeText -> openTimePickDialog()
+            R.id.changeDestLoc -> openSearchPlaceDialog()
+            R.id.dateButton -> openDatePickDialog()
             R.id.addButton -> addNewSchedule()
             R.id.cancelButton -> finish()
+            R.id.toggleButton1, R.id.toggleButton2, R.id.toggleButton3, R.id.toggleButton4,
+            R.id.toggleButton5, R.id.toggleButton6, R.id.toggleButton7 -> daysMode()
         }
     }
 
     //show search place dialog
-    private fun openSearchPlaceDialog(isStart: Int) {
-        val searchPlaceDialog = SearchPlaceDialog.newInstance(location, isStart)
-        searchPlaceDialog.show(supportFragmentManager, null)
+    private fun openSearchPlaceDialog() {
+        thread(start=true) {
+            Log.d(TAG, location)
+            val searchPlaceDialog = SearchPlaceDialog.newInstance(location)
+            searchPlaceDialog.show(supportFragmentManager, null)
+        }
     }
 
     //create click listener to pass data from dialog to activity
-    override fun onDialogClickListener(isStart: Int, place: SearchPlacePlaces) {
-        if (isStart == 0) {
-            userEditStartLocation = true
-            startLocText.text = place.name
-            startPlace = place
-            srcX = place.x
-            srcY = place.y
-        }
-        else {
-            endLocText.text = place.name
-            endPlace = place
-            desX = place.x
-            desY = place.y
-        }
+    override fun onDialogClickListener(place: SearchPlacePlaces) {
+        endLocText.text = place.name
+        endPlace = place
+        desX = place.x
+        desY = place.y
     }
 
     //open date pick dialog
@@ -171,22 +140,37 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
                 this@AddLocationActivity.year = year
                 this@AddLocationActivity.monthOfYear = monthOfYear
                 this@AddLocationActivity.dayOfMonth = dayOfMonth
-                dateText.text = (String.format("%04d%02d%02d", year, monthOfYear, dayOfMonth))
+                dateText.text = (String.format("%04d-%02d-%02d", year, monthOfYear+1, dayOfMonth))
+                clearDays()
             }
-        }, Integer.parseInt(current.substring(0,4)), Integer.parseInt(current.substring(4,6)), Integer.parseInt(current.substring(6,8)) )
+        }, Integer.parseInt(current.substring(0,4)), Integer.parseInt(current.substring(4,6))-1, Integer.parseInt(current.substring(6,8)) )
         dialog.show()
     }
-
-    //open time pick dialog
-    private fun openTimePickDialog() {
-        val dialog = TimePickerDialog(this, object:TimePickerDialog.OnTimeSetListener {
-            override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
-                this@AddLocationActivity.hourOfDay = hourOfDay
-                this@AddLocationActivity.minute = minute
-                timeText.text = (String.format("%02d%02d", hourOfDay, minute))
+    private fun clearDays() {
+        for (tb in dayButtons) {
+            tb.setChecked(false)
+        }
+    }
+    private fun daysMode() {
+        var str = ""
+        for (tb in dayButtons) {
+            if(tb.isChecked) {
+                str = str + tb.textOn + ","
             }
-        }, 12, 0, true)
-        dialog.show()
+        }
+
+        // if there is no day checked
+        if(str == "") {
+            val current = Calendar.getInstance()
+            year = current.get(Calendar.YEAR)
+            monthOfYear = current.get(Calendar.MONTH)
+            dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
+            dateText.text = SimpleDateFormat("yyyy-MM-dd").format(current.time)
+        }
+        // if there is at least one day checked
+        else {
+            dateText.text = str.substring(0, str.length-1)
+        }
     }
 
     // Save data to database
@@ -210,15 +194,19 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
                     timeToDest = inquiryResult.getInt("totalTime").toString()
 
                     //add data to the database
-                    val current = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
-                    val time = String.format("%04d%02d%02d%02d%02d", year, monthOfYear, dayOfMonth, hourOfDay, minute)
-                    val newLocationItem = LocationItem(
-                        endPlace?.name ?: "Unknown", current,
+                    val time = String.format("%04d-%02d-%02d %02d:%02d:00", year, monthOfYear+1, dayOfMonth,
+                        location_edit_time.hour, location_edit_time.minute)
+                    val newLocationItem = LocationItemData(
+                        endPlace?.name ?: "Unknown",
                         endPlace?.x ?: "Unknown", endPlace?.y ?: "Unknown",
                         time, timeToDest ?: "Unknown")
 
                     locationViewModel.insert(newLocationItem)
                     Toast.makeText(this@AddLocationActivity, "Location saved!", Toast.LENGTH_SHORT).show()
+                    //For test
+
+
+                    ///
                     finish()
                 }
             } catch (e: JSONException) {
