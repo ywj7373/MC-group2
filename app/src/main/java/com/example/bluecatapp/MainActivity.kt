@@ -1,7 +1,10 @@
 package com.example.bluecatapp
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.widget.Toast
 import android.util.Log
@@ -27,6 +30,8 @@ object FragmentToLoad {
 class MainActivity : AppCompatActivity() {
     private val ADD_TODO_REQUEST = 1
     private lateinit var todoViewModel: TodoViewModel
+
+//    private lateinit var sensorManager: SensorManager
 
     companion object {
         val gson = Gson()
@@ -58,5 +63,27 @@ class MainActivity : AppCompatActivity() {
             2 -> navController.navigate(R.id.navigation_location)
             3 -> navController.navigate(R.id.navigation_settings)
         }
+
+//        this.sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+//
+//        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let {
+//            this.accelerometer = it
+//        }
+//
+//        sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)?.let {
+//            this.gravity = it
+//        }
+//
+//        sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)?.let {
+//            this.gyroscope = it
+//        }
+//
+//        sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)?.let {
+//            this.linearAcceleration = it
+//        }
+//
+//        sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.let {
+//            this.rotationVector = it
+//        }
     }
 }
