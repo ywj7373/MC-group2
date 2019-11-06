@@ -132,8 +132,23 @@ class RoutineService : Service {
 
                 //check if current time passed arrival time
                 if (currentTime >= time) {
-                    Log.d(TAG, "update estimated time")
-                    //recalculate estimated time
+                    //set the schedule to done
+                    LocationRepository(application).updateDone(true, destination.id)
+                    Log.d(TAG, destination.x)
+
+                    //check if the user is around schedule's location
+                    if (getDistanceFromLatLonInKm(srcLat, srcLong, destination.y.toDouble(), destination.x.toDouble()) <= 0.1 ) {
+                        //------------------------Not yet implemented----------------------
+
+
+                    }
+                    else {
+                        Log.d(TAG, "Missed schedule")
+                        val text = "You are late!"
+                        callNotification(text, 100)
+                    }
+
+                    //recalculate estimated time for next schedule
                     updateEstimatedTime(srcLat, srcLong)
                 }
                 //check if current time passed alarm time
@@ -145,18 +160,22 @@ class RoutineService : Service {
                     val text = "You need to prepare to go to " + destination.name +
                             ".\n It takes about " + h + "hours and " + m + " minutes to go there!"
 
-                    val builder = NotificationCompat.Builder(this, locationNotificationId)
-                        .setContentTitle("BlueCat Alarm")
-                        .setSmallIcon(R.drawable.ic_launcher_foreground)
-                        .setStyle(NotificationCompat.BigTextStyle().bigText(text))
-                        .build()
-                    notificationManager.notify(1234, builder)
+                    callNotification(text, 101)
 
                     //set alarm to true to stop calling alarm
                     LocationRepository(application).updateIsAlarmed(true, destination.id)
                 }
             }
         }
+    }
+
+    private fun callNotification(text: String, id: Int) {
+        val builder = NotificationCompat.Builder(this, locationNotificationId)
+            .setContentTitle("BlueCat Alarm")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .build()
+        notificationManager.notify(id, builder)
     }
 
     private fun timeToSeconds(time: String): Long {

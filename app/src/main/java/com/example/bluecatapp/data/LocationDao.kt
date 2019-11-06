@@ -15,7 +15,7 @@ interface LocationItemDao {
     @Query("SELECT * FROM location_items ")
     fun getAllLocationItems(): LiveData<List<LocationItemData>>
 
-    @Query("SELECT * FROM location_items WHERE time > dateTime('now', 'localtime') ORDER BY dateTime(time) ASC Limit 1")
+    @Query("SELECT * FROM location_items WHERE done == 0 ORDER BY dateTime(time) ASC Limit 1")
     fun getPriorityDestination(): LocationItemData
 
     @Query("UPDATE location_items SET timeToDest = :value1 WHERE id = :value2")
@@ -23,6 +23,9 @@ interface LocationItemDao {
 
     @Query("UPDATE location_items SET isAlarmed = :value1 WHERE id = :value2")
     fun updateIsAlarm(value1: Boolean, value2: Int)
+
+    @Query("UPDATE location_items SET done = :value1 WHERE id = :value2")
+    fun updateDone(value1: Boolean, value2: Int)
 }
 
 @Dao

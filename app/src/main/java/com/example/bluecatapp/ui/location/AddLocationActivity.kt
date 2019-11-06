@@ -69,8 +69,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
 
         //Initialize ODsayService
         odsayService = ODsayService.init(this, getString(R.string.odsay_key))
-        odsayService.setConnectionTimeout(5000)
-        odsayService.setReadTimeout(5000)
+        odsayService.setConnectionTimeout(ODsayTimeout)
+        odsayService.setReadTimeout(ODsayTimeout)
 
         //initialize layout components
         titleEdit = findViewById(R.id.titleEdit)
@@ -199,7 +199,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
                     val newLocationItem = LocationItemData(
                         endPlace?.name ?: "Unknown",
                         endPlace?.x ?: "Unknown", endPlace?.y ?: "Unknown",
-                        time, timeToDest ?: "Unknown", false)
+                        time, timeToDest ?: "Unknown", false, false)
 
                     locationViewModel.insert(newLocationItem)
                     Log.d(TAG, timeToDest)
