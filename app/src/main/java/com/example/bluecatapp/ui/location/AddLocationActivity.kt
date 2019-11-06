@@ -199,25 +199,23 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
                     val newLocationItem = LocationItemData(
                         endPlace?.name ?: "Unknown",
                         endPlace?.x ?: "Unknown", endPlace?.y ?: "Unknown",
-                        time, timeToDest ?: "Unknown")
+                        time, timeToDest ?: "Unknown", false)
 
                     locationViewModel.insert(newLocationItem)
+                    Log.d(TAG, timeToDest)
                     Toast.makeText(this@AddLocationActivity, "Location saved!", Toast.LENGTH_SHORT).show()
-                    //For test
-
-
-                    ///
                     finish()
                 }
             } catch (e: JSONException) {
                 Log.d(TAG, "JSONException")
                 Toast.makeText(this@AddLocationActivity, "Unable to calculate time distance", Toast.LENGTH_LONG).show()
+                //Need to figure out if it failed because the user was too close or too far from the destination
             }
         }
 
         override fun onError(i: Int, s: String?, api: API?) {
             Log.d(TAG, "Connection to ODsay failed")
-            Toast.makeText(this@AddLocationActivity, "Unable to calculate time distance", Toast.LENGTH_LONG).show()
+            Toast.makeText(this@AddLocationActivity, "Connection failed", Toast.LENGTH_LONG).show()
         }
     }
 

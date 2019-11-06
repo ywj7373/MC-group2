@@ -20,7 +20,10 @@ data class LocationItemData(
     val time: String,
 
     @field:SerializedName("timeToDest")
-    val timeToDest: String
+    val timeToDest: String,
+
+    @field:SerializedName("isAlarmed")
+    val isAlarmed: Boolean
 )
 {
     @PrimaryKey(autoGenerate = true)

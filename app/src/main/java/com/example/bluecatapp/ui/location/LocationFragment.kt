@@ -76,9 +76,7 @@ class LocationFragment : Fragment() {
                 Toast.makeText(requireContext(), "All Location Items deleted!", Toast.LENGTH_SHORT).show()
                 true
             }
-            else -> {
-                super.onOptionsItemSelected(item)
-            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

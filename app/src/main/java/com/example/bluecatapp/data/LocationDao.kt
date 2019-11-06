@@ -20,6 +20,9 @@ interface LocationItemDao {
 
     @Query("UPDATE location_items SET timeToDest = :value1 WHERE id = :value2")
     fun updateEstimatedTime(value1: String, value2: Int)
+
+    @Query("UPDATE location_items SET isAlarmed = :value1 WHERE id = :value2")
+    fun updateIsAlarm(value1: Boolean, value2: Int)
 }
 
 @Dao

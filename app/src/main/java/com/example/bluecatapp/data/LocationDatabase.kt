@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 //Create Room Database
-@Database(entities = [LocationItemData::class], version = 10)
+@Database(entities = [LocationItemData::class], version = 11)
 abstract class LocationItemDatabase : RoomDatabase() {
 
     abstract fun locationItemDao(): LocationItemDao

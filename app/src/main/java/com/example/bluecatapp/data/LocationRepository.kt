@@ -47,6 +47,10 @@ class LocationRepository(application: Application) {
         locationItemDao.updateEstimatedTime(newTime, id)
     }
 
+    fun updateIsAlarmed(toggle: Boolean, id: Int) {
+        locationItemDao.updateIsAlarm(toggle, id)
+    }
+
     private class InsertLocationItemAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItemData, Unit, Unit>() {
         val locationItemDao = locationItemDao
 
