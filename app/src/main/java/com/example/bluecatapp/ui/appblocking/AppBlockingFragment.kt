@@ -6,6 +6,10 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorManager
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.SystemClock
@@ -19,6 +23,7 @@ import android.widget.Button
 import android.widget.Chronometer
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -27,6 +32,7 @@ import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
 import com.google.gson.reflect.TypeToken
+import android.hardware.SensorManager as SensorManager1
 
 
 class AppBlockingFragment : Fragment() {
@@ -35,6 +41,17 @@ class AppBlockingFragment : Fragment() {
     private lateinit var usage: UsageStatsManager
     private lateinit var packageManager: PackageManager
     private lateinit var currentlyBlockedApps: MutableMap<String, Long>
+    private lateinit var sensorManager: SensorManager
+
+    //Appblock variables
+    private lateinit var blockedAppName: TextView
+    private lateinit var chrono: Chronometer
+    private lateinit var blockTimeLabel: TextView
+
+    //Pedometer variables
+    private lateinit var pedometerTitle: TextView
+    private lateinit var pedometerLabel: TextView
+    private lateinit var pedometerValue: TextView
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -58,9 +75,16 @@ class AppBlockingFragment : Fragment() {
 //        })
         val startButton: Button = root.findViewById(R.id.start_foreground_service)
         val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
-        val blockedAppName: TextView = root.findViewById(R.id.currently_blocked_app)
-        val chrono: Chronometer = root.findViewById(R.id.view_timer)
-        val blockTimeLabel: TextView = root.findViewById(R.id.block_explanation)
+
+        //initialize app block views
+        blockedAppName = root.findViewById(R.id.currently_blocked_app)
+        chrono = root.findViewById(R.id.view_timer)
+        blockTimeLabel = root.findViewById(R.id.block_explanation)
+
+        //initialize pedometer views
+        pedometerTitle = root.findViewById(R.id.step_title)
+        pedometerLabel = root.findViewById(R.id.step_explanation)
+        pedometerValue = root.findViewById(R.id.step_count)
 
         startButton.setOnClickListener {
             AppBlockForegroundService.startService(context!!, "Monitoring.. ")
@@ -69,9 +93,13 @@ class AppBlockingFragment : Fragment() {
             AppBlockForegroundService.stopService(context!!)
         }
         if (currentlyBlockedApps.entries.count() == 0) {
-            blockedAppName.text = "No blocked apps at the moment"
-            chrono.visibility = View.INVISIBLE
-            blockTimeLabel.visibility = View.INVISIBLE
+            hideViews()
+//            blockedAppName.text = "No blocked apps at the moment"
+//            chrono.visibility = View.INVISIBLE
+//            blockTimeLabel.visibility = View.INVISIBLE
+//            pedometerTitle.visibility = View.INVISIBLE
+//            pedometerLabel.visibility = View.INVISIBLE
+//            pedometerValue.visibility = View.INVISIBLE
         } else {
             currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
                 blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
@@ -81,6 +109,8 @@ class AppBlockingFragment : Fragment() {
                     blockedAppName,
                     blockTimeLabel
                 ).start()
+                //start pedometer
+                stepCounter(20)
             }
         }
         return root
@@ -146,9 +176,15 @@ class AppBlockingFragment : Fragment() {
 
             override fun onFinish() {
                 chrono.stop()
-                chrono.visibility = View.INVISIBLE
-                blockedAppCountdownLabel.visibility = View.INVISIBLE
-                blockedAppName.setText("No blocked apps at the moment")
+                hideViews()
+//                chrono.visibility = View.INVISIBLE
+//                blockedAppCountdownLabel.visibility = View.INVISIBLE
+//                blockedAppName.setText("No blocked apps at the moment")
+//
+//                //Hide pedometer valeus
+//                pedometerTitle.visibility = View.INVISIBLE
+//                pedometerLabel.visibility = View.INVISIBLE
+//                pedometerValue.visibility = View.INVISIBLE
             }
         }
     }
@@ -179,6 +215,38 @@ class AppBlockingFragment : Fragment() {
                 type
             ) else mutableMapOf()
         return currentlyBlockedApps
+    }
+
+    private fun stepCounter(totalCount: Int): SensorEventListener {
+        val sensorManager = context!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        pedometerValue.setText("0 / $totalCount") //initialize value
+
+        return object : SensorEventListener{
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onSensorChanged(event: SensorEvent?) {
+                val currentStepCount = event!!.values[0].toInt()
+
+                pedometerValue.setText("$currentStepCount / $totalCount")
+
+                if(currentStepCount==totalCount){
+                    pedometerTitle.setText("All steps completed")
+                    pedometerLabel.setText("Great job!")
+                }
+            }
+        }
+    }
+
+    private fun hideViews(){
+        //Hide app blocking countdown and pedometer views if no currently blocked apps
+        blockedAppName.text = "No blocked apps at the moment"
+        chrono.visibility = View.INVISIBLE
+        blockTimeLabel.visibility = View.INVISIBLE
+        pedometerTitle.visibility = View.INVISIBLE
+        pedometerLabel.visibility = View.INVISIBLE
+        pedometerValue.visibility = View.INVISIBLE
     }
 }
 

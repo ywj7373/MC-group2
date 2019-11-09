@@ -7,6 +7,8 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -385,6 +387,13 @@ class AppBlockForegroundService : Service() {
             }
         }
         return packageName
+    }
+
+    private fun stepCounter(){
+        val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        //TODO: preserve battery using JobScheduler class to detect step count at specific intervals
+
     }
 }
 
