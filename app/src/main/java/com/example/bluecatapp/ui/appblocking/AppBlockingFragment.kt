@@ -6,6 +6,10 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorManager
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.SystemClock
@@ -19,6 +23,7 @@ import android.widget.Button
 import android.widget.Chronometer
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -27,6 +32,7 @@ import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
 import com.google.gson.reflect.TypeToken
+import android.hardware.SensorManager as SensorManager1
 
 
 class AppBlockingFragment : Fragment() {
@@ -35,6 +41,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var usage: UsageStatsManager
     private lateinit var packageManager: PackageManager
     private lateinit var currentlyBlockedApps: MutableMap<String, Long>
+    private lateinit var sensorManager: SensorManager
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -61,6 +68,10 @@ class AppBlockingFragment : Fragment() {
         val blockedAppName: TextView = root.findViewById(R.id.currently_blocked_app)
         val chrono: Chronometer = root.findViewById(R.id.view_timer)
         val blockTimeLabel: TextView = root.findViewById(R.id.block_explanation)
+        //Pedometer views
+        val pedometerTitle: TextView = root.findViewById(R.id.step_title)
+        val pedometerLabel: TextView = root.findViewById(R.id.step_explanation)
+        val pedometerValue: TextView = root.findViewById(R.id.step_count)
 
         startButton.setOnClickListener {
             AppBlockForegroundService.startService(context!!, "Monitoring.. ")
@@ -72,6 +83,9 @@ class AppBlockingFragment : Fragment() {
             blockedAppName.text = "No blocked apps at the moment"
             chrono.visibility = View.INVISIBLE
             blockTimeLabel.visibility = View.INVISIBLE
+            pedometerTitle.visibility = View.INVISIBLE
+            pedometerLabel.visibility = View.INVISIBLE
+            pedometerValue.visibility = View.INVISIBLE
         } else {
             currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
                 blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
@@ -81,6 +95,8 @@ class AppBlockingFragment : Fragment() {
                     blockedAppName,
                     blockTimeLabel
                 ).start()
+                //start pedometer
+                stepCounter(pedometerValue)
             }
         }
         return root
@@ -179,6 +195,22 @@ class AppBlockingFragment : Fragment() {
                 type
             ) else mutableMapOf()
         return currentlyBlockedApps
+    }
+
+    private fun stepCounter(stepCountValue: TextView): SensorEventListener {
+        val sensorManager = context!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val totalCount = 20 //total number of steps to be completed
+        stepCountValue.setText("0 / $totalCount") //initialize value
+
+        return object : SensorEventListener{
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onSensorChanged(event: SensorEvent?) {
+                stepCountValue.setText("${event!!.values[0]} / $totalCount")
+            }
+        }
     }
 }
 
