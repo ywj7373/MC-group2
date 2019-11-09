@@ -89,23 +89,33 @@
         android:countDown="true"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/block_explanation"
-        tools:layout_editor_absoluteY="281dp"
         tools:targetApi="24" />
+
+    <TextView
+        android:id="@+id/step_explanation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Steps completed"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/step_title"
+        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/step_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="312dp"
         android:text="Let's take a little walk"
         android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="@+id/step_explanation"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view_timer"
-        app:layout_constraintVertical_bias="0.203" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/step_count"
@@ -115,21 +125,10 @@
         android:text="TextView"
         android:textColor="#000000"
         android:textSize="30sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/step_explanation"
-        app:layout_constraintVertical_bias="1.0" />
-
-    <TextView
-        android:id="@+id/step_explanation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Steps completed"
-        app:layout_constraintBottom_toTopOf="@+id/step_count"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/step_title"
         app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
