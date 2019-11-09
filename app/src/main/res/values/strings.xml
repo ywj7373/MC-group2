@@ -10,6 +10,7 @@
     <string name="profile">Profile</string>
     <string name="restricted_apps">Restricted Apps</string>
     <string name="time_limit">Time Limit</string>
+    <string name='pedometer'>Pedometer</string>
 
     <!-- Preference Titles -->
     <string name="profile_header">YOUR PROFILE</string>

@@ -1,10 +1,9 @@
 package com.example.bluecatapp.ui.settings
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
-import androidx.preference.Preference
-import androidx.preference.EditTextPreference
-import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.*
 import com.example.bluecatapp.R
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -16,6 +15,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         val profilePreference = findPreference<EditTextPreference>(getString(R.string.profile))
         profilePreference?.summary = "Display Name"
+
+        //set default pedometer preference to "true"
+        PreferenceManager.setDefaultValues(this.context, R.xml.root_preferences, true);
+        val pedometerPreference = preferenceManager.findPreference<SwitchPreference>(getString(R.string.pedometer))
+        pedometerPreference?.setSwitchTextOn()
     }
 
     override fun onDisplayPreferenceDialog(preference: Preference?) {

@@ -72,7 +72,7 @@
         <SwitchPreference
             android:selectable="true"
             app:iconSpaceReserved="false"
-            app:key="pedometer"
+            app:key="@string/pedometer"
             app:summary="@string/pedometer_summary"
             app:title="@string/pedometer_title" />
 
