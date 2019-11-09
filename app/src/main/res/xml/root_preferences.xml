@@ -68,6 +68,23 @@
             app:key="smart_blocking"
             app:summary="@string/smart_blocking_summary"
             app:title="@string/smart_blocking_title" />
+
+        <SwitchPreference
+            android:selectable="true"
+            app:iconSpaceReserved="false"
+            app:key="pedometer"
+            app:summary="@string/pedometer_summary"
+            app:title="@string/pedometer_title" />
+
+        <ListPreference
+            android:entries="@array/pedometer_entries"
+            android:entryValues="@array/pedometer_values"
+            android:defaultValue="50"
+            android:selectable="true"
+            app:dialogTitle="@string/pedometer_count_title"
+            app:iconSpaceReserved="false"
+            app:key="pedometer_count"
+            app:title="@string/pedometer_count_title" />
     </PreferenceCategory>
 
     <PreferenceCategory

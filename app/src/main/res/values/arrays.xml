@@ -40,6 +40,24 @@
         <item>7200000</item>
     </string-array>
 
+    <string-array name="pedometer_entries">
+        <item>1 step (testing)</item>
+        <item>10 steps</item>
+        <item>20 steps</item>
+        <item>50 steps</item>
+        <item>100 steps</item>
+        <item>200 steps</item>
+    </string-array>
+
+    <string-array name="pedometer_values">
+        <item>1</item>
+        <item>10</item>
+        <item>20</item>
+        <item>50</item>
+        <item>100</item>
+        <item>200</item>
+    </string-array>
+
     <!-- Empty Default Array-->
     <string-array name="empty_array" />
 
