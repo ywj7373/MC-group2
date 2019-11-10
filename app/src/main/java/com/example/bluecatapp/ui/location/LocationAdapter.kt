@@ -21,7 +21,7 @@ class LocationAdapter : RecyclerView.Adapter<LocationAdapter.LocationItemHolder>
     override fun onBindViewHolder(holder: LocationItemHolder, position: Int) {
         val currentLocationItem = locationItems[position]
         holder.textViewName.text = currentLocationItem.name
-        holder.textViewTime.text = currentLocationItem.time
+        holder.textViewTime.text = if(currentLocationItem.daysMode) (currentLocationItem.days + " " + currentLocationItem.time.split(" ")[1]) else currentLocationItem.time
     }
 
     override fun getItemCount(): Int = locationItems.size

@@ -52,6 +52,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     private var monthOfYear:Int = 0
     private var dayOfMonth:Int = 0
 
+    private var days_mode_set:Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_location)
@@ -150,6 +152,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
         for (tb in dayButtons) {
             tb.setChecked(false)
         }
+        days_mode_set = false
     }
     private fun daysMode() {
         var str = ""
@@ -166,10 +169,12 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
             monthOfYear = current.get(Calendar.MONTH)
             dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
             dateText.text = SimpleDateFormat("yyyy-MM-dd").format(current.time)
+            days_mode_set = false
         }
         // if there is at least one day checked
         else {
             dateText.text = str.substring(0, str.length-1)
+            days_mode_set = true
         }
     }
 
@@ -199,7 +204,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
                     val newLocationItem = LocationItemData(
                         endPlace?.name ?: "Unknown",
                         endPlace?.x ?: "Unknown", endPlace?.y ?: "Unknown",
-                        time, timeToDest ?: "Unknown", false, false)
+                        time, timeToDest ?: "Unknown", false, false, days_mode_set, dateText.text.toString())
 
                     locationViewModel.insert(newLocationItem)
                     Log.d(TAG, timeToDest)

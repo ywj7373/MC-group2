@@ -121,17 +121,21 @@ class RoutineService : Service {
     private fun checkTime() {
         //get priority location's estimated time
         thread(start = true) {
-            val destination: LocationItemData? = LocationRepository(application).getPriorityDestination()
+            val destination: LocationItemData? = getTotalPriority()
             if (destination != null) {
                 val time = timeToSeconds(destination.time)
                 val timeToDest = minToSeconds(destination.timeToDest)
                 val currentTime = System.currentTimeMillis()
                 val isAlarmed = destination.isAlarmed
+                val daysMode = destination.daysMode
                 Log.d(TAG, "alarm rings at: " + Date(time - timeToDest - (alpha * 60 * 1000)).toString())
                 Log.d(TAG, "current time: " + Date(currentTime).toString())
 
+                val simpleTimeFormat = SimpleDateFormat("hh:mm:ss")
+
+
                 //check if current time passed arrival time
-                if (currentTime >= time) {
+                if ((!daysMode && currentTime >= time) || (daysMode && (simpleTimeFormat.format(Date(currentTime))>=(simpleTimeFormat.format(Date(time)))) )) {
                     //set the schedule to done
                     LocationRepository(application).updateDone(true, destination.id)
                     Log.d(TAG, destination.x)
@@ -235,7 +239,8 @@ class RoutineService : Service {
     //update estimatedTime based on current location
     private fun updateEstimatedTime(srcLong: Double, srcLat: Double) {
         //get the destination address that needs to be alarmed
-        val destination: LocationItemData? = LocationRepository(application).getPriorityDestination()
+        val destination: LocationItemData? = getTotalPriority()
+
         if (destination != null) {
             Log.d(TAG, destination.name)
 
@@ -290,5 +295,41 @@ class RoutineService : Service {
 
     private fun deg2rad(deg: Double): Double {
         return deg * (PI/180)
+    }
+
+    private fun getTotalPriority(): LocationItemData {
+        val TAG_PRIORITY = "Priority"
+        val dayOfToday = when(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
+            1 -> "%SUN%"
+            2 -> "%MON%"
+            3 -> "%TUE%"
+            4 -> "%WED%"
+            5 -> "%THU%"
+            6 -> "%FRI%"
+            7 -> "%SAT%"
+            else -> ""
+        }
+        Log.d("Priority", dayOfToday)
+        val priorityNotdays: LocationItemData = LocationRepository(application).getPriorityDestination()
+        val priorityDays: LocationItemData = LocationRepository(application).getPriorityDestination_days(dayOfToday)
+        val simpleTimeFormat = SimpleDateFormat("hh:mm:ss")
+        val simpleDateFormat = SimpleDateFormat("yyyyMMdd")
+
+        if(priorityNotdays == null) {Log.d(TAG_PRIORITY, "Days1 "); return priorityDays}
+        if(priorityDays == null) {Log.d(TAG_PRIORITY, "NotDays1 "+priorityNotdays.name);  return priorityNotdays}
+
+        val timeD = timeToSeconds(priorityDays.time)
+        val timeN = timeToSeconds(priorityNotdays.time)
+        val currentTime = System.currentTimeMillis()
+
+        if(simpleDateFormat.format(Date(timeN)) != simpleDateFormat.format(Date(currentTime))) {
+            Log.d(TAG_PRIORITY, "NotDays3 "+priorityNotdays.name);
+            return priorityNotdays
+        }
+
+        when(simpleTimeFormat.format(Date(timeD)) < simpleTimeFormat.format(Date(timeN))) {
+            true -> {Log.d(TAG_PRIORITY, "Days2 "+priorityDays.name);  return priorityDays}
+            false -> {Log.d(TAG_PRIORITY, "NotDays2 "+priorityNotdays.name); return priorityNotdays}
+        }
     }
 }

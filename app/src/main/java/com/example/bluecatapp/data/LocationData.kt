@@ -26,7 +26,14 @@ data class LocationItemData(
     val isAlarmed: Boolean,
 
     @field:SerializedName("done")
-    val done: Boolean
+    val done: Boolean,
+
+    @field:SerializedName("daysMode")
+    val daysMode: Boolean,
+
+    @field:SerializedName("days")
+    val days: String
+
 )
 {
     @PrimaryKey(autoGenerate = true)
