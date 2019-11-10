@@ -73,8 +73,9 @@
             android:selectable="true"
             app:iconSpaceReserved="false"
             app:key="@string/pedometer"
-            app:summary="@string/pedometer_summary"
-            app:title="@string/pedometer_title" />
+            app:title="@string/pedometer_title"
+            android:summaryOff="@string/pedometer_summary_off"
+            android:summaryOn="@string/pedometer_summary_on"/>
 
         <ListPreference
             android:entries="@array/pedometer_entries"

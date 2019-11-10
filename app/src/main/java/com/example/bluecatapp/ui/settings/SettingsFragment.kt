@@ -11,15 +11,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
-        val sharedPref = preferenceManager.sharedPreferences
-
         val profilePreference = findPreference<EditTextPreference>(getString(R.string.profile))
         profilePreference?.summary = "Display Name"
 
         //set default pedometer preference to "true"
         PreferenceManager.setDefaultValues(this.context, R.xml.root_preferences, true);
         val pedometerPreference = preferenceManager.findPreference<SwitchPreference>(getString(R.string.pedometer))
-        pedometerPreference?.setSwitchTextOn()
+        pedometerPreference?.setChecked(true)
     }
 
     override fun onDisplayPreferenceDialog(preference: Preference?) {
