@@ -68,7 +68,7 @@ class RoutineService : Service {
             }
         })
 
-        //observe next schedule
+        //observe next schedule and update estimated time whenever next alarm changes
         locationViewModel.getNextSchedule().observeForever( object: Observer<LocationItemData> {
             override fun onChanged(t: LocationItemData?) {
                 if (t != null) {
@@ -257,14 +257,19 @@ class RoutineService : Service {
         Log.d(TAG, "Current Location Updated")
     }
 
-    //update estimatedTime based on current location
+    //update estimatedTime if current location changes
     private fun updateEstimatedTime(srcLong: Double, srcLat: Double) {
         if (destination != null) {
-            Log.d(TAG, "update estimated time for " + destination!!.name)
             //calculate estimated time
             estimateTravelTime(srcLat.toString(), srcLong.toString(), destination!!.x, destination!!.y)
         }
         else Log.d(TAG, "No schedule!")
+    }
+
+    //call ODsay to estimate Travel time
+    private fun estimateTravelTime(sx: String, sy: String, ex: String, ey: String) {
+        Log.d(TAG, "$sx $sy $ex $ey")
+        odsayService.requestSearchPubTransPath(sx, sy, ex, ey, "0", "0", "0", onEstimateTimeResultCallbackListener)
     }
 
     //callback method to get json data from ODsay
@@ -291,11 +296,5 @@ class RoutineService : Service {
         override fun onError(i: Int, s: String?, api: API?) {
             Log.d(TAG, i.toString())
         }
-    }
-
-    //call ODsay to estimate Travel time
-    private fun estimateTravelTime(sx: String, sy: String, ex: String, ey: String) {
-        Log.d(TAG, "$sx $sy $ex $ey")
-        odsayService.requestSearchPubTransPath(sx, sy, ex, ey, "0", "0", "0", onEstimateTimeResultCallbackListener)
     }
 }
