@@ -202,6 +202,25 @@ class AppBlockForegroundService : Service() {
             val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
             if (foregroundApp != null) {
                 currentAppUsage = appUsageTimers.getOrPut(foregroundApp) { 0 }
+                // Send notification 5 min before block
+                if ((maxTimeLimit - currentAppUsage) == 1000 * 60 * 5.toLong()) {
+                    val toast = Toast.makeText(
+                        this.applicationContext, "We will block ${getAppNameFromPackage(
+                            foregroundApp,
+                            this.applicationContext
+                        )} in 5 minutes if you continue using it", Toast.LENGTH_LONG
+                    )
+                    toast.show()
+                }
+                if ((maxTimeLimit - currentAppUsage) == 1000 * 60 * 1.toLong()) {
+                    val toast = Toast.makeText(
+                        this.applicationContext, "We will block ${getAppNameFromPackage(
+                            foregroundApp,
+                            this.applicationContext
+                        )} in 1 minute if you continue using it", Toast.LENGTH_LONG
+                    )
+                    toast.show()
+                }
                 if (currentAppUsage >= maxTimeLimit) {
                     // App should be blocked
                     addToBlockList(foregroundApp)
@@ -271,11 +290,6 @@ class AppBlockForegroundService : Service() {
             putString("appUsageTimers", MainActivity.gson.toJson(appUsageTimers))
             commit()
         }
-        Toast.makeText(
-            this.applicationContext,
-            "Current usage time: ${currentAppUsage / 1000} s",
-            Toast.LENGTH_SHORT
-        ).show()
     }
 
     private fun resetTimer(packageName: String) {
@@ -389,11 +403,10 @@ class AppBlockForegroundService : Service() {
         return packageName
     }
 
-    private fun stepCounter(){
+    private fun stepCounter() {
         val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         //TODO: preserve battery using JobScheduler class to detect step count at specific intervals
-
     }
 }
 
