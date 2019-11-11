@@ -17,6 +17,7 @@ import com.google.android.gms.location.LocationServices
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import com.example.bluecatapp.R
+import com.example.bluecatapp.data.AlarmTimeData
 import com.example.bluecatapp.data.CurrentLocationData
 import com.example.bluecatapp.data.LocationItemData
 import com.example.bluecatapp.data.LocationRepository
@@ -61,8 +62,8 @@ class RoutineService : Service {
         locationViewModel.getCurrentLocation().observeForever( object : Observer<CurrentLocationData> {
             override fun onChanged(t: CurrentLocationData?) {
                 if (t != null) {
-                    srcLong = t.longitude
                     srcLat = t.latitude
+                    srcLong = t.longitude
                 }
             }
         })
@@ -134,8 +135,9 @@ class RoutineService : Service {
         //get priority location's estimated time
         thread(start = true) {
             if (destination != null) {
+                val alarmTime = LocationRepository(application).getAlarmTime().time
                 val time = timeToSeconds(destination!!.time)
-                val timeToDest = minToSeconds(destination!!.timeToDest)
+                val timeToDest = minToSeconds(alarmTime)
                 val currentTime = System.currentTimeMillis()
                 val isAlarmed = destination!!.isAlarmed
                 val daysMode = destination!!.daysMode
@@ -166,8 +168,8 @@ class RoutineService : Service {
                 else if (currentTime >= time - timeToDest - (alpha * 60 * 1000) && !isAlarmed) {
                     Log.d(TAG, "entered")
                     //send notification
-                    val h = (destination!!.timeToDest.toInt())/60
-                    val m = (destination!!.timeToDest.toInt())%60
+                    val h = (alarmTime.toInt())/60
+                    val m = (alarmTime.toInt())%60
                     val text = "You need to prepare to go to " + destination!!.name +
                             ".\n It takes about " + h + "hours and " + m + " minutes to go there!"
 
@@ -260,7 +262,7 @@ class RoutineService : Service {
         if (destination != null) {
             Log.d(TAG, "update estimated time for " + destination!!.name)
             //calculate estimated time
-            estimateTravelTime(srcLong.toString(), srcLat.toString(), destination!!.x, destination!!.y)
+            estimateTravelTime(srcLat.toString(), srcLong.toString(), destination!!.x, destination!!.y)
         }
         else Log.d(TAG, "No schedule!")
     }
@@ -274,9 +276,12 @@ class RoutineService : Service {
                     //update estimated time to the database
                     val inquiryResult = (odsayData!!.json.getJSONObject("result")
                         .getJSONArray("path").get(0) as JSONObject).getJSONObject("info")
-                    LocationRepository(application).updateEstimatedTime(inquiryResult.getInt("totalTime").toString(), destination!!.id)
+                        .getInt("totalTime").toString()
 
-                    Log.d(TAG, "Estimated Time of " + destination!!.name + " changed to " + inquiryResult.getInt("totalTime").toString())
+                    thread(start=true) {
+                        LocationRepository(application).insertAlarmTime(AlarmTimeData(inquiryResult))
+                    }
+                    Log.d(TAG, "Estimated Time of " + destination!!.name + " changed to " + inquiryResult)
                 }
             } catch (e: JSONException) {
                 e.printStackTrace()
@@ -284,12 +289,13 @@ class RoutineService : Service {
         }
 
         override fun onError(i: Int, s: String?, api: API?) {
-            Log.d(TAG, s)
+            Log.d(TAG, i.toString())
         }
     }
 
     //call ODsay to estimate Travel time
     private fun estimateTravelTime(sx: String, sy: String, ex: String, ey: String) {
+        Log.d(TAG, "$sx $sy $ex $ey")
         odsayService.requestSearchPubTransPath(sx, sy, ex, ey, "0", "0", "0", onEstimateTimeResultCallbackListener)
     }
 }

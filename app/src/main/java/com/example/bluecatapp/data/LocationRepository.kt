@@ -9,13 +9,16 @@ class LocationRepository(application: Application) {
 
     private var locationItemDao: LocationItemDao
     private var currentLocationDao: CurrentLocationDao
+    private var alarmTimeDao: AlarmTimeDao
     private var allLocationItems: LiveData<List<LocationItemData>>
 
     init {
         val locationItemDatabase: LocationItemDatabase = LocationItemDatabase.getInstance(application.applicationContext)!!
         val currentLocationDatabase: CurrentLocationDatabase = CurrentLocationDatabase.getInstance(application.applicationContext)!!
+        val alarmTimeDatabase: AlarmTimeDatabase = AlarmTimeDatabase.getInstance(application.applicationContext)!!
         locationItemDao = locationItemDatabase.locationItemDao()
         currentLocationDao = currentLocationDatabase.currentLocationDao()
+        alarmTimeDao = alarmTimeDatabase.alarmTimeDao()
         allLocationItems = locationItemDao.getAllLocationItems()
     }
 
@@ -43,10 +46,6 @@ class LocationRepository(application: Application) {
         return locationItemDao.getPriorityDestination(dayOfWeek)
     }
 
-    fun updateEstimatedTime(newTime: String, id: Int) {
-        locationItemDao.updateEstimatedTime(newTime, id)
-    }
-
     fun updateIsAlarmed(toggle: Boolean, id: Int) {
         locationItemDao.updateIsAlarm(toggle, id)
     }
@@ -57,6 +56,14 @@ class LocationRepository(application: Application) {
 
     fun updateAllNotDoneDays() {
         locationItemDao.updateAllNotDoneDays()
+    }
+
+    fun insertAlarmTime(alarmTime: AlarmTimeData) {
+        InsertAlarmTimeAsyncTask(alarmTimeDao).execute(alarmTime)
+    }
+
+    fun getAlarmTime(): AlarmTimeData {
+        return alarmTimeDao.getAlarmTime()
     }
 
     private class InsertLocationItemAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItemData, Unit, Unit>() {
@@ -72,6 +79,14 @@ class LocationRepository(application: Application) {
 
         override fun doInBackground(vararg params: CurrentLocationData?) {
             currentLocationDao.insert(params[0]!!)
+        }
+    }
+
+    private class InsertAlarmTimeAsyncTask(alarmTimeDao: AlarmTimeDao) : AsyncTask<AlarmTimeData, Unit, Unit>() {
+        val alarmTimeDao = alarmTimeDao
+
+        override fun doInBackground(vararg params: AlarmTimeData?) {
+            alarmTimeDao.insert(params[0]!!)
         }
     }
 

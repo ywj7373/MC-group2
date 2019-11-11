@@ -1,86 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#F9F9F9">
 
-    <TextView
-        android:id="@+id/titleEdit"
-        android:layout_width="wrap_content"
+    <com.mancj.materialsearchbar.MaterialSearchBar
+        android:id="@+id/searchBar"
+        style="@style/MaterialSearchBarDark"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Location Schedule"
-        android:textColor="@android:color/black"
-        android:textSize="28sp"
-        android:textStyle="bold" />
+        app:mt_hint="Search"
+        app:mt_maxSuggestionsCount="10"
+        app:mt_speechMode="false"
+        app:mt_placeholder="Search"/>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
+        android:layout_below="@id/searchBar"
+        android:orientation="vertical"
+        android:id="@+id/choices">
         <TextView
-            android:id="@+id/endLocText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="search location" />
-
-        <Button
-            android:id="@+id/changeDestLoc"
+            android:id="@+id/loc1"/>
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Search" />
+            android:id="@+id/loc2"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/loc3"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/loc4"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/loc5"/>
     </LinearLayout>
 
     <TextView
         android:id="@+id/timeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select time" />
+        android:text="@string/time_title"
+        android:layout_below="@id/choices"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:textSize="15sp"/>
 
     <TimePicker
         android:id="@+id/location_edit_time"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:timePickerMode="spinner"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_below="@id/timeText"
+        android:layout_marginTop="10dp"/>
 
     <TextView
-        android:id="@+id/textView2"
-        android:layout_width="match_parent"
+        android:id="@+id/dateTitle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select date or days" />
+        android:text="@string/date_title"
+        android:layout_below="@id/location_edit_time"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"/>
+
+    <TextView
+        android:id="@+id/dateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dateTitle"
+        android:textColor="@android:color/black"
+        android:textSize="22sp"
+        android:layout_marginStart="10dp"/>
+
+    <Button
+        android:id="@+id/dateButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@id/dateTitle"
+        android:layout_toEndOf="@id/dateText"
+        android:layout_marginStart="20dp"
+        android:background="@drawable/ic_calendar" />
+
+    <TextView
+        android:id="@+id/repeat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dateText"
+        android:textColor="@android:color/black"
+        android:text="@string/repeat"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/dateText"
-            android:layout_width="362dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_vertical"
-            android:text="TextView"
-            android:textColor="@android:color/black"
-            android:textSize="22sp" />
-
-        <ImageButton
-            android:id="@+id/dateButton"
-
-
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_calendar" />
-    </LinearLayout>
-
-    <!-- Days -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_below="@id/repeat"
+        android:layout_marginTop="10dp">
 
         <ToggleButton
             android:id="@+id/toggleButton1"
@@ -88,10 +111,10 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/day_button"
-            android:text="ToggleButton"
+            android:text="@string/toggle_button"
             android:textColor="@color/for_sunday"
-            android:textOff="SUN"
-            android:textOn="SUN" />
+            android:textOff="@string/sun"
+            android:textOn="@string/sun" />
 
         <ToggleButton
             android:id="@+id/toggleButton2"
@@ -99,9 +122,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/day_button"
-            android:text="ToggleButton"
-            android:textOff="MON"
-            android:textOn="MON" />
+            android:text="@string/toggle_button"
+            android:textOff="@string/mon"
+            android:textOn="@string/mon" />
 
         <ToggleButton
             android:id="@+id/toggleButton3"
@@ -109,9 +132,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/day_button"
-            android:text="ToggleButton"
-            android:textOff="TUE"
-            android:textOn="TUE" />
+            android:text="@string/toggle_button"
+            android:textOff="@string/tue"
+            android:textOn="@string/tue" />
 
         <ToggleButton
             android:id="@+id/toggleButton4"
@@ -119,9 +142,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/day_button"
-            android:text="ToggleButton"
-            android:textOff="WED"
-            android:textOn="WED"/>
+            android:text="@string/toggle_button"
+            android:textOff="@string/wed"
+            android:textOn="@string/wed"/>
 
         <ToggleButton
             android:id="@+id/toggleButton5"
@@ -129,9 +152,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/day_button"
-            android:text="ToggleButton"
-            android:textOff="THU"
-            android:textOn="THU"/>
+            android:text="@string/toggle_button"
+            android:textOff="@string/thu"
+            android:textOn="@string/thu"/>
 
         <ToggleButton
             android:id="@+id/toggleButton6"
@@ -139,9 +162,9 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/day_button"
-            android:text="ToggleButton"
-            android:textOff="FRI"
-            android:textOn="FRI"/>
+            android:text="@string/toggle_button"
+            android:textOff="@string/fri"
+            android:textOn="@string/fri"/>
 
         <ToggleButton
             android:id="@+id/toggleButton7"
@@ -149,32 +172,17 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/day_button"
-            android:text="ToggleButton"
+            android:text="@string/toggle_button"
             android:textColor="@color/for_saturday"
-            android:textOff="SAT"
-            android:textOn="SAT" />
+            android:textOff="@string/sat"
+            android:textOn="@string/sat" />
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="bottom">
+    <Button
+        android:id="@+id/addButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="@string/add" />
 
-        <Button
-            android:id="@+id/addButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Add" />
-
-        <Button
-            android:id="@+id/cancelButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Cancel" />
-
-    </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>

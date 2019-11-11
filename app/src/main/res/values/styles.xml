@@ -58,5 +58,4 @@
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">#969696</item>
     </style>
-
 </resources>
