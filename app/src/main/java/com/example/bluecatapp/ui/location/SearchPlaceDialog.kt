@@ -18,6 +18,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class SearchPlaceDialog: DialogFragment(), View.OnClickListener {
+    private val TAG = "Search Place Dialog"
     private lateinit var placeText: EditText
     private lateinit var searchButton: Button
     private lateinit var loc1: TextView

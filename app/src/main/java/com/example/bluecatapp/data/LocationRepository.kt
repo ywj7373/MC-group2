@@ -47,6 +47,22 @@ class LocationRepository(application: Application) {
         locationItemDao.updateEstimatedTime(newTime, id)
     }
 
+    fun updateIsAlarmed(toggle: Boolean, id: Int) {
+        locationItemDao.updateIsAlarm(toggle, id)
+    }
+
+    fun updateDone(toggle: Boolean, id: Int) {
+        locationItemDao.updateDone(toggle, id)
+    }
+
+    fun getPriorityDestination_days(dayOfSearch: String): LocationItemData {
+        return locationItemDao.getPriorityDestination_days(dayOfSearch)
+    }
+
+    fun updateAllNotDone_days() {
+        locationItemDao.updateAllNotDone_days()
+    }
+
     private class InsertLocationItemAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItemData, Unit, Unit>() {
         val locationItemDao = locationItemDao
 

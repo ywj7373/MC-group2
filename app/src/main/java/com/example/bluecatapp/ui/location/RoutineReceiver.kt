@@ -9,6 +9,8 @@ import android.app.PendingIntent
 import java.util.Calendar
 import android.os.Build
 
+const val ROUTINE_REQEUST_CODE = 486486
+
 class RoutineReceiver : BroadcastReceiver() {
     private val TAG = "RoutineReceiver"
     override fun onReceive(context: Context, intent: Intent) {
@@ -17,9 +19,7 @@ class RoutineReceiver : BroadcastReceiver() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(mServiceIntent)
-        } else {
-            context.startService(mServiceIntent)
-        }
+        } else context.startService(mServiceIntent)
     }
 
     // Set AlarmManager
@@ -28,7 +28,7 @@ class RoutineReceiver : BroadcastReceiver() {
         Log.d(TAG, "setRoutine called")
         val cal = Calendar.getInstance()
         val intent = Intent(context, RoutineReceiver::class.java)
-        val sender = PendingIntent.getBroadcast(context, 486486, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val sender = PendingIntent.getBroadcast(context, ROUTINE_REQEUST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         // Not accurate to 60 second in order to save battery. Use setExact to be accurate.
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 60000, sender)
@@ -38,7 +38,7 @@ class RoutineReceiver : BroadcastReceiver() {
     fun unsetRoutine(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, RoutineReceiver::class.java)
-        val sender = PendingIntent.getBroadcast(context, 486486, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val sender = PendingIntent.getBroadcast(context, ROUTINE_REQEUST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         alarmManager.cancel(sender)
     }
 }

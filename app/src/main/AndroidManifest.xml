@@ -39,6 +39,11 @@
         <activity android:name=".ui.location.AddLocationActivity"/>
         <receiver android:name=".ui.location.RoutineReceiver" />
         <service android:name=".ui.location.RoutineService" />
+        <receiver android:name=".ui.location.DateChangeReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.DATE_CHANGED"></action>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
