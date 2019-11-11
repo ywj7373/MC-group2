@@ -39,8 +39,8 @@ class LocationRepository(application: Application) {
         return currentLocationDao.getCurrentLocation()
     }
 
-    fun getPriorityDestination(): LocationItemData {
-        return locationItemDao.getPriorityDestination()
+    fun getPriorityDestination(dayOfWeek: String): LiveData<LocationItemData> {
+        return locationItemDao.getPriorityDestination(dayOfWeek)
     }
 
     fun updateEstimatedTime(newTime: String, id: Int) {
@@ -55,12 +55,8 @@ class LocationRepository(application: Application) {
         locationItemDao.updateDone(toggle, id)
     }
 
-    fun getPriorityDestination_days(dayOfSearch: String): LocationItemData {
-        return locationItemDao.getPriorityDestination_days(dayOfSearch)
-    }
-
-    fun updateAllNotDone_days() {
-        locationItemDao.updateAllNotDone_days()
+    fun updateAllNotDoneDays() {
+        locationItemDao.updateAllNotDoneDays()
     }
 
     private class InsertLocationItemAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItemData, Unit, Unit>() {

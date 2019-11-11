@@ -11,7 +11,7 @@ class DateChangeReceiver : BroadcastReceiver() {
     private val TAG = "DateChangeReceiver"
     override fun onReceive(context: Context?, intent: Intent?) {
         val application = context?.applicationContext as Application
-        LocationRepository(application).updateAllNotDone_days()
+        LocationRepository(application).updateAllNotDoneDays()
         Log.d(TAG, "onReceiver called : updateAllNotDone_days() called")
     }
 }

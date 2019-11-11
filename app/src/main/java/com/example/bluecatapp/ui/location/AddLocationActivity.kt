@@ -11,22 +11,18 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.CurrentLocationData
 import com.example.bluecatapp.data.LocationItemData
-import com.example.bluecatapp.data.LocationRepository
-import com.odsay.odsayandroidsdk.API
-import com.odsay.odsayandroidsdk.ODsayData
 import com.odsay.odsayandroidsdk.ODsayService
-import com.odsay.odsayandroidsdk.OnResultCallbackListener
 import kotlinx.android.synthetic.main.activity_add_location.*
-import org.json.JSONException
-import org.json.JSONObject
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
+import java.util.*
 import kotlin.concurrent.thread
 
 interface OnButtonClick {
     fun onDialogClickListener(place: SearchPlacePlaces)
 }
+
+const val default_Y = "37.459553"
+const val default_X = "126.952162"
 
 class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonClick {
     private val TAG = "AddLocationActivity"
@@ -39,20 +35,14 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     private lateinit var changeDestLoc: Button
     private lateinit var cancelButton: Button
     private lateinit var addButton: Button
-    private var srcX: String = "126.952162"
-    private var srcY: String = "37.459553"
-    private var desX: String = ""
-    private var desY: String = ""
-    private var location: String = "126.952162" + "," + "37.459553"
     private lateinit var dayButtons : Array<ToggleButton>
+    private var location: String = "$default_X,$default_Y"
     private var endPlace : SearchPlacePlaces? = null
     private var timeToDest : String? = null
-
-    private var year:Int = 0
-    private var monthOfYear:Int = 0
-    private var dayOfMonth:Int = 0
-
-    private var days_mode_set:Boolean = false
+    private var year: Int = 0
+    private var monthOfYear: Int = 0
+    private var dayOfMonth: Int = 0
+    private var days_mode_set: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,16 +53,9 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
         locationViewModel.getCurrentLocation().observe(this,
             Observer<CurrentLocationData> {
                 if (it != null) {
-                    srcX = it.longitude.toString()
-                    srcY = it.latitude.toString()
                     location = it.longitude.toString() + "," + it.latitude.toString()
                 }
             })
-
-        //Initialize ODsayService
-        odsayService = ODsayService.init(this, getString(R.string.odsay_key))
-        odsayService.setConnectionTimeout(ODsayTimeout)
-        odsayService.setReadTimeout(ODsayTimeout)
 
         //initialize layout components
         titleEdit = findViewById(R.id.titleEdit)
@@ -95,7 +78,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
         year = current.get(Calendar.YEAR)
         monthOfYear = current.get(Calendar.MONTH)
         dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
-        dateText.text = SimpleDateFormat("yyyy-MM-dd").format(current.time)
+        dateText.text = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(current.time)
 
         //set click listener
         changeDestLoc.setOnClickListener(this)
@@ -130,13 +113,11 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
     override fun onDialogClickListener(place: SearchPlacePlaces) {
         endLocText.text = place.name
         endPlace = place
-        desX = place.x
-        desY = place.y
     }
 
     //open date pick dialog
     private fun openDatePickDialog() {
-        val current = SimpleDateFormat("yyyyMMddHHmmss").format(Date())
+        val current = SimpleDateFormat("yyyyMMddHHmmss", Locale.KOREA).format(Date())
         val dialog = DatePickerDialog(this, object:DatePickerDialog.OnDateSetListener {
             override fun onDateSet(view: DatePicker?, year: Int, monthOfYear: Int, dayOfMonth: Int) {
                 this@AddLocationActivity.year = year
@@ -148,12 +129,16 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
         }, Integer.parseInt(current.substring(0,4)), Integer.parseInt(current.substring(4,6))-1, Integer.parseInt(current.substring(6,8)) )
         dialog.show()
     }
+
+    //clear all weekdays
     private fun clearDays() {
         for (tb in dayButtons) {
             tb.setChecked(false)
         }
         days_mode_set = false
     }
+
+    //configure weekdays
     private fun daysMode() {
         var str = ""
         for (tb in dayButtons) {
@@ -168,7 +153,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
             year = current.get(Calendar.YEAR)
             monthOfYear = current.get(Calendar.MONTH)
             dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
-            dateText.text = SimpleDateFormat("yyyy-MM-dd").format(current.time)
+            dateText.text = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(current.time)
             days_mode_set = false
         }
         // if there is at least one day checked
@@ -180,52 +165,20 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, OnButtonCl
 
     // Save data to database
     private fun addNewSchedule() {
-        //get estimated travel time
-        if (srcX != "" && srcY != "" && desX != "" && desY != "") {
-            estimateTravelTime(srcX, srcY, desX, desY)
-        }
-        else {
-            Toast.makeText(this, "Please enter correct address!", Toast.LENGTH_LONG).show()
-        }
-    }
+        val isAlarmed = false
+        val done = false
 
-    //callback method to get json data from ODsay
-    private val onEstimateTimeResultCallbackListener = object : OnResultCallbackListener {
-        override fun onSuccess(odsayData: ODsayData?, api: API?) {
-            Log.d(TAG, "Connection to ODsay successful")
-            try {
-                if (api == API.SEARCH_PUB_TRANS_PATH) {
-                    val inquiryResult = (odsayData!!.json.getJSONObject("result").getJSONArray("path").get(0) as JSONObject).getJSONObject("info")
-                    timeToDest = inquiryResult.getInt("totalTime").toString()
+        //add data to the database
+        val time = String.format("%04d-%02d-%02d %02d:%02d:00", year, monthOfYear+1, dayOfMonth,
+            location_edit_time.hour, location_edit_time.minute)
 
-                    //add data to the database
-                    val time = String.format("%04d-%02d-%02d %02d:%02d:00", year, monthOfYear+1, dayOfMonth,
-                        location_edit_time.hour, location_edit_time.minute)
-                    val newLocationItem = LocationItemData(
-                        endPlace?.name ?: "Unknown",
-                        endPlace?.x ?: "Unknown", endPlace?.y ?: "Unknown",
-                        time, timeToDest ?: "Unknown", false, false, days_mode_set, dateText.text.toString())
+        val newLocationItem = LocationItemData(
+            endPlace?.name ?: "Unknown",
+            endPlace?.x ?: "0", endPlace?.y ?: "0",
+            time, timeToDest ?: "0", isAlarmed, done,
+            days_mode_set, dateText.text.toString())
 
-                    locationViewModel.insert(newLocationItem)
-                    Log.d(TAG, timeToDest)
-                    Toast.makeText(this@AddLocationActivity, "Location saved!", Toast.LENGTH_SHORT).show()
-                    finish()
-                }
-            } catch (e: JSONException) {
-                Log.d(TAG, "JSONException")
-                Toast.makeText(this@AddLocationActivity, "Unable to calculate time distance", Toast.LENGTH_LONG).show()
-                //Need to figure out if it failed because the user was too close or too far from the destination
-            }
-        }
-
-        override fun onError(i: Int, s: String?, api: API?) {
-            Log.d(TAG, "Connection to ODsay failed")
-            Toast.makeText(this@AddLocationActivity, "Connection failed", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    //call ODsay to estimate Travel time
-    private fun estimateTravelTime(sx: String, sy: String, ex: String, ey: String) {
-        odsayService.requestSearchPubTransPath(sx, sy, ex, ey, "0", "0", "0", onEstimateTimeResultCallbackListener)
+        locationViewModel.insert(newLocationItem)
+        finish()
     }
 }

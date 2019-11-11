@@ -1,29 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginEnd="8dp"
     android:orientation="vertical">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout
         android:id="@+id/location_item_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="50dp"
+        android:background="#F9F9F9">
+
+        <RelativeLayout
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E4E0E0" />
+
+        <Button
+            android:id="@+id/loc_img"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_below="@id/divider"
+            android:layout_marginTop="12.5dp"
+            android:background="@drawable/ic_location_on_black_24dp"
+            android:layout_marginStart="20dp" />
 
         <TextView
             android:id="@+id/location_item_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Location Name" />
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:layout_below="@id/divider"
+            android:layout_toEndOf="@id/loc_img"
+            android:textColor="#000000"
+            android:layout_marginTop="12.5dp"
+            android:layout_marginStart="10dp"
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/location_item_time"
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:layout_below="@id/divider"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="12.5dp"
+            android:layout_marginEnd="30dp"
+            android:textColor="#939393"
+            android:textSize="13sp" />
+
+        <RelativeLayout
+            android:id="@+id/divider2"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/location_item_name"
-            android:text="Location Time" />
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:background="#E4E0E0" />
     </RelativeLayout>
+
 </androidx.cardview.widget.CardView>
