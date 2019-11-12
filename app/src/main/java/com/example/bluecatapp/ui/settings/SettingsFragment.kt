@@ -2,8 +2,10 @@ package com.example.bluecatapp.ui.settings
 
 import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.preference.*
+import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.R
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -14,14 +16,31 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val profilePreference = findPreference<EditTextPreference>(getString(R.string.profile))
         profilePreference?.summary = "Display Name"
 
-        //set default pedometer preference to "true"
-        val pedometerPreference = preferenceManager.findPreference<SwitchPreference>(getString(R.string.pedometer))
-        pedometerPreference?.setChecked(true)
-
-        //set default app blocking preference to "true"
         val appBlockPreference = preferenceManager.findPreference<SwitchPreference>(getString(R.string.appblock))
-        appBlockPreference?.setChecked(true)
-        //TODO: replace START and STOP buttons in app blocking screen
+        //app block monitoring starts automatically when toggled on
+        appBlockPreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
+            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
+                if(!appBlockPreference.isChecked){
+                    //toggle on: app blocking enabled
+                    AppBlockForegroundService.startService(context!!, "Monitoring.. ")
+
+                    Toast.makeText(
+                        activity!!.applicationContext,
+                        "App blocking enabled",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else{
+                    //toggle off: app blocking disabled
+                    AppBlockForegroundService.stopService(context!!)
+                    Toast.makeText(
+                        activity!!.applicationContext,
+                        "App blocking disabled",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                return true
+            }
+        })
     }
 
     override fun onDisplayPreferenceDialog(preference: Preference?) {

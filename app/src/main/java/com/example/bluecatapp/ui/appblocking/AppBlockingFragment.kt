@@ -73,8 +73,8 @@ class AppBlockingFragment : Fragment() {
 //        appBlockingViewModel.text.observe(this, Observer {
 //            textView.text = it
 //        })
-        val startButton: Button = root.findViewById(R.id.start_foreground_service)
-        val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
+//        val startButton: Button = root.findViewById(R.id.start_foreground_service)
+//        val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
 
         //initialize app block views
         blockedAppName = root.findViewById(R.id.currently_blocked_app)
@@ -86,20 +86,23 @@ class AppBlockingFragment : Fragment() {
         pedometerLabel = root.findViewById(R.id.step_explanation)
         pedometerValue = root.findViewById(R.id.step_count)
 
-        startButton.setOnClickListener {
-            AppBlockForegroundService.startService(context!!, "Monitoring.. ")
-        }
-        stopButton.setOnClickListener {
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val isEnabled = sharedPrefs.getBoolean(getString(R.string.appblock), false)
+
+        if(isEnabled){
+            AppBlockForegroundService.startService(context!!, "Monitoring...")
+        } else{
             AppBlockForegroundService.stopService(context!!)
         }
+
+//        startButton.setOnClickListener {
+//            AppBlockForegroundService.startService(context!!, "Monitoring.. ")
+//        }
+//        stopButton.setOnClickListener {
+//            AppBlockForegroundService.stopService(context!!)
+//        }
         if (currentlyBlockedApps.entries.count() == 0) {
             hideViews()
-//            blockedAppName.text = "No blocked apps at the moment"
-//            chrono.visibility = View.INVISIBLE
-//            blockTimeLabel.visibility = View.INVISIBLE
-//            pedometerTitle.visibility = View.INVISIBLE
-//            pedometerLabel.visibility = View.INVISIBLE
-//            pedometerValue.visibility = View.INVISIBLE
         } else {
             currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
                 blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
