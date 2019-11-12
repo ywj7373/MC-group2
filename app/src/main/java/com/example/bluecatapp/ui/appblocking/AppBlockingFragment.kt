@@ -19,20 +19,17 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.Chronometer
-import android.widget.TextView
-import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
+import android.widget.*
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
 import com.google.gson.reflect.TypeToken
-import android.hardware.SensorManager as SensorManager1
+import kotlinx.android.synthetic.main.fragment_appblocking.*
 
 
 class AppBlockingFragment : Fragment() {
@@ -73,8 +70,6 @@ class AppBlockingFragment : Fragment() {
 //        appBlockingViewModel.text.observe(this, Observer {
 //            textView.text = it
 //        })
-//        val startButton: Button = root.findViewById(R.id.start_foreground_service)
-//        val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
 
         //initialize app block views
         blockedAppName = root.findViewById(R.id.currently_blocked_app)
@@ -95,12 +90,6 @@ class AppBlockingFragment : Fragment() {
             AppBlockForegroundService.stopService(context!!)
         }
 
-//        startButton.setOnClickListener {
-//            AppBlockForegroundService.startService(context!!, "Monitoring.. ")
-//        }
-//        stopButton.setOnClickListener {
-//            AppBlockForegroundService.stopService(context!!)
-//        }
         if (currentlyBlockedApps.entries.count() == 0) {
             hideViews()
         } else {
@@ -117,6 +106,16 @@ class AppBlockingFragment : Fragment() {
             }
         }
         return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        appblocking_recycler_view.apply{
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(activity)
+            adapter = AppBlockingAdapter()
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -180,14 +179,6 @@ class AppBlockingFragment : Fragment() {
             override fun onFinish() {
                 chrono.stop()
                 hideViews()
-//                chrono.visibility = View.INVISIBLE
-//                blockedAppCountdownLabel.visibility = View.INVISIBLE
-//                blockedAppName.setText("No blocked apps at the moment")
-//
-//                //Hide pedometer valeus
-//                pedometerTitle.visibility = View.INVISIBLE
-//                pedometerLabel.visibility = View.INVISIBLE
-//                pedometerValue.visibility = View.INVISIBLE
             }
         }
     }
