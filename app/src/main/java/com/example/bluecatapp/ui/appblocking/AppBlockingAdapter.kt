@@ -11,11 +11,8 @@ import com.example.bluecatapp.R
 import kotlinx.android.synthetic.main.pref_dialog_restricted_apps.view.*
 import org.w3c.dom.Text
 
-class AppBlockingAdapter() :
+class AppBlockingAdapter(private val BlockedAppList: MutableMap<String, Long>) :
     RecyclerView.Adapter<AppBlockingAdapter.AppViewHolder>() {
-
-    // FIXME: pass blocked app list into class
-    private var BlockedAppList = arrayOf("Hello World!", "TODO: Add blocked apps here", "Chrome", "Youtube", "ADD ME", "Scroll me")
 
     class AppViewHolder(appListItem: View) : RecyclerView.ViewHolder(appListItem) {
         var appName: TextView = appListItem.findViewById(R.id.appItemName)
@@ -34,8 +31,9 @@ class AppBlockingAdapter() :
     // Replace contents of view invoked by layout manager
     override fun onBindViewHolder(holder: AppViewHolder, position: Int) {
         // FIXME
-        holder.appName.text = BlockedAppList[position]
-        holder.appTime.text = "" +  position
+        val appName = BlockedAppList.keys.elementAt(position)
+        holder.appName.text = appName
+        holder.appTime.text = "" +  BlockedAppList[appName]
     }
 
     override fun getItemCount(): Int = BlockedAppList.size

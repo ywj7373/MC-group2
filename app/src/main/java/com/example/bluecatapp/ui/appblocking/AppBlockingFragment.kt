@@ -71,12 +71,12 @@ class AppBlockingFragment : Fragment() {
 //            textView.text = it
 //        })
 
-        //initialize app block views
+        // Initialize app block views
         blockedAppName = root.findViewById(R.id.currently_blocked_app)
         chrono = root.findViewById(R.id.view_timer)
         blockTimeLabel = root.findViewById(R.id.block_explanation)
 
-        //initialize pedometer views
+        // Initialize pedometer views
         pedometerTitle = root.findViewById(R.id.step_title)
         pedometerLabel = root.findViewById(R.id.step_explanation)
         pedometerValue = root.findViewById(R.id.step_count)
@@ -114,7 +114,7 @@ class AppBlockingFragment : Fragment() {
         appblocking_recycler_view.apply{
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(activity)
-            adapter = AppBlockingAdapter()
+            adapter = AppBlockingAdapter(currentlyBlockedApps)
         }
     }
 
