@@ -15,9 +15,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
         profilePreference?.summary = "Display Name"
 
         //set default pedometer preference to "true"
-        PreferenceManager.setDefaultValues(this.context, R.xml.root_preferences, true);
         val pedometerPreference = preferenceManager.findPreference<SwitchPreference>(getString(R.string.pedometer))
         pedometerPreference?.setChecked(true)
+
+        //set default app blocking preference to "true"
+        val appBlockPreference = preferenceManager.findPreference<SwitchPreference>(getString(R.string.appblock))
+        appBlockPreference?.setChecked(true)
+        //TODO: replace START and STOP buttons in app blocking screen
     }
 
     override fun onDisplayPreferenceDialog(preference: Preference?) {

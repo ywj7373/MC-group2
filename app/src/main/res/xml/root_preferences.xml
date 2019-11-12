@@ -36,6 +36,14 @@
         app:iconSpaceReserved="false"
         app:title="@string/app_blocking_header">
 
+        <SwitchPreference
+            android:selectable="true"
+            app:iconSpaceReserved="false"
+            app:key="@string/appblock"
+            app:title="@string/appblock_title"
+            android:summaryOff="@string/appblock_summary_off"
+            android:summaryOn="@string/appblock_summary_on"/>
+
         <com.example.bluecatapp.ui.settings.RestrictAppsPreference
             android:defaultValue="@array/empty_array"
             app:iconSpaceReserved="false"
