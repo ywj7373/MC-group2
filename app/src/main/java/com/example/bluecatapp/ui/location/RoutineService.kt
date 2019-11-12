@@ -136,6 +136,10 @@ class RoutineService : Service {
         thread(start = true) {
             if (destination != null) {
                 val alarmTime = LocationRepository(application).getAlarmTime().time
+                Log.d(TAG, alarmTime)
+                Log.d(TAG, destination!!.name)
+                Log.d(TAG, destination!!.time)
+                //when destination time is 12 -> the time is measured as 24
                 val time = timeToSeconds(destination!!.time)
                 val timeToDest = minToSeconds(alarmTime)
                 val currentTime = System.currentTimeMillis()
@@ -279,22 +283,32 @@ class RoutineService : Service {
             try {
                 if (api == API.SEARCH_PUB_TRANS_PATH) {
                     //update estimated time to the database
-                    val inquiryResult = (odsayData!!.json.getJSONObject("result")
-                        .getJSONArray("path").get(0) as JSONObject).getJSONObject("info")
-                        .getInt("totalTime").toString()
-
-                    thread(start=true) {
-                        LocationRepository(application).insertAlarmTime(AlarmTimeData(inquiryResult))
+                    val response = odsayData!!.json
+                    //handle error
+                    if (response.has("error")) {
+                        val msg = response.getJSONObject("error").getString("msg")
+                        Log.d(TAG, msg)
+                        thread(start = true) {
+                            LocationRepository(application).insertAlarmTime(AlarmTimeData("10"))
+                        }
                     }
-                    Log.d(TAG, "Estimated Time of " + destination!!.name + " changed to " + inquiryResult)
+                    //update estimated time
+                    else {
+                        val inquiryResult = (response.getJSONObject("result")
+                            .getJSONArray("path").get(0) as JSONObject).getJSONObject("info")
+                            .getInt("totalTime").toString()
+
+                        thread(start = true) {
+                            LocationRepository(application).insertAlarmTime(AlarmTimeData(inquiryResult))
+                        }
+                        Log.d(TAG, "Estimated Time of " + destination!!.name + " changed to " + inquiryResult)
+                    }
                 }
             } catch (e: JSONException) {
                 e.printStackTrace()
             }
         }
 
-        override fun onError(i: Int, s: String?, api: API?) {
-            Log.d(TAG, i.toString())
-        }
+        override fun onError(i: Int, s: String?, api: API?) {}
     }
 }
