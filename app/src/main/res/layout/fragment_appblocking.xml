@@ -29,38 +29,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/stop_foreground_service"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:text="Stop service"
-        android:textColor="#fff"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/start_foreground_service"
-        app:layout_constraintTop_toBottomOf="@+id/view_timer"
-        app:layout_constraintVertical_bias="0.717" />
-
-    <Button
-        android:id="@+id/start_foreground_service"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:text="Start service"
-        android:textColor="#fff"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/stop_foreground_service"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view_timer"
-        app:layout_constraintVertical_bias="0.717" />
-
     <TextView
         android:id="@+id/currently_blocked_app"
         android:layout_width="wrap_content"

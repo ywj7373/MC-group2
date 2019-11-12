@@ -7,6 +7,7 @@
     <string name="title_activity_settings">Settings</string>
 
     <!-- Preference Keys -->
+    <string name="appblock">App Block</string>
     <string name="profile">Profile</string>
     <string name="restricted_apps">Restricted Apps</string>
     <string name="time_limit">Time Limit</string>
@@ -25,6 +26,9 @@
     <string name="profile_dialog_title">Enter Your Name</string>
 
     <!-- App Blocking Mode Preferences -->
+    <string name="appblock_title">App Blocking</string>
+    <string name="appblock_summary_on">App blocking enabled</string>
+    <string name="appblock_summary_off">App blocking disabled</string>
     <string name="restricted_apps_title">Select Apps to Restrict</string>
     <string name="restricted_apps_dialog">Apps to Restrict</string>
     <string name="smart_blocking_title">Smart Blocking</string>
