@@ -4,14 +4,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.cardview.widget.CardView
-import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bluecatapp.R
-import kotlinx.android.synthetic.main.pref_dialog_restricted_apps.view.*
-import org.w3c.dom.Text
 
-class AppBlockingAdapter(private val BlockedAppList: MutableMap<String, Long>) :
+class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>) :
     RecyclerView.Adapter<AppBlockingAdapter.AppViewHolder>() {
 
     class AppViewHolder(appListItem: View) : RecyclerView.ViewHolder(appListItem) {
@@ -31,9 +27,9 @@ class AppBlockingAdapter(private val BlockedAppList: MutableMap<String, Long>) :
     // Replace contents of view invoked by layout manager
     override fun onBindViewHolder(holder: AppViewHolder, position: Int) {
         // FIXME
-        val appName = BlockedAppList.keys.elementAt(position)
+        val appName = BlockedAppList[position][0].toString()
         holder.appName.text = appName
-        holder.appTime.text = "" +  BlockedAppList[appName]
+        holder.appTime.text = BlockedAppList[position][1].toString()
     }
 
     override fun getItemCount(): Int = BlockedAppList.size

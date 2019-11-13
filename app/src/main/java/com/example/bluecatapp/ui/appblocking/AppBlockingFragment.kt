@@ -114,7 +114,7 @@ class AppBlockingFragment : Fragment() {
         appblocking_recycler_view.apply{
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(activity)
-            adapter = AppBlockingAdapter(currentlyBlockedApps)
+            adapter = AppBlockingAdapter(getBlockedAppsList())
         }
     }
 
@@ -211,6 +211,16 @@ class AppBlockingFragment : Fragment() {
         return currentlyBlockedApps
     }
 
+    // Return list of blocked app names with respective finish time stamps
+    private fun getBlockedAppsList(): List<List<Any?>> {
+        var blockedAppList: MutableList<List<Any?>> = arrayListOf()
+
+        currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
+            blockedAppList.add(listOf(getAppNameFromPackage(appPackageName, context!!), finishTimeStamp))
+        }
+        return blockedAppList
+    }
+
     private fun stepCounter(totalCount: Int): SensorEventListener {
         val sensorManager = context!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         pedometerValue.setText("0 / $totalCount") //initialize value
@@ -243,5 +253,6 @@ class AppBlockingFragment : Fragment() {
         pedometerValue.visibility = View.INVISIBLE
     }
 }
+
 
 
