@@ -5,6 +5,7 @@ import android.app.AppOpsManager
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorManager
@@ -19,20 +20,18 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.Chronometer
-import android.widget.TextView
-import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
+import android.widget.*
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
+import androidx.preference.PreferenceManager.*
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
 import com.google.gson.reflect.TypeToken
-import android.hardware.SensorManager as SensorManager1
+import kotlinx.android.synthetic.main.fragment_appblocking.*
 
 
 class AppBlockingFragment : Fragment() {
@@ -41,6 +40,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var usage: UsageStatsManager
     private lateinit var packageManager: PackageManager
     private lateinit var currentlyBlockedApps: MutableMap<String, Long>
+    private lateinit var sharedPrefs: SharedPreferences
     private lateinit var sensorManager: SensorManager
 
     //Appblock variables
@@ -73,20 +73,18 @@ class AppBlockingFragment : Fragment() {
 //        appBlockingViewModel.text.observe(this, Observer {
 //            textView.text = it
 //        })
-//        val startButton: Button = root.findViewById(R.id.start_foreground_service)
-//        val stopButton: Button = root.findViewById(R.id.stop_foreground_service)
 
-        //initialize app block views
+        // Initialize app block views
         blockedAppName = root.findViewById(R.id.currently_blocked_app)
         chrono = root.findViewById(R.id.view_timer)
         blockTimeLabel = root.findViewById(R.id.block_explanation)
 
-        //initialize pedometer views
+        // Initialize pedometer views
         pedometerTitle = root.findViewById(R.id.step_title)
         pedometerLabel = root.findViewById(R.id.step_explanation)
         pedometerValue = root.findViewById(R.id.step_count)
 
-        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         val isEnabled = sharedPrefs.getBoolean(getString(R.string.appblock), false)
 
         if(isEnabled){
@@ -95,12 +93,6 @@ class AppBlockingFragment : Fragment() {
             AppBlockForegroundService.stopService(context!!)
         }
 
-//        startButton.setOnClickListener {
-//            AppBlockForegroundService.startService(context!!, "Monitoring.. ")
-//        }
-//        stopButton.setOnClickListener {
-//            AppBlockForegroundService.stopService(context!!)
-//        }
         if (currentlyBlockedApps.entries.count() == 0) {
             hideViews()
         } else {
@@ -117,6 +109,16 @@ class AppBlockingFragment : Fragment() {
             }
         }
         return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        appblocking_recycler_view.apply{
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(activity)
+            adapter = AppBlockingAdapter(getBlockedAppsList())
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -180,14 +182,6 @@ class AppBlockingFragment : Fragment() {
             override fun onFinish() {
                 chrono.stop()
                 hideViews()
-//                chrono.visibility = View.INVISIBLE
-//                blockedAppCountdownLabel.visibility = View.INVISIBLE
-//                blockedAppName.setText("No blocked apps at the moment")
-//
-//                //Hide pedometer valeus
-//                pedometerTitle.visibility = View.INVISIBLE
-//                pedometerLabel.visibility = View.INVISIBLE
-//                pedometerValue.visibility = View.INVISIBLE
             }
         }
     }
@@ -208,7 +202,7 @@ class AppBlockingFragment : Fragment() {
     }
 
     private fun getCurrentlyBlockedApps(): MutableMap<String, Long> {
-        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val sharedPrefs = getDefaultSharedPreferences(context)
         val type = object : TypeToken<MutableMap<String, Long>>() {}.type
         val blockedAppsJson = sharedPrefs.getString("currentlyBlockedApps", null)
 
@@ -218,6 +212,16 @@ class AppBlockingFragment : Fragment() {
                 type
             ) else mutableMapOf()
         return currentlyBlockedApps
+    }
+
+    // FIXME: Return list of blocked app names with respective finish time stamps
+    private fun getBlockedAppsList(): List<List<Any?>> {
+        var blockedAppList: MutableList<List<Any?>> = arrayListOf()
+
+        currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
+            blockedAppList.add(listOf(getAppNameFromPackage(appPackageName, context!!), finishTimeStamp))
+        }
+        return blockedAppList
     }
 
     private fun stepCounter(totalCount: Int): SensorEventListener {
@@ -252,5 +256,6 @@ class AppBlockingFragment : Fragment() {
         pedometerValue.visibility = View.INVISIBLE
     }
 }
+
 
 
