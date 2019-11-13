@@ -5,6 +5,7 @@ import android.app.AppOpsManager
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorManager
@@ -24,6 +25,7 @@ import androidx.core.text.bold
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
+import androidx.preference.PreferenceManager.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
@@ -38,6 +40,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var usage: UsageStatsManager
     private lateinit var packageManager: PackageManager
     private lateinit var currentlyBlockedApps: MutableMap<String, Long>
+    private lateinit var sharedPrefs: SharedPreferences
     private lateinit var sensorManager: SensorManager
 
     //Appblock variables
@@ -81,7 +84,7 @@ class AppBlockingFragment : Fragment() {
         pedometerLabel = root.findViewById(R.id.step_explanation)
         pedometerValue = root.findViewById(R.id.step_count)
 
-        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         val isEnabled = sharedPrefs.getBoolean(getString(R.string.appblock), false)
 
         if(isEnabled){
@@ -199,7 +202,7 @@ class AppBlockingFragment : Fragment() {
     }
 
     private fun getCurrentlyBlockedApps(): MutableMap<String, Long> {
-        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val sharedPrefs = getDefaultSharedPreferences(context)
         val type = object : TypeToken<MutableMap<String, Long>>() {}.type
         val blockedAppsJson = sharedPrefs.getString("currentlyBlockedApps", null)
 
@@ -211,7 +214,7 @@ class AppBlockingFragment : Fragment() {
         return currentlyBlockedApps
     }
 
-    // Return list of blocked app names with respective finish time stamps
+    // FIXME: Return list of blocked app names with respective finish time stamps
     private fun getBlockedAppsList(): List<List<Any?>> {
         var blockedAppList: MutableList<List<Any?>> = arrayListOf()
 

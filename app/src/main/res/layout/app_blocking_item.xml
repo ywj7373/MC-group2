@@ -19,12 +19,14 @@
             android:layout_height="wrap_content"
             android:text="TextView"/>
 
-        <TextView
+        <Chronometer
             android:id="@+id/appItemTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView"
-            android:layout_below="@+id/appItemName"/>
+            android:layout_alignParentEnd="true"
+            android:countDown="true"
+            android:layout_toRightOf="@id/appItemName"
+            android:textAlignment="viewEnd" />
 
         <ProgressBar
             android:id="@+id/appItemProgress"
