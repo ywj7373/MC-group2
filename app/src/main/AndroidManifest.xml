@@ -24,7 +24,7 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"
-            android:value="vdzq4ajyej" />
+            android:value="@string/naver_api_key_id" />
         <service android:name=".AppBlockForegroundService" />
         <activity
             android:name=".MainActivity"
@@ -37,6 +37,7 @@
         </activity>
         <activity android:name=".AddTodoActivity"/>
         <activity android:name=".ui.location.AddLocationActivity"/>
+        <activity android:name=".ui.location.MapActivity"/>
         <receiver android:name=".ui.location.RoutineReceiver" />
         <service android:name=".ui.location.RoutineService" />
         <receiver android:name=".ui.location.DateChangeReceiver">

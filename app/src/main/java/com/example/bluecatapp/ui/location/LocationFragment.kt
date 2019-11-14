@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
@@ -38,6 +39,18 @@ class LocationFragment : Fragment() {
         locationViewModel.getAllLocationItems().observe(this,
             Observer<List<LocationItemData>> { t -> locationAdapter.setLocationItems(t!!) })
 
+        locationViewModel.getNextSchedule().observe(this,
+            Observer {
+                if (it != null) {
+                    next_loc.text = it.name
+                    time_loc.text = it.time.split(" ")[1].substring(0, 5)
+                }
+                else {
+                    next_loc.text = resources.getString(R.string.next_loc)
+                    time_loc.text = resources.getString(R.string.time_loc)
+                }
+            })
+
         startLocationService()
 
         return root
@@ -53,13 +66,6 @@ class LocationFragment : Fragment() {
             // set the custom adapter to the RecyclerView
             adapter = locationAdapter
             setHasFixedSize(true)
-
-        }
-
-        //call add location activity
-        addItemButton.setOnClickListener {
-            val intent = Intent(requireContext(), AddLocationActivity::class.java)
-            startActivity(intent)
         }
     }
 
@@ -68,12 +74,16 @@ class LocationFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    //implement delete all items function
+    //add new schedule
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.location_delete_all_locations -> {
+            R.id.addItemButton -> {
+                val intent = Intent(requireContext(), AddLocationActivity::class.java)
+                startActivity(intent)
+                true
+            }
+            R.id.deleteItems -> {
                 locationViewModel.deleteAllLocationItems()
-                Toast.makeText(requireContext(), "All Location Items deleted!", Toast.LENGTH_SHORT).show()
                 true
             }
             else -> super.onOptionsItemSelected(item)

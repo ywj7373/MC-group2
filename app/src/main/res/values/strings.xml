@@ -47,4 +47,25 @@
     <string name="odsay_key">Qyb4YWtiFBd/Oz07uS+2273XmRFWFYOTXil+4C6QsPs</string>
     <string name="naver_api_key_id">vdzq4ajyej</string>
     <string name="naver_api_key">A6CoEzf661hYYJ7qBkvILYG7spFDQOR18SBgIh1N</string>
+    <string name="next">NEXT UP</string>
+    <string name="next_loc">No Schedule</string>
+    <string name="time_loc">00:00</string>
+    <string name="what_where">Name</string>
+    <string name="goal_time">Goal time</string>
+    <string name="remind_text">LOCATION REMINDERS</string>
+    <string name="stat_title">YOUR STATS</string>
+    <string name="grade">A+</string>
+    <string name="stat_label">On-time: 0 times | Absent: 0 time</string>
+    <string name="time_title">Time</string>
+    <string name="date_title">Date</string>
+    <string name="repeat">Repeat</string>
+    <string name="toggle_button">ToggleButton</string>
+    <string name="sun">SUN</string>
+    <string name="mon">MON</string>
+    <string name="tue">TUE</string>
+    <string name="wed">WED</string>
+    <string name="thu">THU</string>
+    <string name="fri">FRI</string>
+    <string name="sat">SAT</string>
+    <string name="add">+ add</string>
 </resources>

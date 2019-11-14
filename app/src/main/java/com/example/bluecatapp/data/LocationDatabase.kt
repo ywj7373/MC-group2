@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 //Create Room Database
-@Database(entities = [LocationItemData::class], version = 12)
+@Database(entities = [LocationItemData::class], version = 14)
 abstract class LocationItemDatabase : RoomDatabase() {
 
     abstract fun locationItemDao(): LocationItemDao
@@ -83,6 +83,41 @@ abstract class CurrentLocationDatabase : RoomDatabase() {
             private val currentLocationDao = db?.currentLocationDao()
             override fun doInBackground(vararg p0: Unit?) {
                 currentLocationDao?.insert(CurrentLocationData(37.459553, 126.952162))
+            }
+        }
+    }
+}
+
+@Database(entities = [AlarmTimeData::class], version = 1)
+abstract class AlarmTimeDatabase : RoomDatabase() {
+
+    abstract fun alarmTimeDao(): AlarmTimeDao
+
+    companion object {
+        private var instance: AlarmTimeDatabase? = null
+
+        fun getInstance(context: Context): AlarmTimeDatabase? {
+            if (instance == null) {
+                synchronized(AlarmTimeDatabase::class) {
+                    instance = Room.databaseBuilder(
+                        context.applicationContext,
+                        AlarmTimeDatabase::class.java, "alarm_time"
+                    )
+                        .fallbackToDestructiveMigration()
+                        .addCallback(roomCallback)
+                        .build()
+                }
+            }
+            return instance
+        }
+
+        fun destroyInstance() {
+            instance = null
+        }
+
+        private val roomCallback = object : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
             }
         }
     }

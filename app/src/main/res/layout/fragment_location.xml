@@ -1,33 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F9F9F9">
+
+    <TextView
+        android:id="@+id/next_text"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="18dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:lineSpacingExtra="7sp"
+        android:text="@string/next"
+        android:textAppearance="@style/next" />
+
+    <TextView
+        android:id="@+id/next_loc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/next_text"
+        android:layout_marginStart="30dp"
+        android:text="@string/next_loc"
+        android:textAppearance="@style/text_label"
+        android:lineSpacingExtra="0sp"
+        android:gravity="top" />
+
+    <TextView
+        android:id="@+id/time_loc"
+        android:layout_width="63dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/next_text"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="60dp"
+        android:text="@string/time_loc"
+        android:textAppearance="@style/text_label"
+        android:lineSpacingExtra="0sp"
+        android:gravity="top" />
+
+    <TextView
+        android:id="@+id/what_where"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/next_loc"
+        android:layout_marginStart="70dp"
+        android:text="@string/what_where"
+        android:textAppearance="@style/descript_label"
+        android:lineSpacingExtra="7sp"
+        android:gravity="center_vertical" />
+
+    <TextView
+        android:id="@+id/goal_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/time_loc"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="60dp"
+        android:text="@string/goal_time"
+        android:textAppearance="@style/descript_label"
+        android:lineSpacingExtra="3sp"
+        android:gravity="center_horizontal|center_vertical" />
+
+    <RelativeLayout
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E4E0E0"
+        android:layout_below="@id/goal_time"
+        android:layout_marginTop="30dp" />
+
+    <TextView
+        android:id="@+id/stat_title"
+        android:layout_width="76dp"
+        android:layout_height="21dp"
+        android:layout_below="@id/divider"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="50dp"
+        android:text="@string/stat_title"
+        android:textAppearance="@style/stat_title"
+        android:lineSpacingExtra="7sp"
+        android:gravity="center_vertical" />
+
+    <TextView
+        android:id="@+id/grade"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/stat_title"
+        android:layout_centerInParent="true"
+        android:text="@string/grade"
+        android:textAppearance="@style/grade"
+        android:lineSpacingExtra="0sp"
+        android:gravity="center_vertical"
+        />
+
+    <TextView
+        android:id="@+id/stat_label"
+        android:layout_width="wrap_content"
+        android:layout_height="21dp"
+        android:layout_below="@id/grade"
+        android:layout_centerInParent="true"
+        android:text="@string/stat_label"
+        android:textAppearance="@style/stat_label"
+        android:lineSpacingExtra="7sp"
+        android:gravity="center_vertical" />
+
+    <TextView
+        android:id="@+id/remind_text"
+        android:layout_width="139dp"
+        android:layout_height="17.5dp"
+        android:layout_below="@id/stat_label"
+        android:layout_marginTop="40dp"
+        android:layout_marginStart="50dp"
+        android:text="@string/remind_text"
+        android:textAppearance="@style/remind_text"
+        android:lineSpacingExtra="7sp"
+        android:gravity="center_vertical" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/remind_text"
+        android:layout_marginTop="10dp"
         android:id="@+id/location_recycler_view"
         android:scrollbars="vertical"
-        tools:itemCount="10"
         tools:listitem="@layout/location_item">
     </androidx.recyclerview.widget.RecyclerView>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/addItemButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="60dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginBottom="60dp"
-        android:src="@drawable/ic_add_black_24dp"
-        app:backgroundTint="@color/colorPrimary" />
 
 </RelativeLayout>

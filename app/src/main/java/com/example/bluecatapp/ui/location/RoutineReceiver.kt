@@ -31,6 +31,7 @@ class RoutineReceiver : BroadcastReceiver() {
         val sender = PendingIntent.getBroadcast(context, ROUTINE_REQEUST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         // Not accurate to 60 second in order to save battery. Use setExact to be accurate.
+        context.startService(Intent(context, RoutineService::class.java))
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 60000, sender)
     }
 

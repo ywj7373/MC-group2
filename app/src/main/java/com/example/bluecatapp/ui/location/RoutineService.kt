@@ -17,6 +17,7 @@ import com.google.android.gms.location.LocationServices
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import com.example.bluecatapp.R
+import com.example.bluecatapp.data.AlarmTimeData
 import com.example.bluecatapp.data.CurrentLocationData
 import com.example.bluecatapp.data.LocationItemData
 import com.example.bluecatapp.data.LocationRepository
@@ -35,34 +36,46 @@ import java.util.*
 import kotlin.concurrent.thread
 
 const val ODsayTimeout = 5000
-const val LOCATION_TRACKER_INTERVAL: Long = 60000
-const val LOCATION_TRACKER_FASTEST_INTERVAL: Long = 55000
-const val alpha = 20
+const val LOCATION_TRACKER_INTERVAL: Long = 60000 //60s
+const val LOCATION_TRACKER_FASTEST_INTERVAL: Long = 55000 //55s
+const val alpha = 20 //min
 
 class RoutineService : Service {
     private val TAG = "Routine Service"
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var odsayService : ODsayService
-    private val destination: LocationItemData? = null
+    private lateinit var notificationManager: NotificationManager
     private var srcLong : Double = 0.0
     private var srcLat : Double = 0.0
     private val routineNotificationId  = "BLUECAT_ROUTINE_ALARM"
     private val locationNotificationId = "BLUE_CAT_LOCATION_ALARM"
     private val notificationTitle = "BLUECAT_APP"
-    private lateinit var notificationManager: NotificationManager
+    private var destination: LocationItemData? = null
 
     constructor() : super()
 
     override fun onCreate() {
         super.onCreate()
 
+        //observe change in current location
         locationViewModel = LocationViewModel(application)
         locationViewModel.getCurrentLocation().observeForever( object : Observer<CurrentLocationData> {
             override fun onChanged(t: CurrentLocationData?) {
                 if (t != null) {
-                    srcLong = t.longitude
                     srcLat = t.latitude
+                    srcLong = t.longitude
                 }
+            }
+        })
+
+        //observe next schedule and update estimated time whenever next alarm changes
+        locationViewModel.getNextSchedule().observeForever( object: Observer<LocationItemData> {
+            override fun onChanged(t: LocationItemData?) {
+                if (t != null) {
+                    destination = t
+                    updateEstimatedTime(srcLat, srcLong)
+                }
+                else destination = null
             }
         })
 
@@ -117,31 +130,34 @@ class RoutineService : Service {
         return null
     }
 
-    //check if it is time to send notificaiton or alarm
+    //check if it is time to send notificaton or alarm
     private fun checkTime() {
         //get priority location's estimated time
         thread(start = true) {
-            val destination: LocationItemData? = getTotalPriority()
             if (destination != null) {
-                val time = timeToSeconds(destination.time)
-                val timeToDest = minToSeconds(destination.timeToDest)
+                val alarmTime = LocationRepository(application).getAlarmTime().time
+                Log.d(TAG, alarmTime)
+                Log.d(TAG, destination!!.name)
+                Log.d(TAG, destination!!.time)
+                //when destination time is 12 -> the time is measured as 24
+                val time = timeToSeconds(destination!!.time)
+                val timeToDest = minToSeconds(alarmTime)
                 val currentTime = System.currentTimeMillis()
-                val isAlarmed = destination.isAlarmed
-                val daysMode = destination.daysMode
+                val isAlarmed = destination!!.isAlarmed
+                val daysMode = destination!!.daysMode
                 Log.d(TAG, "alarm rings at: " + Date(time - timeToDest - (alpha * 60 * 1000)).toString())
                 Log.d(TAG, "current time: " + Date(currentTime).toString())
 
-                val simpleTimeFormat = SimpleDateFormat("hh:mm:ss")
-
+                val simpleTimeFormat = SimpleDateFormat("hh:mm:ss", Locale.KOREA)
 
                 //check if current time passed arrival time
                 if ((!daysMode && currentTime >= time) || (daysMode && (simpleTimeFormat.format(Date(currentTime))>=(simpleTimeFormat.format(Date(time)))) )) {
                     //set the schedule to done
-                    LocationRepository(application).updateDone(true, destination.id)
-                    Log.d(TAG, destination.x)
+                    LocationRepository(application).updateDone(true, destination!!.id)
+                    Log.d(TAG, "schedule time passed! " + destination!!.x)
 
                     //check if the user is around schedule's location
-                    if (getDistanceFromLatLonInKm(srcLat, srcLong, destination.y.toDouble(), destination.x.toDouble()) <= 0.1 ) {
+                    if (getDistanceFromLatLonInKm(srcLat, srcLong, destination!!.y.toDouble(), destination!!.x.toDouble()) <= 0.1 ) {
                         //------------------------Not yet implemented----------------------
 
 
@@ -151,23 +167,20 @@ class RoutineService : Service {
                         val text = "You are late!"
                         callNotification(text, 100)
                     }
-
-                    //recalculate estimated time for next schedule
-                    updateEstimatedTime(srcLat, srcLong)
                 }
                 //check if current time passed alarm time
                 else if (currentTime >= time - timeToDest - (alpha * 60 * 1000) && !isAlarmed) {
                     Log.d(TAG, "entered")
                     //send notification
-                    val h = (destination.timeToDest.toInt())/60
-                    val m = (destination.timeToDest.toInt())%60
-                    val text = "You need to prepare to go to " + destination.name +
+                    val h = (alarmTime.toInt())/60
+                    val m = (alarmTime.toInt())%60
+                    val text = "You need to prepare to go to " + destination!!.name +
                             ".\n It takes about " + h + "hours and " + m + " minutes to go there!"
 
                     callNotification(text, 101)
 
                     //set alarm to true to stop calling alarm
-                    LocationRepository(application).updateIsAlarmed(true, destination.id)
+                    LocationRepository(application).updateIsAlarmed(true, destination!!.id)
                 }
             }
         }
@@ -214,10 +227,7 @@ class RoutineService : Service {
             val location: Location = locationResult.lastLocation
             val destLong = location.longitude
             val destLat = location.latitude
-
             val dist = getDistanceFromLatLonInKm(srcLat, srcLong, destLat, destLong)
-            Log.d(TAG, dist.toString())
-            Log.d(TAG, srcLat.toString() + " " + srcLong.toString())
 
             //If the user moved more than 100m, update current location
             if (dist > 0.1) {
@@ -230,24 +240,40 @@ class RoutineService : Service {
         }
     }
 
+    //get distance between two coordinates in KM
+    private fun getDistanceFromLatLonInKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val R = 6371 // Radius of the earth in km
+        val dLat = deg2rad(lat2-lat1) // deg2rad below
+        val dLon = deg2rad(lon2-lon1)
+        val a = sin(dLat/2) * sin(dLat/2) +
+                cos(deg2rad(lat1)) * cos(deg2rad(lat2)) *
+                sin(dLon/2) * sin(dLon/2)
+        return  R * 2 * atan2(sqrt(a), sqrt(1-a)) // Distance in km
+    }
+
+    private fun deg2rad(deg: Double): Double {
+        return deg * (PI/180)
+    }
+
     //update current location
     private fun updateCurrentLocation(location: CurrentLocationData) {
         LocationRepository(application).insertCurrentLocation(location)
         Log.d(TAG, "Current Location Updated")
     }
 
-    //update estimatedTime based on current location
+    //update estimatedTime if current location changes
     private fun updateEstimatedTime(srcLong: Double, srcLat: Double) {
-        //get the destination address that needs to be alarmed
-        val destination: LocationItemData? = getTotalPriority()
-
         if (destination != null) {
-            Log.d(TAG, destination.name)
-
             //calculate estimated time
-            estimateTravelTime(srcLong.toString(), srcLat.toString(), destination.x, destination.y)
+            estimateTravelTime(srcLat.toString(), srcLong.toString(), destination!!.x, destination!!.y)
         }
         else Log.d(TAG, "No schedule!")
+    }
+
+    //call ODsay to estimate Travel time
+    private fun estimateTravelTime(sx: String, sy: String, ex: String, ey: String) {
+        Log.d(TAG, "$sx $sy $ex $ey")
+        odsayService.requestSearchPubTransPath(sx, sy, ex, ey, "0", "0", "0", onEstimateTimeResultCallbackListener)
     }
 
     //callback method to get json data from ODsay
@@ -256,80 +282,33 @@ class RoutineService : Service {
             Log.d(TAG, "Connection to ODsay successful")
             try {
                 if (api == API.SEARCH_PUB_TRANS_PATH) {
-                    val inquiryResult = (odsayData!!.json.getJSONObject("result").getJSONArray("path").get(0) as JSONObject).getJSONObject("info")
                     //update estimated time to the database
-                    Log.d(TAG, "Estimated Time of " + destination!!.name + " changed to " + inquiryResult.getInt("totalTime").toString())
-                    LocationRepository(application).updateEstimatedTime(inquiryResult.getInt("totalTime").toString(), destination.id)
+                    val response = odsayData!!.json
+                    //handle error
+                    if (response.has("error")) {
+                        val msg = response.getJSONObject("error").getString("msg")
+                        Log.d(TAG, msg)
+                        thread(start = true) {
+                            LocationRepository(application).insertAlarmTime(AlarmTimeData("10"))
+                        }
+                    }
+                    //update estimated time
+                    else {
+                        val inquiryResult = (response.getJSONObject("result")
+                            .getJSONArray("path").get(0) as JSONObject).getJSONObject("info")
+                            .getInt("totalTime").toString()
+
+                        thread(start = true) {
+                            LocationRepository(application).insertAlarmTime(AlarmTimeData(inquiryResult))
+                        }
+                        Log.d(TAG, "Estimated Time of " + destination!!.name + " changed to " + inquiryResult)
+                    }
                 }
             } catch (e: JSONException) {
-                Log.d(TAG, "JSONException")
-                Toast.makeText(this@RoutineService, "Unable to calculate time distance", Toast.LENGTH_LONG).show()
-                //Need to handle error
-                //-----------------------Not yet implemented--------------------------
-
-
+                e.printStackTrace()
             }
         }
 
-        override fun onError(i: Int, s: String?, api: API?) {
-            Log.d(TAG, "Connection to ODsay failed")
-            Toast.makeText(this@RoutineService, "Connection failed!", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    //call ODsay to estimate Travel time
-    private fun estimateTravelTime(sx: String, sy: String, ex: String, ey: String) {
-        odsayService.requestSearchPubTransPath(sx, sy, ex, ey, "0", "0", "0", onEstimateTimeResultCallbackListener)
-    }
-
-    //get distance between two coordinates in KM
-    private fun getDistanceFromLatLonInKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        val R = 6371 // Radius of the earth in km
-        val dLat = deg2rad(lat2-lat1) // deg2rad below
-        val dLon = deg2rad(lon2-lon1)
-        val a = sin(dLat/2) * sin(dLat/2) +
-                    cos(deg2rad(lat1)) * cos(deg2rad(lat2)) *
-                    sin(dLon/2) * sin(dLon/2)
-        return  R * 2 * atan2(sqrt(a), sqrt(1-a)) // Distance in km
-    }
-
-    private fun deg2rad(deg: Double): Double {
-        return deg * (PI/180)
-    }
-
-    private fun getTotalPriority(): LocationItemData {
-        val TAG_PRIORITY = "Priority"
-        val dayOfToday = when(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
-            1 -> "%SUN%"
-            2 -> "%MON%"
-            3 -> "%TUE%"
-            4 -> "%WED%"
-            5 -> "%THU%"
-            6 -> "%FRI%"
-            7 -> "%SAT%"
-            else -> ""
-        }
-        Log.d("Priority", dayOfToday)
-        val priorityNotdays: LocationItemData = LocationRepository(application).getPriorityDestination()
-        val priorityDays: LocationItemData = LocationRepository(application).getPriorityDestination_days(dayOfToday)
-        val simpleTimeFormat = SimpleDateFormat("hh:mm:ss")
-        val simpleDateFormat = SimpleDateFormat("yyyyMMdd")
-
-        if(priorityNotdays == null) {Log.d(TAG_PRIORITY, "Days1 "); return priorityDays}
-        if(priorityDays == null) {Log.d(TAG_PRIORITY, "NotDays1 "+priorityNotdays.name);  return priorityNotdays}
-
-        val timeD = timeToSeconds(priorityDays.time)
-        val timeN = timeToSeconds(priorityNotdays.time)
-        val currentTime = System.currentTimeMillis()
-
-        if(simpleDateFormat.format(Date(timeN)) != simpleDateFormat.format(Date(currentTime))) {
-            Log.d(TAG_PRIORITY, "NotDays3 "+priorityNotdays.name);
-            return priorityNotdays
-        }
-
-        when(simpleTimeFormat.format(Date(timeD)) < simpleTimeFormat.format(Date(timeN))) {
-            true -> {Log.d(TAG_PRIORITY, "Days2 "+priorityDays.name);  return priorityDays}
-            false -> {Log.d(TAG_PRIORITY, "NotDays2 "+priorityNotdays.name); return priorityNotdays}
-        }
+        override fun onError(i: Int, s: String?, api: API?) {}
     }
 }

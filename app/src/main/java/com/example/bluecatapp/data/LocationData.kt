@@ -19,9 +19,6 @@ data class LocationItemData(
     @field:SerializedName("time")
     val time: String,
 
-    @field:SerializedName("timeToDest")
-    val timeToDest: String,
-
     @field:SerializedName("isAlarmed")
     val isAlarmed: Boolean,
 
@@ -48,6 +45,17 @@ data class CurrentLocationData(
 
     @field:SerializedName("longitude")
     val longitude: Double
+)
+{
+    @PrimaryKey
+    @field:SerializedName("id")
+    var id: Int = 0
+}
+
+@Entity(tableName = "alarm_time")
+data class AlarmTimeData(
+    @field:SerializedName("time")
+    val time: String
 )
 {
     @PrimaryKey
