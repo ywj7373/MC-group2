@@ -2,6 +2,7 @@ package com.example.bluecatapp.ui.todo
 
 import android.app.Activity
 import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -18,6 +19,7 @@ import com.example.bluecatapp.R
 import com.example.bluecatapp.data.TodoItem
 import kotlinx.android.synthetic.main.fragment_todo.*
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -25,12 +27,26 @@ import android.hardware.SensorManager
 import android.widget.Chronometer
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.preference.PreferenceManager
+import com.example.bluecatapp.HwAlarmReceiver
 
 
 class TodoFragment : Fragment() {
 
+    private lateinit var preference: SharedPreferences
+    private lateinit var editor: SharedPreferences.Editor
+
+    //================================== Notification ==================================//
+    private var notiTime : Long = 0
+
     //================================== Alarms ==================================//
-    private lateinit var mAlarmManager: AlarmManager
+    private val _5Min : Long = 1000 * 60 * 5
+    private var alarmTime : Long = 0
+
+    private val ALARM_REQUEST_CODE = 100
+    private lateinit var alarmManager: AlarmManager
+    private lateinit var pendingIntent: PendingIntent
 
     //================================== Motion Sensors ==================================//
     private lateinit var shakeSensorManager: SensorManager
@@ -70,7 +86,8 @@ class TodoFragment : Fragment() {
                 shakeCount++
                 val toast = Toast.makeText(
                     requireContext(),
-                    "Device has shaken $shakeCount times",
+                    "alarmCount : $alarmCount" +
+                            "Device has shaken $shakeCount times",
                     Toast.LENGTH_LONG
                 )
                 toast.show()
@@ -110,16 +127,17 @@ class TodoFragment : Fragment() {
 
     private var isHomeworkMode = false
 
-    private val hwNotificationTime =
-        1000 * 60 * 44 + 1000 * 57// test : 3 seconds
-//        1000*60*5 // 5 minutes @todo should be changed as set on the settings page
+//    private val testNotificationTime = _5Min
+//        1000 * 60 * 44 + 1000 * 57// test : 3 seconds
+//        1000*60*5 // 5 minutes
 
-    private val hwAlarmTime =
-        1000 * 60 * 44 * +1000 * 54 // test : 6 seconds
+//    private val testAlarmTime = 1000
+//        1000 * 60 * 44 * +1000 * 54 // test : 6 seconds
 //        1000 // 1 second
 
-    private var hwModeTime =
-        1000 * 60 * 45 // 45 minutes @todo should be changed as set on the settings page
+    private var hwModeTime : Long = 0// at onCreate, initialized following the value of shared preference
+
+    private var hwModeClockBaseTime : Long = 0
 
     //================================== To-do List ==================================//
     private val ADD_TODO_REQUEST = 1
@@ -129,8 +147,22 @@ class TodoFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //================================== General ==================================//
         setHasOptionsMenu(true)
         retainInstance = true
+
+        preference = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        editor = preference.edit()
+
+        //================================== Alarms ==================================//
+
+        alarmManager = activity!!.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(requireContext(), HwAlarmReceiver::class.java)
+        pendingIntent = PendingIntent.getBroadcast(requireContext(), ALARM_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+
+        hwModeTime = getString(R.string.hw_time_value).toLong()
 
         //================================== Motion Sensors ==================================//
         //================================== Detect Shaking ==================================//
@@ -231,6 +263,7 @@ class TodoFragment : Fragment() {
             R.id.container_hwmode -> {
 
                 if (isHomeworkMode) {
+                    alarmManager.cancel(pendingIntent) // cancel the alarm
 
                     var alertDialog = AlertDialog.Builder(requireContext()).create()
                     val editText = EditText(requireContext())
@@ -298,49 +331,62 @@ class TodoFragment : Fragment() {
                     alertDialog.show()
 
                 } else { // turning on the hw mode
-                    // Initialize shakeCount every time hw mode turns on. ( @todo should be set to 0 when alarm fires )
+                    hwModeClockBaseTime = SystemClock.elapsedRealtime() + hwModeTime
+
+                    alarmTime = hwModeClockBaseTime - getString(R.string.hw_time_alarm_value).toLong() // subtract 1 second from the base time => alarm time
+                    notiTime = hwModeClockBaseTime - _5Min // subtract 5 minutes from the base time => notification time
+
+                    //set the alarm
+                    alarmManager.
+                        setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
+                            alarmTime,
+                            pendingIntent)
+
+                    // Initialize shakeCount every time hw mode turns on.
                     shakeCount = 0
 
                     Toast.makeText(requireContext(), "Good Luck!", Toast.LENGTH_LONG).show()
                     view_timer.isCountDown = true
-                    view_timer.base = SystemClock.elapsedRealtime() + hwModeTime
+                    view_timer.base = hwModeClockBaseTime
                     view_timer.start()
                     view_timer.setOnChronometerTickListener { view ->
 
                         if (alarmCount == 0) {
 
-                            if ((view_timer.base - SystemClock.elapsedRealtime()) <= hwNotificationTime) {
+                            if (SystemClock.elapsedRealtime()>=notiTime) {
                                 alarmCount++
                                 Toast.makeText(
                                     requireContext(),
                                     "This is when notification goes off",
                                     Toast.LENGTH_LONG
                                 ).show()
-                            } else {
-                                Toast.makeText(
-                                    requireContext(),
-                                    "${view_timer.base - SystemClock.elapsedRealtime()} seconds left / hwNotificationTime :$hwNotificationTime",
-                                    Toast.LENGTH_SHORT
-                                ).show()
                             }
+//                            else {
+//                                Toast.makeText(
+//                                    requireContext(),
+//                                    "${view_timer.base - SystemClock.elapsedRealtime()} seconds left / hwNotificationTime :$hwNotificationTime",
+//                                    Toast.LENGTH_SHORT
+//                                ).show()
+//                            }
 
                         } else if (alarmCount == 1) {
 
-                            Toast.makeText(
-                                requireContext(),
-                                "${view_timer.base - SystemClock.elapsedRealtime()}",
-                                Toast.LENGTH_SHORT
-                            ).show()
+//                            Toast.makeText(
+//                                requireContext(),
+//                                "${view_timer.base - SystemClock.elapsedRealtime()}",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
 
-                            if ((view_timer.base - SystemClock.elapsedRealtime()) <= hwAlarmTime) {
+                            if (SystemClock.elapsedRealtime()>=alarmTime) {
                                 alarmCount++
                                 shakeCount = 0
-                                Toast.makeText(
-                                    requireContext(),
-                                    "This is when alarm goes off. Shake Phone!!",
-                                    Toast.LENGTH_LONG
-                                ).show()
+//                                Toast.makeText(
+//                                    requireContext(),
+//                                    "This is when alarm goes off. Shake Phone!!",
+//                                    Toast.LENGTH_LONG
+//                                ).show()
                             }
+
                         } else if (alarmCount == 2) {
 
 //                            Toast.makeText(
@@ -416,7 +462,8 @@ class TodoFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        shakeCount = 0;
+        shakeCount = 0
+        isHomeworkMode = R.bool.hw_mode_bool.toString().toBoolean()
         shakeSensorManager.registerListener(
             shakeSensorListener,
             shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -433,6 +480,14 @@ class TodoFragment : Fragment() {
         super.onPause()
         shakeSensorManager.unregisterListener(shakeSensorListener);
 //        walkSensorManager.unregisterListener(walkSensorListener);
+
+        editor.putBoolean(R.bool.hw_mode_bool.toString(),isHomeworkMode)
+        editor.commit()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        alarmManager.cancel(pendingIntent)
     }
 
 

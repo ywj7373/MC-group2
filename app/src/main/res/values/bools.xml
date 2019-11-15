@@ -4,4 +4,8 @@
         false
     </bool>
 
+    <bool name="hw_mode_bool">
+        false
+    </bool>
+
 </resources>
