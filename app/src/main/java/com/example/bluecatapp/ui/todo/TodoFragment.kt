@@ -1,6 +1,7 @@
 package com.example.bluecatapp.ui.todo
 
 import android.app.Activity
+import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -28,6 +29,9 @@ import androidx.appcompat.app.AlertDialog
 
 class TodoFragment : Fragment() {
 
+    //================================== Alarms ==================================//
+    private lateinit var mAlarmManager: AlarmManager
+
     //================================== Motion Sensors ==================================//
     private lateinit var shakeSensorManager: SensorManager
     private lateinit var walkSensorManager: SensorManager
@@ -36,7 +40,7 @@ class TodoFragment : Fragment() {
     private var shakeAccelCurrent: Float = 0.toFloat() // current acceleration including gravity
     private var shakeAccelLast: Float = 0.toFloat() // last acceleration including gravity
 
-    private var shakeLimit: Int = 10 // @todo set by settings
+    private var shakeLimit: Int = 0// (at onCreate) set shake count limit from shared preferences
     private var alarmCount: Int = 0
     private var shakeCount: Int = 0
 
@@ -64,12 +68,12 @@ class TodoFragment : Fragment() {
 
             if (shakeAccel > 6) {
                 shakeCount++
-//                val toast = Toast.makeText(
-//                    requireContext(),
-//                    "Device has shaken $shakeCount times",
-//                    Toast.LENGTH_LONG
-//                )
-//                toast.show()
+                val toast = Toast.makeText(
+                    requireContext(),
+                    "Device has shaken $shakeCount times",
+                    Toast.LENGTH_LONG
+                )
+                toast.show()
             }
         }
 
@@ -94,12 +98,6 @@ class TodoFragment : Fragment() {
 //            shakeAccelCurrent = Math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
 //            val delta = shakeAccelCurrent - shakeAccelLast
 //            shakeAccel = shakeAccel * 0.9f + delta // perform low-cut filter
-
-            Toast.makeText(
-                requireContext(),
-                "Have shaken $shakeCount times",
-                Toast.LENGTH_SHORT
-            ).show()
 
         }
 
@@ -136,6 +134,7 @@ class TodoFragment : Fragment() {
 
         //================================== Motion Sensors ==================================//
         //================================== Detect Shaking ==================================//
+        shakeLimit = getString(R.string.hw_shake_value).toInt()
 
         this.shakeSensorManager =
             activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager

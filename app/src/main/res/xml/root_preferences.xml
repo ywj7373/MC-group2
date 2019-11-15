@@ -123,6 +123,19 @@
             android:selectable="true"
             app:iconSpaceReserved="false" />
 
+        <ListPreference
+            app:key="@string/hw_shake_val_key"
+
+            app:title="@string/hw_shake_val_title"
+            app:dialogTitle="@string/hw_shake_val_title"
+
+            android:entries="@array/hw_shake_entries"
+            android:entryValues="@array/hw_shake_values"
+            android:defaultValue="@string/hw_shake_value"
+
+            android:selectable="true"
+            app:iconSpaceReserved="false" />
+
         <SwitchPreference
             app:key="@string/hw_pedometer_bool_key"
 

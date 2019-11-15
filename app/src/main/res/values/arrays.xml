@@ -82,6 +82,24 @@
 
     </string-array>
 
+    <string-array name="hw_shake_entries">
+        <item>1 time (testing)</item>
+        <item>5 times</item>
+        <item>10 times</item>
+        <item>15 times</item>
+        <item>20 times</item>
+        <item>30 times</item>
+    </string-array>
+
+    <string-array name="hw_shake_values">
+        <item>1</item>
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>30</item>
+    </string-array>
+
     <string-array name="hw_pedometer_entries">
         <item>1 step (testing)</item>
         <item>10 steps</item>
