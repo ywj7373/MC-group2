@@ -341,7 +341,6 @@ class TodoFragment : Fragment() {
                         DialogInterface.BUTTON_NEGATIVE,
                         "No...",
                         DialogInterface.OnClickListener { dialog, whichButton ->
-                            //                        val inputText = editText.text.toString()
                             Toast.makeText(
                                 activity!!.applicationContext
                                 , "Keep Working!",
@@ -364,8 +363,9 @@ class TodoFragment : Fragment() {
         // Initialize shakeCount every time hw mode turns on.
         shakeCount = 0
 
-        Toast.makeText(requireContext(), "Good Luck!", Toast.LENGTH_LONG).show()
+        Toast.makeText(requireContext(), "Good Luck!", Toast.LENGTH_SHORT).show()
         view_timer.isCountDown = true
+        currentHwClockTime = preference.getLong(getString(R.string.hw_time_current_clock_time),0)
         if(currentHwClockTime>0){ // if clock time already exists
             view_timer.base = currentHwClockTime
         }else{
