@@ -3,6 +3,7 @@ package com.example.bluecatapp
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Bundle
@@ -14,6 +15,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bluecatapp.data.TodoItem
 import com.example.bluecatapp.ui.todo.TodoViewModel
@@ -31,6 +33,9 @@ class MainActivity : AppCompatActivity() {
     private val ADD_TODO_REQUEST = 1
     private lateinit var todoViewModel: TodoViewModel
 
+    private lateinit var preference: SharedPreferences
+    private lateinit var editor: SharedPreferences.Editor
+
 //    private lateinit var sensorManager: SensorManager
 
     companion object {
@@ -40,6 +45,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        preference = PreferenceManager.getDefaultSharedPreferences(this)
+        editor = preference.edit()
 
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment)
@@ -85,5 +93,10 @@ class MainActivity : AppCompatActivity() {
 //        sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.let {
 //            this.rotationVector = it
 //        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        editor.putBoolean(getString(R.string.hw_mode_bool),false) // set hw_mode_bool to false when app turns off
     }
 }

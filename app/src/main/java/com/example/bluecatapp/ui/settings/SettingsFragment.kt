@@ -56,12 +56,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         hwModeTimePreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
             override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
 
-                editor.putString(getString(R.string.hw_time_value),newValue.toString())
+                editor.putLong(getString(R.string.hw_time_value),newValue.toString().toLong())
                 editor.commit()
 
                 Toast.makeText(
                     activity!!.applicationContext,
-                    "HW mode time changed to ${newValue.toString().toInt()/1000/60} minutes " +
+                    "HW mode time changed to ${newValue.toString().toLong()/1000/60} minutes " +
 //                            "${getString(R.string.hw_time_value).toInt()/1000/60}" +
                             "",
                     Toast.LENGTH_SHORT
@@ -75,12 +75,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         hwModeShakeCountPreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
             override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
 
-                editor.putString(getString(R.string.hw_shake_value),newValue.toString())
+                editor.putInt(getString(R.string.hw_shake_value),newValue.toString().toInt())
                 editor.commit()
 
                 Toast.makeText(
                     activity!!.applicationContext,
-                    "HW mode shake count changed to ${newValue.toString()} times " +
+                    "HW mode shake count changed to ${newValue.toString().toInt()} times " +
 //                            "${getString(R.string.hw_shake_value)}" +
                             "",
                     Toast.LENGTH_SHORT
@@ -94,7 +94,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         hwModePedometerBoolPreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
             override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
 
-                editor.putBoolean(R.bool.hw_pedometer_bool.toString(),hwModePedometerBoolPreference.isChecked)
+                editor.putBoolean(getString(R.string.hw_pedometer_bool),hwModePedometerBoolPreference.isChecked)
                 editor.commit()
 
                 if(!hwModePedometerBoolPreference.isChecked){
@@ -123,7 +123,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         hwModePedometerValPreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
             override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
 
-                editor.putString(getString(R.string.hw_pedometer_value),newValue.toString())
+                editor.putInt(getString(R.string.hw_pedometer_value),newValue.toString().toInt())
                 editor.commit()
 
                 Toast.makeText(

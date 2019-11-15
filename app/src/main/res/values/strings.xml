@@ -57,23 +57,35 @@
     <string name="hw_pedometer_summary_off">Step count feature disabled during HW mode</string>
 
     <string name="hw_time_value">
-        2700000
+        hw_time_value
     </string>
 
     <string name="hw_shake_value">
-        15
+        hw_shake_value
     </string>
 
     <string name="hw_time_notification_value">
-        300000
+        hw_time_notification_value
     </string>
 
     <string name="hw_time_alarm_value">
-        1000
+        hw_time_alarm_value
     </string>
 
     <string name="hw_pedometer_value">
-        50
+        hw_pedometer_value
+    </string>
+
+    <string name="hw_time_current_clock_time">
+        hw_time_current_clock_time
+    </string>
+
+    <string name="hw_pedometer_bool">
+        hw_pedometer_bool
+    </string>
+
+    <string name="hw_mode_bool">
+        hw_mode_bool
     </string>
 
     <!-- Location -->

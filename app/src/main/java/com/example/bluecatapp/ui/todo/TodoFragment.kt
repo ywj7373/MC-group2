@@ -24,6 +24,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.util.Log
 import android.widget.Chronometer
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
@@ -31,19 +32,20 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.preference.PreferenceManager
 import com.example.bluecatapp.HwAlarmReceiver
 
-
 class TodoFragment : Fragment() {
 
+    //================================== Common ==================================//
     private lateinit var preference: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
+    private val _5Min: Long = 1000 * 60 * 5
+    private val _1Sec: Long = 1000
 
     //================================== Notification ==================================//
-    private var notiTime : Long = 0
+    private var notiTime: Long = _5Min
 
     //================================== Alarms ==================================//
-    private val _5Min : Long = 1000 * 60 * 5
-    private var alarmTime : Long = 0
 
+    private var alarmTime: Long = _1Sec
     private val ALARM_REQUEST_CODE = 100
     private lateinit var alarmManager: AlarmManager
     private lateinit var pendingIntent: PendingIntent
@@ -125,6 +127,8 @@ class TodoFragment : Fragment() {
     val hwDoneDisplayText = "I have done my homework."
     val hwDoneConfirmText = hwDoneDisplayText.replace("\\s".toRegex(), "").toLowerCase()
 
+    var currentHwClockTime: Long = 0 // to track the time when a user gets out of the fragment
+
     private var isHomeworkMode = false
 
 //    private val testNotificationTime = _5Min
@@ -135,9 +139,12 @@ class TodoFragment : Fragment() {
 //        1000 * 60 * 44 * +1000 * 54 // test : 6 seconds
 //        1000 // 1 second
 
-    private var hwModeTime : Long = 0// at onCreate, initialized following the value of shared preference
+    private var hwModeTime: Long =
+        0// at onCreate, initialized following the value of shared preference
 
-    private var hwModeClockBaseTime : Long = 0
+//    private var hwModeTime2: Long = 0// test
+
+    private var hwModeClockBaseTime: Long = 0
 
     //================================== To-do List ==================================//
     private val ADD_TODO_REQUEST = 1
@@ -159,14 +166,21 @@ class TodoFragment : Fragment() {
 
         alarmManager = activity!!.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(requireContext(), HwAlarmReceiver::class.java)
-        pendingIntent = PendingIntent.getBroadcast(requireContext(), ALARM_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        pendingIntent = PendingIntent.getBroadcast(
+            requireContext(),
+            ALARM_REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
 
-        hwModeTime = getString(R.string.hw_time_value).toLong()
+        hwModeTime = preference.getLong(getString(R.string.hw_time_value), 1000 * 60 * 45)
+        Log.d("HW:onCreate:hwModeTime", "value : $hwModeTime")
 
         //================================== Motion Sensors ==================================//
         //================================== Detect Shaking ==================================//
-        shakeLimit = getString(R.string.hw_shake_value).toInt()
+        shakeLimit = preference.getInt(getString(R.string.hw_shake_value), 30)
+        Log.d("HW:onCreate:shakeLimit", "value : $shakeLimit")
 
         this.shakeSensorManager =
             activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -263,7 +277,6 @@ class TodoFragment : Fragment() {
             R.id.container_hwmode -> {
 
                 if (isHomeworkMode) {
-                    alarmManager.cancel(pendingIntent) // cancel the alarm
 
                     var alertDialog = AlertDialog.Builder(requireContext()).create()
                     val editText = EditText(requireContext())
@@ -273,9 +286,7 @@ class TodoFragment : Fragment() {
                                 "\"" + hwDoneDisplayText + "\""
                     )
                     alertDialog.setTitle("Turn Off HW Mode")
-
                     alertDialog.setView(editText)
-
                     alertDialog.setButton(
                         DialogInterface.BUTTON_POSITIVE,
                         "Yes!",
@@ -283,13 +294,25 @@ class TodoFragment : Fragment() {
 
                             val inputText =
                                 editText.text.toString().replace("\\s".toRegex(), "").toLowerCase()
-                            if (inputText.equals(hwDoneConfirmText)) {
+
+                            if (inputText.equals(hwDoneConfirmText)) { // correct input text.
+                                //---Set Shared Preference of clock---//
+                                editor.putLong(
+                                    getString(R.string.hw_time_current_clock_time),
+                                    view_timer.base
+                                )
                                 view_timer.isCountDown = false
-                                view_timer.base =
-                                    SystemClock.elapsedRealtime() + hwModeTime // 45 minutes
+                                view_timer.base = SystemClock.elapsedRealtime() + hwModeTime
                                 view_timer.stop()
 
                                 isHomeworkMode = false;
+                                editor.putBoolean(getString(R.string.hw_mode_bool), isHomeworkMode)
+                                editor.commit()
+
+                                //---cancel the alarm---//
+                                alarmManager.cancel(pendingIntent)
+
+                                //---UI---//
                                 text_homework.text = "Turn Homework Mode ON"
                                 text_homework.setBackgroundColor(Color.parseColor("#111111"))
                                 text_homework.setTextColor(Color.parseColor("#ffffff"))
@@ -301,7 +324,7 @@ class TodoFragment : Fragment() {
                                 Toast.makeText(
                                     requireContext(),
                                     "Nice job!",
-                                    Toast.LENGTH_LONG
+                                    Toast.LENGTH_SHORT
                                 ).show()
 
                                 alertDialog.dismiss()
@@ -309,7 +332,7 @@ class TodoFragment : Fragment() {
                                 Toast.makeText(
                                     activity!!.applicationContext,
                                     "Type in the given sentence properly",
-                                    Toast.LENGTH_LONG
+                                    Toast.LENGTH_SHORT
                                 ).show()
                             }
                         })
@@ -322,7 +345,7 @@ class TodoFragment : Fragment() {
                             Toast.makeText(
                                 activity!!.applicationContext
                                 , "Keep Working!",
-                                Toast.LENGTH_LONG
+                                Toast.LENGTH_SHORT
                             ).show()
 
                             alertDialog.dismiss()
@@ -331,95 +354,74 @@ class TodoFragment : Fragment() {
                     alertDialog.show()
 
                 } else { // turning on the hw mode
-                    hwModeClockBaseTime = SystemClock.elapsedRealtime() + hwModeTime
-
-                    alarmTime = hwModeClockBaseTime - getString(R.string.hw_time_alarm_value).toLong() // subtract 1 second from the base time => alarm time
-                    notiTime = hwModeClockBaseTime - _5Min // subtract 5 minutes from the base time => notification time
-
-                    //set the alarm
-                    alarmManager.
-                        setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
-                            alarmTime,
-                            pendingIntent)
-
-                    // Initialize shakeCount every time hw mode turns on.
-                    shakeCount = 0
-
-                    Toast.makeText(requireContext(), "Good Luck!", Toast.LENGTH_LONG).show()
-                    view_timer.isCountDown = true
-                    view_timer.base = hwModeClockBaseTime
-                    view_timer.start()
-                    view_timer.setOnChronometerTickListener { view ->
-
-                        if (alarmCount == 0) {
-
-                            if (SystemClock.elapsedRealtime()>=notiTime) {
-                                alarmCount++
-                                Toast.makeText(
-                                    requireContext(),
-                                    "This is when notification goes off",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-//                            else {
-//                                Toast.makeText(
-//                                    requireContext(),
-//                                    "${view_timer.base - SystemClock.elapsedRealtime()} seconds left / hwNotificationTime :$hwNotificationTime",
-//                                    Toast.LENGTH_SHORT
-//                                ).show()
-//                            }
-
-                        } else if (alarmCount == 1) {
-
-//                            Toast.makeText(
-//                                requireContext(),
-//                                "${view_timer.base - SystemClock.elapsedRealtime()}",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-
-                            if (SystemClock.elapsedRealtime()>=alarmTime) {
-                                alarmCount++
-                                shakeCount = 0
-//                                Toast.makeText(
-//                                    requireContext(),
-//                                    "This is when alarm goes off. Shake Phone!!",
-//                                    Toast.LENGTH_LONG
-//                                ).show()
-                            }
-
-                        } else if (alarmCount == 2) {
-
-//                            Toast.makeText(
-//                                requireContext(),
-//                                "Have shaken $shakeCount times",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-
-                            if (shakeCount >= shakeLimit) {
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Hope you are awake. Back to HW mode",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                alarmCount = 0
-                                shakeCount = 0
-                                view_timer.base = SystemClock.elapsedRealtime() + hwModeTime
-                            }
-                        }
-
-                    }
-
-                    isHomeworkMode = true
-                    text_homework.text = "Turn Homework Mode OFF"
-                    text_homework.setBackgroundColor(Color.parseColor("#dddddd"))
-                    text_homework.setTextColor(Color.parseColor("#111111"))
-                    todo_ll_container.setBackgroundColor(Color.parseColor("#111111"))
-                    clock_homework.visibility = View.GONE
-//                text_hw_timer.visibility = View.VISIBLE
-                    view_timer.visibility = View.VISIBLE
+                    turnHWModeOn()
                 }
             }
         }
+    }
+
+    private fun turnHWModeOn() {
+        // Initialize shakeCount every time hw mode turns on.
+        shakeCount = 0
+
+        Toast.makeText(requireContext(), "Good Luck!", Toast.LENGTH_LONG).show()
+        view_timer.isCountDown = true
+        if(currentHwClockTime>0){ // if clock time already exists
+            view_timer.base = currentHwClockTime
+        }else{
+            view_timer.base = SystemClock.elapsedRealtime() + hwModeTime
+        }
+        view_timer.start()
+        view_timer.setOnChronometerTickListener { view ->
+
+            if (alarmCount == 0) {
+
+                if (view.base - SystemClock.elapsedRealtime() <= notiTime) {
+                    alarmCount++
+                    Toast.makeText(
+                        requireContext(),
+                        "This is when notification goes off" +
+                                "${view.base} ${SystemClock.elapsedRealtime()} ${view.base - SystemClock.elapsedRealtime()} $notiTime",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } else if (alarmCount == 1) {
+
+                if (view.base - SystemClock.elapsedRealtime() <= alarmTime) {
+                    alarmCount++
+                    shakeCount = 0
+                }
+
+            } else if (alarmCount == 2) {
+
+
+                if (shakeCount >= shakeLimit) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Hope you are awake. Back to HW mode",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    alarmCount = 0
+                    shakeCount = 0
+                    view_timer.base = SystemClock.elapsedRealtime() + hwModeTime
+                }
+
+            }
+
+        }
+
+        isHomeworkMode = true
+        editor.putBoolean(getString(R.string.hw_mode_bool), isHomeworkMode)
+        editor.commit()
+
+        text_homework.text = "Turn Homework Mode OFF"
+        text_homework.setBackgroundColor(Color.parseColor("#dddddd"))
+        text_homework.setTextColor(Color.parseColor("#111111"))
+        todo_ll_container.setBackgroundColor(Color.parseColor("#111111"))
+        clock_homework.visibility = View.GONE
+//                text_hw_timer.visibility = View.VISIBLE
+        view_timer.visibility = View.VISIBLE
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -460,10 +462,21 @@ class TodoFragment : Fragment() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         shakeCount = 0
-        isHomeworkMode = R.bool.hw_mode_bool.toString().toBoolean()
+
+        isHomeworkMode = preference.getBoolean(getString(R.string.hw_mode_bool), false)
+        currentHwClockTime =
+            preference.getLong(getString(R.string.hw_time_current_clock_time), SystemClock.elapsedRealtime()+hwModeTime)
+
+
+        Log.d(
+            "HW:onStart:clockValue",
+            "HW onStart$currentHwClockTime ${currentHwClockTime / 1000 / 60} ${currentHwClockTime / 1000}"
+        )
+        Log.d("HW:onStart:modeBool", "HW onStart $isHomeworkMode")
+
         shakeSensorManager.registerListener(
             shakeSensorListener,
             shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -474,20 +487,62 @@ class TodoFragment : Fragment() {
 //            walkSensorListener,
 //            walkSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
 //            SensorManager.SENSOR_DELAY_NORMAL)
+
     }
 
     override fun onPause() {
         super.onPause()
         shakeSensorManager.unregisterListener(shakeSensorListener);
 //        walkSensorManager.unregisterListener(walkSensorListener);
+//        alarmManager.cancel(pendingIntent) // turn off alarm only when app itself is onDestroy
 
-        editor.putBoolean(R.bool.hw_mode_bool.toString(),isHomeworkMode)
+        Log.d(
+            "HW:onPause:clockValue",
+            "HW onPause at ${view_timer.base} ${view_timer.base / 1000 / 60} ${view_timer.base / 1000}"
+        )
+        Log.d("HW:onPause:modeBool", "HW onPause at $isHomeworkMode")
+
+        editor.putLong(getString(R.string.hw_time_current_clock_time), view_timer.base)
+        editor.putBoolean(getString(R.string.hw_mode_bool), isHomeworkMode)
         editor.commit()
+
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        shakeCount = 0
+        isHomeworkMode = preference.getBoolean(getString(R.string.hw_mode_bool), false)
+        currentHwClockTime =
+            preference.getLong(getString(R.string.hw_time_current_clock_time), SystemClock.elapsedRealtime()+hwModeTime)
+
+        Log.d(
+            "HW:onResume:clockValue",
+            "HW onResume $currentHwClockTime ${currentHwClockTime / 1000 / 60} ${currentHwClockTime / 1000}"
+        )
+        Log.d("HW:onResume:modeBool", "HW onResume $isHomeworkMode")
+
+        shakeSensorManager.registerListener(
+            shakeSensorListener,
+            shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+
+        if (isHomeworkMode) {
+            turnHWModeOn()
+        }
+
+//        walkSensorManager.registerListener(
+//            walkSensorListener,
+//            walkSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+//            SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        alarmManager.cancel(pendingIntent)
+        shakeSensorManager.unregisterListener(shakeSensorListener);
+        //        walkSensorManager.unregisterListener(walkSensorListener);
+//        alarmManager.cancel(pendingIntent) // turn off alarm only when app is onDestroy
     }
 
 
