@@ -13,6 +13,10 @@
     <string name="time_limit">Time Limit</string>
     <string name='pedometer'>Pedometer</string>
 
+    <string name='hw_time_key'>HW Mode time</string>
+    <string name='hw_pedometer_bool_key'>Pedometer HW Mode</string>
+    <string name='hw_pedometer_val_key'>Step Count HW Mode</string>
+
     <!-- Preference Titles -->
     <string name="profile_header">YOUR PROFILE</string>
     <string name="app_blocking_header">APP BLOCKING MODE</string>
@@ -41,7 +45,22 @@
     <string name="pedometer_count_title">Step Count</string>
     <string name="pedometer_count_summary">Select number of steps to complete</string>
 
-    <!-- TODO -->
+    <!-- hw mode -->
+
+    <string name="hw_time_title">HW Mode time</string>
+    <string name="hw_pedometer_bool_title">Pedometer HW Mode</string>
+    <string name="hw_pedometer_val_title">Step Count HW Mode</string>
+
+    <string name="hw_pedometer_summary_on">Step count feature enabled during HW mode</string>
+    <string name="hw_pedometer_summary_off">Step count feature disabled during HW mode</string>
+
+    <string name="hw_time_value">
+        2700000
+    </string>
+
+    <string name="hw_pedometer_value">
+        50
+    </string>
 
     <!-- Location -->
     <string name="odsay_key">Qyb4YWtiFBd/Oz07uS+2273XmRFWFYOTXil+4C6QsPs</string>

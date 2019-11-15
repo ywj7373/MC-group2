@@ -36,7 +36,7 @@ class TodoFragment : Fragment() {
     private var shakeAccelCurrent: Float = 0.toFloat() // current acceleration including gravity
     private var shakeAccelLast: Float = 0.toFloat() // last acceleration including gravity
 
-    private var shakeLimit : Int = 10 // @todo set by settings
+    private var shakeLimit: Int = 10 // @todo set by settings
     private var alarmCount: Int = 0
     private var shakeCount: Int = 0
 
@@ -94,6 +94,13 @@ class TodoFragment : Fragment() {
 //            shakeAccelCurrent = Math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
 //            val delta = shakeAccelCurrent - shakeAccelLast
 //            shakeAccel = shakeAccel * 0.9f + delta // perform low-cut filter
+
+            Toast.makeText(
+                requireContext(),
+                "Have shaken $shakeCount times",
+                Toast.LENGTH_SHORT
+            ).show()
+
         }
 
         override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
@@ -259,14 +266,19 @@ class TodoFragment : Fragment() {
 //                text_hw_timer.visibility = View.GONE
                                 view_timer.visibility = View.GONE
 
-                                Toast.makeText(requireContext(), "Nice job!", Toast.LENGTH_LONG)
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Nice job!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+
                                 alertDialog.dismiss()
                             } else {
                                 Toast.makeText(
-                                    requireContext(),
+                                    activity!!.applicationContext,
                                     "Type in the given sentence properly",
                                     Toast.LENGTH_LONG
-                                )
+                                ).show()
                             }
                         })
 
@@ -275,7 +287,12 @@ class TodoFragment : Fragment() {
                         "No...",
                         DialogInterface.OnClickListener { dialog, whichButton ->
                             //                        val inputText = editText.text.toString()
-                            Toast.makeText(requireContext(), "Keep Working!", Toast.LENGTH_LONG)
+                            Toast.makeText(
+                                activity!!.applicationContext
+                                , "Keep Working!",
+                                Toast.LENGTH_LONG
+                            ).show()
+
                             alertDialog.dismiss()
                         })
 
@@ -300,7 +317,7 @@ class TodoFragment : Fragment() {
                                     "This is when notification goes off",
                                     Toast.LENGTH_LONG
                                 ).show()
-                            }else{
+                            } else {
                                 Toast.makeText(
                                     requireContext(),
                                     "${view_timer.base - SystemClock.elapsedRealtime()} seconds left / hwNotificationTime :$hwNotificationTime",
@@ -327,11 +344,11 @@ class TodoFragment : Fragment() {
                             }
                         } else if (alarmCount == 2) {
 
-                            Toast.makeText(
-                                requireContext(),
-                                "Have shaken $shakeCount times",
-                                Toast.LENGTH_SHORT
-                            ).show()
+//                            Toast.makeText(
+//                                requireContext(),
+//                                "Have shaken $shakeCount times",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
 
                             if (shakeCount >= shakeLimit) {
                                 Toast.makeText(
