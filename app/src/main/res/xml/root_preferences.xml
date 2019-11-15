@@ -108,7 +108,46 @@
         app:iconSpaceReserved="false"
         app:title="@string/homework_header">
 
-        <!-- TODO -->
+        <!-- HW mode settings -->
+
+        <ListPreference
+            app:key="@string/hw_time_key"
+
+            app:title="@string/hw_time_title"
+            app:dialogTitle="@string/hw_time_title"
+
+            android:entries="@array/hw_time_entries"
+            android:entryValues="@array/hw_time_values"
+            android:defaultValue="@string/hw_time_value"
+
+            android:selectable="true"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreference
+            app:key="@string/hw_pedometer_bool_key"
+
+            app:title="@string/hw_pedometer_bool_title"
+
+            app:defaultValue="@bool/hw_pedometer_bool"
+
+            android:selectable="true"
+            app:iconSpaceReserved="false"
+
+            android:summaryOn="@string/hw_pedometer_summary_on"
+            android:summaryOff="@string/hw_pedometer_summary_off" />
+
+        <ListPreference
+            app:key="@string/hw_pedometer_val_key"
+
+            app:title="@string/hw_pedometer_val_title"
+            app:dialogTitle="@string/hw_pedometer_val_title"
+
+            android:entries="@array/hw_pedometer_entries"
+            android:entryValues="@array/hw_pedometer_values"
+            android:defaultValue="@string/hw_pedometer_value"
+
+            android:selectable="true"
+            app:iconSpaceReserved="false" />
 
     </PreferenceCategory>
 
