@@ -299,7 +299,7 @@ class TodoFragment : Fragment() {
                                 //---Set Shared Preference of clock---//
                                 editor.putLong(
                                     getString(R.string.hw_time_current_clock_time),
-                                    view_timer.base
+                                    SystemClock.elapsedRealtime() + hwModeTime
                                 )
                                 view_timer.isCountDown = false
                                 view_timer.base = SystemClock.elapsedRealtime() + hwModeTime
