@@ -14,6 +14,7 @@
     <string name='pedometer'>Pedometer</string>
 
     <string name='hw_time_key'>HW Mode time</string>
+    <string name='hw_shake_val_key'>Shake Count HW Mode</string>
     <string name='hw_pedometer_bool_key'>Pedometer HW Mode</string>
     <string name='hw_pedometer_val_key'>Step Count HW Mode</string>
 
@@ -48,6 +49,7 @@
     <!-- hw mode -->
 
     <string name="hw_time_title">HW Mode time</string>
+    <string name='hw_shake_val_title'>Shake Count HW Mode</string>
     <string name="hw_pedometer_bool_title">Pedometer HW Mode</string>
     <string name="hw_pedometer_val_title">Step Count HW Mode</string>
 
@@ -56,6 +58,18 @@
 
     <string name="hw_time_value">
         2700000
+    </string>
+
+    <string name="hw_shake_value">
+        15
+    </string>
+
+    <string name="hw_time_notification_value">
+        300000
+    </string>
+
+    <string name="hw_time_alarm_value">
+        1000
     </string>
 
     <string name="hw_pedometer_value">

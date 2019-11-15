@@ -71,6 +71,25 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         })
 
+        val hwModeShakeCountPreference= preferenceManager.findPreference<ListPreference>(getString(R.string.hw_shake_val_key))
+        hwModeShakeCountPreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
+            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
+
+                editor.putString(getString(R.string.hw_shake_value),newValue.toString())
+                editor.commit()
+
+                Toast.makeText(
+                    activity!!.applicationContext,
+                    "HW mode shake count changed to ${newValue.toString()} times " +
+//                            "${getString(R.string.hw_shake_value)}" +
+                            "",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                return true
+            }
+        })
+
         val hwModePedometerBoolPreference = preferenceManager.findPreference<SwitchPreference>(getString(R.string.hw_pedometer_bool_key))
         hwModePedometerBoolPreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
             override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
