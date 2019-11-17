@@ -72,21 +72,19 @@ class AppBlockingFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                ActivityCompat.requestPermissions(
-//                    requireActivity(),
-//                    arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
-//                    200
-//                )
-//        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
+                    200
+                )
+        }
         sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         sensorManager!!.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)?.let {
             pedometerSensor = it
         }
 
         if (pedometerSensor != null) {
-
-//            Pedometer(activity!!.applicationContext)
             sensorManager.registerListener(
                 stepCounter(),
                 pedometerSensor,
@@ -113,7 +111,6 @@ class AppBlockingFragment : Fragment() {
             sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),
             SensorManager.SENSOR_DELAY_NORMAL
         )
-
         Toast.makeText(
             activity!!.applicationContext,
             "PEDOMETER RESUMED",
@@ -162,12 +159,17 @@ class AppBlockingFragment : Fragment() {
         } else {
             currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
                 blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
-                getBlockCountdown(
-                    finishTimeStamp,
-                    chrono
-                ).start()
-                //start pedometer
-                simulatePedometer(appPackageName, maxStepCount)
+                pedometerValue.setText("${appStepCounters[appPackageName]} / $maxStepCount")
+                if(System.currentTimeMillis() < finishTimeStamp) {
+                    getBlockCountdown(
+                        finishTimeStamp,
+                        chrono
+                    ).start()
+                }
+                if(appStepCounters[appPackageName]!! < maxStepCount) {
+                    // Start pedometer simulation
+                    simulatePedometer(appPackageName, maxStepCount)
+                }
             }
         }
         return root
@@ -179,7 +181,7 @@ class AppBlockingFragment : Fragment() {
         appblocking_recycler_view.apply{
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(activity)
-            adapter = AppBlockingAdapter(getAdapterList())
+            adapter = AppBlockingAdapter(getAdapterList(), maxStepCount)
         }
     }
 
@@ -239,7 +241,6 @@ class AppBlockingFragment : Fragment() {
 
             override fun onFinish() {
                 chrono.stop()
-                hideViews()
             }
         }
     }
@@ -290,29 +291,25 @@ class AppBlockingFragment : Fragment() {
         var blockedAppList: MutableList<List<Any?>> = arrayListOf()
 
         currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
-            blockedAppList.add(listOf(getAppNameFromPackage(appPackageName, context!!), finishTimeStamp))
+            blockedAppList.add(listOf(getAppNameFromPackage(appPackageName, context!!),
+                finishTimeStamp, appStepCounters[appPackageName]))
         }
         return blockedAppList
     }
 
     private fun stepCounter() : SensorEventListener {
-        var x = 0
         return object: SensorEventListener {
 
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { }
 
             override fun onSensorChanged(event: SensorEvent?) {
-                x++
                 val currentStepCount = event!!.values[0].toInt()
                 Toast.makeText(
                     activity!!.applicationContext,
-                    "YOU MOVED: $x\tSTEP COUNT: $currentStepCount",
+                    "YOU MOVED $currentStepCount STEPS",
                     Toast.LENGTH_SHORT
                 ).show()
-                Log.d("PEDOMETER", "YOU MOVED: $x\tSTEP COUNT: $currentStepCount")
-//                pedometerValue.setText("$currentStepCount / $maxStepCount")
+                pedometerValue.setText("$currentStepCount / $maxStepCount")
 
 //                if(currentStepCount==maxStepCount){
 //                    pedometerTitle.setText("All steps completed")
@@ -326,20 +323,20 @@ class AppBlockingFragment : Fragment() {
      * Increments step count every 2s
      */
     private fun simulatePedometer(appName: String, numberOfSteps: Int) {
-        val countDownFromTime = (numberOfSteps * 2000).toLong()
-        object: CountDownTimer(countDownFromTime, 2000) {
+        val countDownFromTime = ((numberOfSteps - appStepCounters[appName]!!) * 2000).toLong()
+
+        object : CountDownTimer(countDownFromTime, 2000) {
             override fun onTick(millisUntilFinished: Long) {
-                appStepCounters[appName] = appStepCounters[appName]!!.plus(1)
+                appStepCounters[appName] = appStepCounters[appName]!! + 1
+                with(sharedPrefs.edit()) {
+                    // update changed values
+                    putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
+                    commit()
+                }
                 pedometerValue.setText("${appStepCounters[appName]} / $numberOfSteps")
             }
 
-            override fun onFinish() {
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "Pedometer simulation finished",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+            override fun onFinish() {}
         }.start()
     }
 
