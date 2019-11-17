@@ -1,5 +1,6 @@
 package com.example.bluecatapp.ui.location
 
+import SwipeCallback
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -19,6 +20,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationItemData
 import kotlinx.android.synthetic.main.fragment_location.*
+import androidx.recyclerview.widget.RecyclerView
+import androidx.annotation.NonNull
+import androidx.recyclerview.widget.ItemTouchHelper
+
+
+
 
 class LocationFragment : Fragment() {
     private val TAG = "Location Fragment"
@@ -52,6 +59,12 @@ class LocationFragment : Fragment() {
             })
 
         startLocationService()
+
+        // Swipe to delete functionality
+        val recyclerView = root.findViewById(R.id.location_recycler_view) as RecyclerView
+        val itemTouchHelper = ItemTouchHelper(SwipeCallback(context!!, locationAdapter, locationViewModel))
+        itemTouchHelper.attachToRecyclerView(recyclerView)
+        //
 
         return root
     }

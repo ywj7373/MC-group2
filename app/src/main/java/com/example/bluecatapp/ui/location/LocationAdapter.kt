@@ -6,6 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationItemData
@@ -41,6 +44,13 @@ class LocationAdapter : RecyclerView.Adapter<LocationAdapter.LocationItemHolder>
     fun setLocationItems(locationItems: List<LocationItemData>) {
         this.locationItems = locationItems
         notifyDataSetChanged()
+    }
+
+    fun removeItem(position:Int, locationViewModel: LocationViewModel) {
+        val locationItem = locationItems[position]
+        locationViewModel.deleteLocationItem(locationItem.id)
+        (locationItems as ArrayList).removeAt(position)
+        notifyItemRemoved(position)
     }
 
     inner class LocationItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

@@ -47,4 +47,8 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     fun getCurrentLocation(): LiveData<CurrentLocationData> {
         return currentLocation
     }
+
+    fun deleteLocationItem(id: Int) {
+        repository.deleteLocationItem(id)
+    }
 }

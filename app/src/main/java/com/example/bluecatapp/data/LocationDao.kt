@@ -26,6 +26,9 @@ interface LocationItemDao {
 
     @Query("UPDATE location_items SET done = 0 WHERE daysMode == 1")
     fun updateAllNotDoneDays()
+
+    @Query("DELETE FROM location_items WHERE id = :value1")
+    fun deleteLocationItem(value1: Int)
 }
 
 @Dao

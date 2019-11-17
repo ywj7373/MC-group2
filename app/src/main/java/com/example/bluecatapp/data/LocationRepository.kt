@@ -66,6 +66,10 @@ class LocationRepository(application: Application) {
         return alarmTimeDao.getAlarmTime()
     }
 
+    fun deleteLocationItem(id: Int) {
+        DeleteLocationITemAsyncTask(locationItemDao, id).execute()
+    }
+
     private class InsertLocationItemAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItemData, Unit, Unit>() {
         val locationItemDao = locationItemDao
 
@@ -94,6 +98,13 @@ class LocationRepository(application: Application) {
 
         override fun doInBackground(vararg p0: Unit?) {
             locationItemDao.deleteAllLocationItems()
+        }
+    }
+
+    private class DeleteLocationITemAsyncTask(val locationItemDao: LocationItemDao, var id: Int) : AsyncTask<Unit, Unit, Unit>() {
+
+        override fun doInBackground(vararg p0: Unit?) {
+            locationItemDao.deleteLocationItem(id)
         }
     }
 }
