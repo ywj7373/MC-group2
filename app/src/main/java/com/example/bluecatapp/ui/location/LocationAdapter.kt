@@ -13,9 +13,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationItemData
 
-class LocationAdapter : RecyclerView.Adapter<LocationAdapter.LocationItemHolder>() {
+class LocationAdapter internal constructor(locationViewModel: LocationViewModel): RecyclerView.Adapter<LocationAdapter.LocationItemHolder>() {
+
 
     private var locationItems: List<LocationItemData> = ArrayList()
+    private val locationViewModel = locationViewModel
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationItemHolder {
         val itemView = LayoutInflater.from(parent.context)
@@ -35,6 +37,28 @@ class LocationAdapter : RecyclerView.Adapter<LocationAdapter.LocationItemHolder>
             val intent = Intent(it.context, MapActivity::class.java)
             intent.putExtra("Longitude", locationItem.x)
             intent.putExtra("Latitude", locationItem.y)
+            it.context.startActivity(intent)
+        }
+
+        holder.delete_button.setOnClickListener {
+            val locationItem = locationItems[position]
+            locationViewModel.deleteLocationItem(locationItem.id)
+            (locationItems as ArrayList).removeAt(position)
+            notifyItemRemoved(position)
+        }
+
+        holder.edit_button.setOnClickListener {
+            val intent = Intent(it.context, AddLocationActivity::class.java)
+            val locationItem = locationItems[position]
+            intent.putExtra("Editmode", true)
+            intent.putExtra("Id", locationItem.id)
+            intent.putExtra("name", locationItem.name)
+            intent.putExtra("x", locationItem.x)
+            intent.putExtra("y", locationItem.y)
+            intent.putExtra("time", locationItem.time)
+            intent.putExtra("daysMode", locationItem.daysMode)
+            intent.putExtra("days", locationItem.days)
+
             it.context.startActivity(intent)
         }
     }
@@ -57,6 +81,8 @@ class LocationAdapter : RecyclerView.Adapter<LocationAdapter.LocationItemHolder>
         var textViewName: TextView = itemView.findViewById(R.id.location_item_name)
         var textViewTime: TextView = itemView.findViewById(R.id.location_item_time)
         var loc_img: Button = itemView.findViewById(R.id.loc_img)
+        var delete_button: Button = itemView.findViewById(R.id.delete_button)
+        var edit_button: Button = itemView.findViewById(R.id.edit_button)
     }
 
 }

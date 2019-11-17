@@ -1,6 +1,5 @@
 package com.example.bluecatapp.ui.location
 
-import SwipeCallback
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -22,7 +21,6 @@ import com.example.bluecatapp.data.LocationItemData
 import kotlinx.android.synthetic.main.fragment_location.*
 import androidx.recyclerview.widget.RecyclerView
 import androidx.annotation.NonNull
-import androidx.recyclerview.widget.ItemTouchHelper
 
 
 
@@ -31,7 +29,7 @@ class LocationFragment : Fragment() {
     private val TAG = "Location Fragment"
     private lateinit var locationViewModel: LocationViewModel
     private val PERMISSION_ID = 270
-    private val locationAdapter = LocationAdapter()
+    private lateinit var locationAdapter: LocationAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,7 +40,7 @@ class LocationFragment : Fragment() {
         //initialize view model
         val root = inflater.inflate(R.layout.fragment_location, container, false)
         locationViewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
-
+        locationAdapter = LocationAdapter(locationViewModel)
         locationViewModel.getAllLocationItems().observe(this,
             Observer<List<LocationItemData>> { t -> locationAdapter.setLocationItems(t!!) })
 
@@ -59,12 +57,6 @@ class LocationFragment : Fragment() {
             })
 
         startLocationService()
-
-        // Swipe to delete functionality
-        val recyclerView = root.findViewById(R.id.location_recycler_view) as RecyclerView
-        val itemTouchHelper = ItemTouchHelper(SwipeCallback(context!!, locationAdapter, locationViewModel))
-        itemTouchHelper.attachToRecyclerView(recyclerView)
-        //
 
         return root
     }
@@ -92,6 +84,7 @@ class LocationFragment : Fragment() {
         return when (item.itemId) {
             R.id.addItemButton -> {
                 val intent = Intent(requireContext(), AddLocationActivity::class.java)
+                intent.putExtra("Editmode", false)
                 startActivity(intent)
                 true
             }

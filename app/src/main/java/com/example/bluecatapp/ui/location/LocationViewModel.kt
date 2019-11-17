@@ -51,4 +51,8 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     fun deleteLocationItem(id: Int) {
         repository.deleteLocationItem(id)
     }
+
+    fun editLocationItem(name: String, x: String, y:String, time:String, isAlarmed:Boolean, done:Boolean, daysMode:Boolean, days:String, id: Int) {
+        repository.editLocationItem(name, x, y, time, isAlarmed, done, daysMode, days, id)
+    }
 }

@@ -70,6 +70,10 @@ class LocationRepository(application: Application) {
         DeleteLocationITemAsyncTask(locationItemDao, id).execute()
     }
 
+    fun editLocationItem(name: String, x: String, y:String, time:String, isAlarmed:Boolean, done:Boolean, daysMode:Boolean, days:String, id: Int) {
+        EditLocationItemAsyncTask(locationItemDao, name, x, y, time, isAlarmed, done, daysMode, days, id).execute()
+    }
+
     private class InsertLocationItemAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItemData, Unit, Unit>() {
         val locationItemDao = locationItemDao
 
@@ -105,6 +109,12 @@ class LocationRepository(application: Application) {
 
         override fun doInBackground(vararg p0: Unit?) {
             locationItemDao.deleteLocationItem(id)
+        }
+    }
+
+    private class EditLocationItemAsyncTask(val locationItemDao: LocationItemDao, var name: String, var x: String, var y:String, var time:String, var isAlarmed:Boolean, var done:Boolean, var daysMode:Boolean, var days:String, var id: Int) : AsyncTask<Unit, Unit, Unit>() {
+        override fun doInBackground(vararg p0: Unit?) {
+            locationItemDao.editLocationItem(name, x, y, time, isAlarmed, done, daysMode, days, id)
         }
     }
 }
