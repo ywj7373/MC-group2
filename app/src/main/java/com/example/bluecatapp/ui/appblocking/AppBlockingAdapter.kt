@@ -1,11 +1,13 @@
 package com.example.bluecatapp.ui.appblocking
 
+import android.graphics.drawable.Drawable
 import android.os.CountDownTimer
 import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Chronometer
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +23,7 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private v
         var appTime: Chronometer = appListItem.findViewById(R.id.appItemTime)
         var appProgress: ProgressBar = appListItem.findViewById(R.id.appItemProgress)
         var appStepCount: TextView = appListItem.findViewById(R.id.appItemStepCount)
+        var appIcon: ImageView = appListItem.findViewById(R.id.appItemIcon)
     }
 
     // Create new app blocking views invoked by layout manager
@@ -45,6 +48,7 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private v
 //        holder.appProgress.max = maxStepCount
 //        holder.appProgress.progress = stepCount
 //        holder.appStepCount.setText("$stepCount / $maxStepCount")
+        holder.appIcon.setImageDrawable(BlockedAppList[position][3] as Drawable?)
     }
 
     override fun getItemCount(): Int = BlockedAppList.size
