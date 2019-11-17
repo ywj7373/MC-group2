@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.hardware.SensorEvent
@@ -35,6 +36,7 @@ import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
 import com.google.gson.reflect.TypeToken
+import com.naver.maps.map.e
 import kotlinx.android.synthetic.main.fragment_appblocking.*
 
 
@@ -51,6 +53,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var blockedAppName: TextView
     private lateinit var chrono: Chronometer
     private lateinit var blockTimeLabel: TextView
+    private lateinit var appIcon: ImageView
 
     //Pedometer variables
     private lateinit var sensorManager: SensorManager
@@ -104,19 +107,19 @@ class AppBlockingFragment : Fragment() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        sensorManager.registerListener(
-            stepCounter(),
-            sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-        Toast.makeText(
-            activity!!.applicationContext,
-            "PEDOMETER RESUMED",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        sensorManager.registerListener(
+//            stepCounter(),
+//            sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),
+//            SensorManager.SENSOR_DELAY_NORMAL
+//        )
+//        Toast.makeText(
+//            activity!!.applicationContext,
+//            "PEDOMETER RESUMED",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -137,6 +140,7 @@ class AppBlockingFragment : Fragment() {
         blockedAppName = root.findViewById(R.id.currently_blocked_app)
         chrono = root.findViewById(R.id.view_timer)
         blockTimeLabel = root.findViewById(R.id.block_explanation)
+        appIcon = root.findViewById(R.id.appIcon)
 
         // Initialize pedometer views
         pedometerTitle = root.findViewById(R.id.step_title)
@@ -160,6 +164,7 @@ class AppBlockingFragment : Fragment() {
             currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
                 blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
                 pedometerValue.setText("${appStepCounters[appPackageName]} / $maxStepCount")
+                appIcon.setImageDrawable(getAppIcon(appPackageName))
                 if(System.currentTimeMillis() < finishTimeStamp) {
                     getBlockCountdown(
                         finishTimeStamp,
@@ -260,6 +265,17 @@ class AppBlockingFragment : Fragment() {
         return null
     }
 
+    private fun getAppIcon(packageName: String): Drawable? {
+        var icon: Drawable ?= null
+        try {
+            icon = packageManager.getApplicationIcon(packageName)
+        }
+        catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+        return icon
+    }
+
     private fun getCurrentlyBlockedApps(): MutableMap<String, Long> {
         val sharedPrefs = getDefaultSharedPreferences(context)
         val type = object : TypeToken<MutableMap<String, Long>>() {}.type
@@ -289,10 +305,9 @@ class AppBlockingFragment : Fragment() {
     // FIXME: Return list of blocked app names with respective finish time stamps
     private fun getAdapterList(): List<List<Any?>> {
         var blockedAppList: MutableList<List<Any?>> = arrayListOf()
-
         currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
             blockedAppList.add(listOf(getAppNameFromPackage(appPackageName, context!!),
-                finishTimeStamp, appStepCounters[appPackageName]))
+                finishTimeStamp, appStepCounters[appPackageName], getAppIcon(appPackageName)))
         }
         return blockedAppList
     }
@@ -340,9 +355,27 @@ class AppBlockingFragment : Fragment() {
         }.start()
     }
 
+    // Check if device has built-in system feature
+    private fun checkSensorFeatures(feature: String){
+        if(packageManager.hasSystemFeature(feature)){
+            Toast.makeText(
+                activity!!.applicationContext,
+                "$feature feature found",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else{
+            Toast.makeText(
+                activity!!.applicationContext,
+                "$feature feature not found",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     private fun hideViews(){
         //Hide app blocking countdown and pedometer views if no currently blocked apps
         blockedAppName.text = "No blocked apps at the moment"
+        appIcon.visibility = View.INVISIBLE
         chrono.visibility = View.INVISIBLE
         blockTimeLabel.visibility = View.INVISIBLE
         pedometerTitle.visibility = View.INVISIBLE

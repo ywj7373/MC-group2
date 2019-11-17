@@ -13,8 +13,17 @@
         android:paddingRight="10dp"
         android:paddingBottom="10dp">
 
+        <ImageView
+            android:id="@+id/appItemIcon"
+            android:layout_width="54dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_marginRight="10dp"
+            app:srcCompat="@android:drawable/sym_def_app_icon" />
+
         <TextView
             android:id="@+id/appItemName"
+            android:layout_toRightOf="@id/appItemIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="TextView"/>
@@ -31,10 +40,11 @@
         <ProgressBar
             android:id="@+id/appItemProgress"
             style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="276dp"
+            android:layout_width="218dp"
             android:layout_height="wrap_content"
             android:layout_below="@+id/appItemTime"
             android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/appItemIcon"
             android:max="100"
             android:progress="0" />
 
