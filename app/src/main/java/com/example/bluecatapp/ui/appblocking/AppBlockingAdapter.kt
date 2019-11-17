@@ -40,8 +40,13 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>) :
 
     private fun getBlockCountdown(countDownFromTime: Long, chrono: Chronometer): CountDownTimer {
         val msToFinish = countDownFromTime - System.currentTimeMillis()
-        chrono.base = SystemClock.elapsedRealtime() + msToFinish
+        if(msToFinish < 0 ){
+            chrono.base = 0
+        } else {
+            chrono.base = SystemClock.elapsedRealtime() + msToFinish
+        }
         chrono.start()
+
         return object : CountDownTimer(msToFinish, 1000) {
             override fun onTick(millisUntilFinished: Long) {
             }

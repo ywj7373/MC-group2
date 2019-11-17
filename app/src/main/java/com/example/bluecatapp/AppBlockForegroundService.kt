@@ -22,19 +22,25 @@ import com.google.gson.reflect.TypeToken
 
 
 class AppBlockForegroundService : Service() {
+    // Constants
     private val CHANNEL_ID = "AppBlockForegroundService"
-    private lateinit var appOps: AppOpsManager
+    private val UPDATE_INTERVAL: Long = 1000
+
+    // Mutable maps for blocked app list
     private lateinit var myUsageStatsMap: MutableMap<String, UsageStats>
+    private lateinit var currentlyBlockedApps: MutableMap<String, Long>
+    private lateinit var appUsageTimers: MutableMap<String, Long>
+    private lateinit var appStepCounters: MutableMap<String, Int> // stores step count for blocked apps
+
+    private lateinit var appOps: AppOpsManager
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
-    private val UPDATE_INTERVAL: Long = 1000
-    private lateinit var currentlyBlockedApps: MutableMap<String, Long>
     private lateinit var sharedPrefs: SharedPreferences
-    private lateinit var appUsageTimers: MutableMap<String, Long>
     private lateinit var currentAppUsageTimerHandler: Handler
     private var currentAppUsageTimerRunnable: Runnable = Runnable {}
     private var currentAppUsage: Long = 0
     private var prevDetectedForegroundAppPackageName: String? = null
+
 
     companion object {
         fun startService(context: Context, message: String) {
@@ -53,6 +59,7 @@ class AppBlockForegroundService : Service() {
         super.onCreate()
         appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         appUsageTimers = mutableMapOf()
+        appStepCounters = mutableMapOf()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -311,7 +318,11 @@ class AppBlockForegroundService : Service() {
             }
         }
         if (didChange) {
-            unblockList.forEach { currentlyBlockedApps.remove(it) }
+            // remove apps from unblock lists
+            unblockList.forEach {
+                currentlyBlockedApps.remove(it)
+                appStepCounters.remove(it)
+            }
             var unblockListPrettyNames = ""
             unblockList.forEach { appName ->
                 unblockListPrettyNames += "${
@@ -328,6 +339,7 @@ class AppBlockForegroundService : Service() {
                 .show()
             with(sharedPrefs.edit()) {
                 putString("currentlyBlockedApps", MainActivity.gson.toJson(currentlyBlockedApps))
+                putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
                 commit()
             }
         }
@@ -371,10 +383,12 @@ class AppBlockForegroundService : Service() {
             sharedPrefs.getString("block_duration", "${10 * 60 * 1000}")?.toLong() ?: (10 * 60
                     * 1000) // Default 10 seconds
 
-        currentlyBlockedApps[packageName] =
-            System.currentTimeMillis() + blockDuration
+        currentlyBlockedApps[packageName] = System.currentTimeMillis() + blockDuration
+        appStepCounters[packageName] = 0 // initialize step count as 0
+
         with(sharedPrefs.edit()) {
             putString("currentlyBlockedApps", MainActivity.gson.toJson(currentlyBlockedApps))
+            putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
             commit()
         }
         resetTimer(packageName)
