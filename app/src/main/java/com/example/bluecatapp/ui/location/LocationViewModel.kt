@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.bluecatapp.data.CurrentLocationData
 import com.example.bluecatapp.data.LocationRepository
 import com.example.bluecatapp.data.LocationItemData
+import com.example.bluecatapp.data.StatsData
 import java.util.*
 
 class LocationViewModel(application: Application) : AndroidViewModel(application) {
@@ -27,6 +28,7 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     private var allLocationItems: LiveData<List<LocationItemData>> = repository.getAllLocationItems()
     private var currentLocation: LiveData<CurrentLocationData> = repository.getCurrentLocation()
     private var nextSchedule: LiveData<LocationItemData> = repository.getPriorityDestination(dayOfToday)
+    private var statsData: LiveData<StatsData> = repository.getStats()
 
     fun getNextSchedule(): LiveData<LocationItemData> {
         return nextSchedule
@@ -47,4 +49,21 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     fun getCurrentLocation(): LiveData<CurrentLocationData> {
         return currentLocation
     }
+
+    fun deleteLocationItem(id: Int) {
+        repository.deleteLocationItem(id)
+    }
+
+    fun editLocationItem(name: String, x: String, y:String, time:String, isAlarmed:Boolean, done:Boolean, daysMode:Boolean, days:String, id: Int) {
+        repository.editLocationItem(name, x, y, time, isAlarmed, done, daysMode, days, id)
+    }
+
+    fun getStats(): LiveData<StatsData> {
+        return statsData
+    }
+
+    fun resetStats() {
+        repository.resetStats()
+    }
+
 }

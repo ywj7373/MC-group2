@@ -62,3 +62,17 @@ data class AlarmTimeData(
     @field:SerializedName("id")
     var id: Int = 0
 }
+
+@Entity(tableName = "stats")
+data class StatsData(
+    @field:SerializedName("ontime")
+    val ontime: Int,
+
+    @field:SerializedName("absent")
+    val absent: Int
+)
+{
+    @PrimaryKey
+    @field:SerializedName("id")
+    var id: Int = 0
+}

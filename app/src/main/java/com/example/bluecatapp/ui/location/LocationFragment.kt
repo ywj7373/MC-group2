@@ -19,12 +19,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationItemData
 import kotlinx.android.synthetic.main.fragment_location.*
+import androidx.recyclerview.widget.RecyclerView
+import androidx.annotation.NonNull
+
+
+
 
 class LocationFragment : Fragment() {
     private val TAG = "Location Fragment"
     private lateinit var locationViewModel: LocationViewModel
     private val PERMISSION_ID = 270
-    private val locationAdapter = LocationAdapter()
+    private lateinit var locationAdapter: LocationAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,7 +40,7 @@ class LocationFragment : Fragment() {
         //initialize view model
         val root = inflater.inflate(R.layout.fragment_location, container, false)
         locationViewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
-
+        locationAdapter = LocationAdapter(locationViewModel)
         locationViewModel.getAllLocationItems().observe(this,
             Observer<List<LocationItemData>> { t -> locationAdapter.setLocationItems(t!!) })
 
@@ -48,6 +53,40 @@ class LocationFragment : Fragment() {
                 else {
                     next_loc.text = resources.getString(R.string.next_loc)
                     time_loc.text = resources.getString(R.string.time_loc)
+                }
+            })
+
+        // Statistics
+        locationViewModel.getStats().observe(this,
+            Observer {
+                if (it != null) {
+                    val ontime = it.ontime
+                    val absent = it.absent
+                    val ratio = if( ontime+absent != 0 ) ontime.toDouble()/(ontime+absent) else 1.0
+
+                    if(ratio >= 0.9)
+                        grade.text = "A+"
+                    else if(ratio >= 0.8)
+                        grade.text = "A0"
+                    else if(ratio >= 0.7)
+                        grade.text = "A-"
+                    else if(ratio >= 0.6)
+                        grade.text = "B+"
+                    else if(ratio >= 0.5)
+                        grade.text = "B0"
+                    else if(ratio >= 0.4)
+                        grade.text = "B-"
+                    else if(ratio >= 0.3)
+                        grade.text = "C+"
+                    else
+                        grade.text = "F"
+
+                    stat_label.text = "On-time: " + ontime + " times | Absent: " + absent + " time"
+                }
+                else {
+                    grade.text = "A+"
+                    stat_label.text = "On-time: 0 times | Absent: 0 time"
+                    locationViewModel.resetStats()
                 }
             })
 
@@ -79,6 +118,7 @@ class LocationFragment : Fragment() {
         return when (item.itemId) {
             R.id.addItemButton -> {
                 val intent = Intent(requireContext(), AddLocationActivity::class.java)
+                intent.putExtra("Editmode", false)
                 startActivity(intent)
                 true
             }

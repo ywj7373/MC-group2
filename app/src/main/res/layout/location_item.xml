@@ -1,9 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+<com.daimajia.swipe.SwipeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent" android:layout_height="50dp">
+<!-- Bottom View Start-->
+<LinearLayout
+    android:background="#ffffff"
+    android:id="@+id/bottom_wrapper"
+    android:layout_width="160dp"
+    android:weightSum="2"
+    android:layout_height="50dp"
+    android:orientation="horizontal">
+    <!--What you want to show-->
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="#00ff00"
+        android:text = "EDIT"
+        android:id="@+id/edit_button"
+        />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="#ff0000"
+        android:text = "DELETE"
+        android:id="@+id/delete_button"
+        />
+</LinearLayout>
+<!-- Bottom View End-->
+
+<!-- Surface View Start -->
+
+    <!--What you want to show in SurfaceView-->
 
     <RelativeLayout
         android:id="@+id/location_item_container"
@@ -55,5 +83,5 @@
             android:layout_alignParentBottom="true"
             android:background="#E4E0E0" />
     </RelativeLayout>
-
-</androidx.cardview.widget.CardView>
+<!-- Surface View End -->
+</com.daimajia.swipe.SwipeLayout>

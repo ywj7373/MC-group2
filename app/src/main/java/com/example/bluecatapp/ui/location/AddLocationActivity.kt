@@ -45,11 +45,22 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private var dayOfMonth: Int = 0
     private var days_mode_set: Boolean = false
     private var picked = false
+    private var editmode = false
+
+    private var intentx:String = ""
+    private var intenty:String = ""
+    private var intentname:String = ""
+    private var intenttime:String = ""
+    private var intentdays:String = ""
+    private var intentdaysMode:Boolean = false
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_location)
         locationViewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
+        editmode = intent.getBooleanExtra("Editmode", false)
 
         //set current location
         locationViewModel.getCurrentLocation().observe(this,
@@ -92,6 +103,40 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
         dateText.text = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(current.time)
 
+        // Edit Mode Initialization
+        if(editmode) {
+            intentname = intent.getStringExtra("name")
+            intentx = intent.getStringExtra("x")
+            intenty = intent.getStringExtra("y")
+            intenttime = intent.getStringExtra("time")
+            intentdays = intent.getStringExtra("days")
+            intentdaysMode = intent.getBooleanExtra("daysMode", false)
+
+            addButton.setText("Edit")
+            year = intenttime.substring(0,4).toInt()
+            monthOfYear = intenttime.substring(5,7).toInt()
+            dayOfMonth = intenttime.substring(8, 10).toInt()
+            location_edit_time.hour = intenttime.substring(11, 13).toInt()
+            location_edit_time.minute = intenttime.substring(14, 16).toInt()
+            dateText.text = intenttime.substring(0, 10)
+
+            if(intentdaysMode) {
+                dateText.text = intentdays
+
+                if(intentdays.contains("SUN")) dayButtons[0].setChecked(true)
+                if(intentdays.contains("MON")) dayButtons[1].setChecked(true)
+                if(intentdays.contains("TUE")) dayButtons[2].setChecked(true)
+                if(intentdays.contains("WED")) dayButtons[3].setChecked(true)
+                if(intentdays.contains("THU")) dayButtons[4].setChecked(true)
+                if(intentdays.contains("FRI")) dayButtons[5].setChecked(true)
+                if(intentdays.contains("SAT")) dayButtons[6].setChecked(true)
+            }
+            days_mode_set = intentdaysMode
+
+            loc1.setText(intentname)
+            loc1.setBackgroundColor(Color.GREEN)
+        }
+
         //set click listener
         dateButton.setOnClickListener(this)
         addButton.setOnClickListener(this)
@@ -103,6 +148,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
 
         for (tb in dayButtons)
             tb.setOnClickListener(this)
+
+
     }
 
     override fun onSearchConfirmed(text: CharSequence?) {
@@ -122,7 +169,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         when (v.id) {
             R.id.dateButton -> openDatePickDialog()
             R.id.addButton -> {
-                if (picked) addNewSchedule()
+                if (picked or editmode) addNewSchedule()
                 else Toast.makeText(this@AddLocationActivity, "Please select a valid location!", Toast.LENGTH_SHORT).show()
             }
             R.id.toggleButton1, R.id.toggleButton2, R.id.toggleButton3, R.id.toggleButton4,
@@ -277,13 +324,30 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         val time = String.format("%04d-%02d-%02d %02d:%02d:00", year, monthOfYear+1, dayOfMonth,
             location_edit_time.hour, location_edit_time.minute)
 
-        val newLocationItem = LocationItemData(
+        val newLocationItem =
+            if (!picked and editmode)
+                LocationItemData(
+                intentname,
+                intentx, intenty,
+                time, isAlarmed, done,
+                days_mode_set, dateText.text.toString())
+            else
+                LocationItemData(
             place?.name ?: "Unknown",
             place?.x ?: "0", place?.y ?: "0",
-            time, isAlarmed, done,
-            days_mode_set, dateText.text.toString())
+             time, isAlarmed, done,
+             days_mode_set, dateText.text.toString())
 
-        locationViewModel.insert(newLocationItem)
+        if(editmode) {
+            val id = intent.getIntExtra("Id", 0)
+            locationViewModel.editLocationItem(newLocationItem.name,
+                newLocationItem.x, newLocationItem.y, newLocationItem.time,
+                newLocationItem.isAlarmed, newLocationItem.done,
+                newLocationItem.daysMode, newLocationItem.days, id)
+        }
+        else {
+            locationViewModel.insert(newLocationItem)
+        }
         finish()
     }
 
