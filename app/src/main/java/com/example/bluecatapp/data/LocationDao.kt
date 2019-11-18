@@ -51,3 +51,19 @@ interface AlarmTimeDao {
     @Query("SELECT * FROM alarm_time")
     fun getAlarmTime(): AlarmTimeData
 }
+
+@Dao
+interface StatsDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(statsData: StatsData)
+
+    @Query("SELECT * FROM stats")
+    fun getStatsData(): LiveData<StatsData>
+
+    @Query("UPDATE stats SET ontime = ontime + 1")
+    fun increaseOntime()
+
+    @Query("UPDATE stats SET absent = absent + 1")
+    fun increaseAbsent()
+
+}

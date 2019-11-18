@@ -56,6 +56,40 @@ class LocationFragment : Fragment() {
                 }
             })
 
+        // Statistics
+        locationViewModel.getStats().observe(this,
+            Observer {
+                if (it != null) {
+                    val ontime = it.ontime
+                    val absent = it.absent
+                    val ratio = if( ontime+absent != 0 ) ontime.toDouble()/(ontime+absent) else 1.0
+
+                    if(ratio >= 0.9)
+                        grade.text = "A+"
+                    else if(ratio >= 0.8)
+                        grade.text = "A0"
+                    else if(ratio >= 0.7)
+                        grade.text = "A-"
+                    else if(ratio >= 0.6)
+                        grade.text = "B+"
+                    else if(ratio >= 0.5)
+                        grade.text = "B0"
+                    else if(ratio >= 0.4)
+                        grade.text = "B-"
+                    else if(ratio >= 0.3)
+                        grade.text = "C+"
+                    else
+                        grade.text = "F"
+
+                    stat_label.text = "On-time: " + ontime + " times | Absent: " + absent + " time"
+                }
+                else {
+                    grade.text = "A+"
+                    stat_label.text = "On-time: 0 times | Absent: 0 time"
+                    locationViewModel.resetStats()
+                }
+            })
+
         startLocationService()
 
         return root

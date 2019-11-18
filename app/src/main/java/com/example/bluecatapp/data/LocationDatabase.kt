@@ -122,3 +122,38 @@ abstract class AlarmTimeDatabase : RoomDatabase() {
         }
     }
 }
+
+@Database(entities = [StatsData::class], version = 1)
+abstract class StatsDatabase : RoomDatabase() {
+
+    abstract fun statsDao(): StatsDao
+
+    companion object {
+        private var instance: StatsDatabase? = null
+
+        fun getInstance(context: Context): StatsDatabase? {
+            if (instance == null) {
+                synchronized(StatsDatabase::class) {
+                    instance = Room.databaseBuilder(
+                        context.applicationContext,
+                        StatsDatabase::class.java, "stats"
+                    )
+                        .fallbackToDestructiveMigration()
+                        .addCallback(roomCallback)
+                        .build()
+                }
+            }
+            return instance
+        }
+
+        fun destroyInstance() {
+            instance = null
+        }
+
+        private val roomCallback = object : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+            }
+        }
+    }
+}
