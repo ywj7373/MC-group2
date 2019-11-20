@@ -158,14 +158,14 @@ class RoutineService : Service {
 
                     //check if the user is around schedule's location
                     if (getDistanceFromLatLonInKm(srcLat, srcLong, destination!!.y.toDouble(), destination!!.x.toDouble()) <= 0.1 ) {
-                        //------------------------Not yet implemented----------------------
-
-
+                        Log.d(TAG, "Made on time")
+                        LocationRepository(application).increaseOntime()
                     }
                     else {
                         Log.d(TAG, "Missed schedule")
                         val text = "You are late!"
                         callNotification(text, 100)
+                        LocationRepository(application).increaseAbsent()
                     }
                 }
                 //check if current time passed alarm time

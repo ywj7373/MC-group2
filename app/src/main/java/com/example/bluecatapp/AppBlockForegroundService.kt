@@ -7,8 +7,6 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.hardware.Sensor
-import android.hardware.SensorManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -22,19 +20,26 @@ import com.google.gson.reflect.TypeToken
 
 
 class AppBlockForegroundService : Service() {
+    // Constants
     private val CHANNEL_ID = "AppBlockForegroundService"
-    private lateinit var appOps: AppOpsManager
+    private val UPDATE_INTERVAL: Long = 1000
+
+    // Mutable maps for blocked app list
     private lateinit var myUsageStatsMap: MutableMap<String, UsageStats>
+    private lateinit var currentlyBlockedApps: MutableMap<String, Long>
+    private lateinit var appUsageTimers: MutableMap<String, Long>
+    private lateinit var appStepCounters: MutableMap<String, Int> // stores step count for blocked apps
+
+    private lateinit var appOps: AppOpsManager
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
-    private val UPDATE_INTERVAL: Long = 1000
-    private lateinit var currentlyBlockedApps: MutableMap<String, Long>
     private lateinit var sharedPrefs: SharedPreferences
-    private lateinit var appUsageTimers: MutableMap<String, Long>
     private lateinit var currentAppUsageTimerHandler: Handler
     private var currentAppUsageTimerRunnable: Runnable = Runnable {}
     private var currentAppUsage: Long = 0
     private var prevDetectedForegroundAppPackageName: String? = null
+    private var maxStepCount = 0
+
 
     companion object {
         fun startService(context: Context, message: String) {
@@ -51,20 +56,17 @@ class AppBlockForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         appUsageTimers = mutableMapOf()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("bcat", "Started app blocking service.")
-//        monitorStartTimeStamp = System.currentTimeMillis()
-//        Toast.makeText(
-//            this.applicationContext,
-//            "Monitoring from $monitorStartTimeStamp : ${monitorStartTimeStamp / (1000 * 3600) % 24} ms",
-//            Toast.LENGTH_SHORT
-//        ).show()
+
         // Load preferences
-        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+//        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+        maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
 
         val input = intent?.getStringExtra("inputExtra")
         createNotificationChannel()
@@ -176,6 +178,18 @@ class AppBlockForegroundService : Service() {
         return currentlyBlockedApps
     }
 
+    private fun getAppStepCounters(): MutableMap<String, Int> {
+        val type = object : TypeToken<MutableMap<String, Int>>() {}.type
+        val appStepCountersJson = sharedPrefs.getString("appStepCounters", null)
+
+        appStepCounters =
+            if (appStepCountersJson !== null) MainActivity.gson.fromJson(
+                appStepCountersJson,
+                type
+            ) else mutableMapOf()
+        return appStepCounters
+    }
+
     private fun blockApp(packageName: String) {
         Log.d(
             "bcat",
@@ -191,8 +205,9 @@ class AppBlockForegroundService : Service() {
     }
 
     private fun checkIfShouldBlockForegroundApp() {
-
         currentlyBlockedApps = getCurrentlyBlockedApps()
+        appStepCounters = getAppStepCounters()
+
         if (hasUsageDataAccessPermission()) {
             val foregroundApp = getForegroundApp()
             val maxTimeLimit: Long = sharedPrefs.getString("time_limit", "${10 * 1000}")!!.toLong()
@@ -305,13 +320,18 @@ class AppBlockForegroundService : Service() {
         var didChange = false
         var unblockList: MutableSet<String> = mutableSetOf()
         currentlyBlockedApps.forEach { (appName, unblockTime) ->
-            if (unblockTime < System.currentTimeMillis()) {
+            if (unblockTime < System.currentTimeMillis()
+                && (appStepCounters[appName]!! >= maxStepCount)) {
                 unblockList.add(appName)
                 didChange = true
             }
         }
         if (didChange) {
-            unblockList.forEach { currentlyBlockedApps.remove(it) }
+            // remove apps from unblock lists
+            unblockList.forEach {
+                currentlyBlockedApps.remove(it)
+                appStepCounters.remove(it)
+            }
             var unblockListPrettyNames = ""
             unblockList.forEach { appName ->
                 unblockListPrettyNames += "${
@@ -328,6 +348,7 @@ class AppBlockForegroundService : Service() {
                 .show()
             with(sharedPrefs.edit()) {
                 putString("currentlyBlockedApps", MainActivity.gson.toJson(currentlyBlockedApps))
+                putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
                 commit()
             }
         }
@@ -335,13 +356,14 @@ class AppBlockForegroundService : Service() {
 
     private fun checkForAppUsagesToReset() {
         val blockDuration: Long =
-            sharedPrefs.getString("block_duration", "${10 * 60 * 1000}")?.toLong() ?: (10 * 60
-                    * 1000) // Default 10 seconds
+            sharedPrefs.getString("block_duration", "${10 * 60 * 1000}")!!.toLong()
         val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
 
         appUsageTimers.forEach { (packageName: String, usageTime: Long) ->
             val usageStats: UsageStats? = getUsageStatsForApp(packageName)
-            if (usageTime > 0 && restrictedApps.contains(packageName) && usageStats?.lastTimeUsed != null && System.currentTimeMillis() - usageStats.lastTimeUsed > blockDuration) {
+            if (usageTime > 0 && restrictedApps.contains(packageName)
+                    && (usageStats?.lastTimeUsed != null)
+                        && ((System.currentTimeMillis() - usageStats.lastTimeUsed) > blockDuration)) {
                 resetTimer(packageName)
                 Toast.makeText(
                     this.applicationContext, "Reset app usage for ${getAppNameFromPackage(
@@ -371,10 +393,12 @@ class AppBlockForegroundService : Service() {
             sharedPrefs.getString("block_duration", "${10 * 60 * 1000}")?.toLong() ?: (10 * 60
                     * 1000) // Default 10 seconds
 
-        currentlyBlockedApps[packageName] =
-            System.currentTimeMillis() + blockDuration
+        currentlyBlockedApps[packageName] = System.currentTimeMillis() + blockDuration
+        appStepCounters[packageName] = 0 // initialize step count as 0
+
         with(sharedPrefs.edit()) {
             putString("currentlyBlockedApps", MainActivity.gson.toJson(currentlyBlockedApps))
+            putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
             commit()
         }
         resetTimer(packageName)
@@ -401,12 +425,6 @@ class AppBlockForegroundService : Service() {
             }
         }
         return packageName
-    }
-
-    private fun stepCounter() {
-        val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-        //TODO: preserve battery using JobScheduler class to detect step count at specific intervals
     }
 }
 

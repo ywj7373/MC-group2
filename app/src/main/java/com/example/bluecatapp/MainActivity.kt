@@ -1,6 +1,8 @@
 package com.example.bluecatapp
 
 import android.app.Activity
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -30,13 +32,10 @@ object FragmentToLoad {
 }
 
 class MainActivity : AppCompatActivity() {
-    private val ADD_TODO_REQUEST = 1
-    private lateinit var todoViewModel: TodoViewModel
+    private lateinit var hwAlarmReceiver: HwAlarmReceiver
 
     private lateinit var preference: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
-
-//    private lateinit var sensorManager: SensorManager
 
     companion object {
         val gson = Gson()
@@ -48,6 +47,8 @@ class MainActivity : AppCompatActivity() {
 
         preference = PreferenceManager.getDefaultSharedPreferences(this)
         editor = preference.edit()
+
+        hwAlarmReceiver = HwAlarmReceiver()
 
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment)
@@ -72,31 +73,22 @@ class MainActivity : AppCompatActivity() {
             3 -> navController.navigate(R.id.navigation_settings)
         }
 
-//        this.sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-//
-//        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let {
-//            this.accelerometer = it
-//        }
-//
-//        sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)?.let {
-//            this.gravity = it
-//        }
-//
-//        sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)?.let {
-//            this.gyroscope = it
-//        }
-//
-//        sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)?.let {
-//            this.linearAcceleration = it
-//        }
-//
-//        sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.let {
-//            this.rotationVector = it
-//        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        editor.putBoolean(getString(R.string.hw_mode_bool),false) // set hw_mode_bool to false when app turns off
+
+        // * if the hw_mode is turned not turn on when the app is destroyed, make sure to destroy the alarm
+        // * it's deleted when the hw mode gets turned off, but just to make sure.
+        if(!preference.getBoolean(getString(R.string.hw_mode_bool),false)){
+            try{
+                hwAlarmReceiver.cancelAlarm(this,R.integer.ALARM_NOTI_REQUEST_CODE)
+                hwAlarmReceiver.cancelAlarm(this,R.integer.ALARM_FINAL_REQUEST_CODE)
+            }catch (e : Exception){
+                Log.d("Main:onDestroy",e.message)
+            }
+        }
+
+
     }
 }

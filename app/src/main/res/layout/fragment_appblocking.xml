@@ -41,7 +41,7 @@
             android:id="@+id/currently_blocked_app"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="72dp"
             android:text="No Currently Blocked Apps"
             android:textSize="24sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -55,7 +55,7 @@
             android:text="Time left until app is unblocked"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/currently_blocked_app" />
+            app:layout_constraintTop_toBottomOf="@+id/appIcon" />
 
         <Chronometer
             android:id="@+id/view_timer"
@@ -94,15 +94,13 @@
             android:id="@+id/step_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="288dp"
-            android:text="TextView"
+            android:text="Step Count"
             android:textColor="#000000"
             android:textSize="30sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.496"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/step_explanation"
-            app:layout_constraintVertical_bias="1.0" />
+            app:layout_constraintTop_toBottomOf="@+id/step_explanation" />
 
         <TextView
             android:id="@+id/appListTitle"
@@ -121,10 +119,21 @@
             android:id="@+id/appblocking_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="55dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/appListTitle" />
+
+        <ImageView
+            android:id="@+id/appIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/currently_blocked_app"
+            app:srcCompat="@android:drawable/sym_def_app_icon" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
