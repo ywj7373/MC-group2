@@ -1,6 +1,5 @@
 package com.example.bluecatapp.ui.appblocking
 
-import android.Manifest
 import android.Manifest.permission.ACTIVITY_RECOGNITION
 import android.app.AlertDialog
 import android.app.AppOpsManager
@@ -11,9 +10,9 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.hardware.Sensor
-import android.hardware.SensorManager
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -24,19 +23,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Chronometer
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.preference.PreferenceManager
-import androidx.preference.PreferenceManager.*
+import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
 import com.google.gson.reflect.TypeToken
-import com.naver.maps.map.e
 import kotlinx.android.synthetic.main.fragment_appblocking.*
 
 
@@ -60,7 +60,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var pedometerTitle: TextView
     private lateinit var pedometerLabel: TextView
     private lateinit var pedometerValue: TextView
-    private var pedometerSensor:Sensor ?= null
+    private var pedometerSensor: Sensor? = null
     private var maxStepCount: Int = 10
 
 
@@ -75,36 +75,7 @@ class AppBlockingFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
-                    200
-                )
-        }
-        sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensorManager!!.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)?.let {
-            pedometerSensor = it
-        }
 
-        if (pedometerSensor != null) {
-            sensorManager.registerListener(
-                stepCounter(),
-                pedometerSensor,
-                SensorManager.SENSOR_DELAY_NORMAL
-            )
-            Toast.makeText(
-                activity!!.applicationContext,
-                "PEDOMETER CREATED",
-                Toast.LENGTH_SHORT
-            ).show()
-        } else {
-            Toast.makeText(
-                activity!!.applicationContext,
-                "PEDOMETER NOT FOUND",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
     }
 
 //    override fun onResume() {
@@ -134,8 +105,6 @@ class AppBlockingFragment : Fragment() {
 //            textView.text = it
 //        })
 
-        sharedPrefs = getDefaultSharedPreferences(this.context)
-
         // Initialize app block views
         blockedAppName = root.findViewById(R.id.currently_blocked_app)
         chrono = root.findViewById(R.id.view_timer)
@@ -147,14 +116,49 @@ class AppBlockingFragment : Fragment() {
         pedometerLabel = root.findViewById(R.id.step_explanation)
         pedometerValue = root.findViewById(R.id.step_count)
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(ACTIVITY_RECOGNITION),
+                200
+            )
+        }
+        sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)?.let {
+            pedometerSensor = it
+        }
+        sharedPrefs = getDefaultSharedPreferences(this.context)
+        val pedometerEnabled = sharedPrefs.getBoolean("Pedometer", false)
+        Log.d("bcat", "behehehehheeh " + pedometerEnabled)
+        if (pedometerEnabled) {
+            if (pedometerSensor != null) {
+                sensorManager.registerListener(
+                    stepCounter(),
+                    pedometerSensor,
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+                Toast.makeText(
+                    activity!!.applicationContext,
+                    "PEDOMETER CREATED",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                Toast.makeText(
+                    activity!!.applicationContext,
+                    "PEDOMETER NOT FOUND",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
         // Retrieve makeStepCount from sharedPreferences
         maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
 
         // Check if app blocking enabled in Settings
         val isEnabled = sharedPrefs.getBoolean(getString(R.string.appblock), false)
-        if(isEnabled){
+        if (isEnabled) {
             AppBlockForegroundService.startService(context!!, "Monitoring...")
-        } else{
+        } else {
             AppBlockForegroundService.stopService(context!!)
         }
 
@@ -165,13 +169,13 @@ class AppBlockingFragment : Fragment() {
                 blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
                 pedometerValue.setText("${appStepCounters[appPackageName]} / $maxStepCount")
                 appIcon.setImageDrawable(getAppIcon(appPackageName))
-                if(System.currentTimeMillis() < finishTimeStamp) {
+                if (System.currentTimeMillis() < finishTimeStamp) {
                     getBlockCountdown(
                         finishTimeStamp,
                         chrono
                     ).start()
                 }
-                if(appStepCounters[appPackageName]!! < maxStepCount) {
+                if (appStepCounters[appPackageName]!! < maxStepCount) {
                     // Start pedometer simulation
                     simulatePedometer(appPackageName, maxStepCount)
                 }
@@ -183,7 +187,7 @@ class AppBlockingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        appblocking_recycler_view.apply{
+        appblocking_recycler_view.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(activity)
             adapter = AppBlockingAdapter(getAdapterList(), maxStepCount)
@@ -266,11 +270,10 @@ class AppBlockingFragment : Fragment() {
     }
 
     private fun getAppIcon(packageName: String): Drawable? {
-        var icon: Drawable ?= null
+        var icon: Drawable? = null
         try {
             icon = packageManager.getApplicationIcon(packageName)
-        }
-        catch (e: PackageManager.NameNotFoundException) {
+        } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
         }
         return icon
@@ -306,16 +309,20 @@ class AppBlockingFragment : Fragment() {
     private fun getAdapterList(): List<List<Any?>> {
         var blockedAppList: MutableList<List<Any?>> = arrayListOf()
         currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
-            blockedAppList.add(listOf(getAppNameFromPackage(appPackageName, context!!),
-                finishTimeStamp, appStepCounters[appPackageName], getAppIcon(appPackageName)))
+            blockedAppList.add(
+                listOf(
+                    getAppNameFromPackage(appPackageName, context!!),
+                    finishTimeStamp, appStepCounters[appPackageName], getAppIcon(appPackageName)
+                )
+            )
         }
         return blockedAppList
     }
 
-    private fun stepCounter() : SensorEventListener {
-        return object: SensorEventListener {
+    private fun stepCounter(): SensorEventListener {
+        return object : SensorEventListener {
 
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
             override fun onSensorChanged(event: SensorEvent?) {
                 val currentStepCount = event!!.values[0].toInt()
@@ -356,14 +363,14 @@ class AppBlockingFragment : Fragment() {
     }
 
     // Check if device has built-in system feature
-    private fun checkSensorFeatures(feature: String){
-        if(packageManager.hasSystemFeature(feature)){
+    private fun checkSensorFeatures(feature: String) {
+        if (packageManager.hasSystemFeature(feature)) {
             Toast.makeText(
                 activity!!.applicationContext,
                 "$feature feature found",
                 Toast.LENGTH_SHORT
             ).show()
-        } else{
+        } else {
             Toast.makeText(
                 activity!!.applicationContext,
                 "$feature feature not found",
@@ -372,7 +379,7 @@ class AppBlockingFragment : Fragment() {
         }
     }
 
-    private fun hideViews(){
+    private fun hideViews() {
         //Hide app blocking countdown and pedometer views if no currently blocked apps
         blockedAppName.text = "No blocked apps at the moment"
         appIcon.visibility = View.INVISIBLE
