@@ -240,22 +240,21 @@ class AppBlockForegroundService : Service() {
                     // App should be blocked
                     addToBlockList(foregroundApp)
                 }
+                Log.d(
+                    "bcat",
+                    "| Open app: ${getAppNameFromPackage(
+                        foregroundApp,
+                        this.applicationContext
+                    )} | Blocked apps: $currentlyBlockedApps | Restricted app usage: $currentAppUsage | Max time: ${maxTimeLimit / 1000}s | Block duration: ${blockDuration / 1000}s |"
+                )
             }
-
-            Log.d(
-                "bcat",
-                "| Open app: ${getAppNameFromPackage(
-                    foregroundApp!!,
-                    this.applicationContext
-                )} | Blocked apps: $currentlyBlockedApps | Restricted app usage: $currentAppUsage | Max time: ${maxTimeLimit / 1000}s | Block duration: ${blockDuration / 1000}s |"
-            )
 
             if (!prevDetectedForegroundAppPackageName.equals(foregroundApp)) {
                 // A new app has been opened
                 // Stop the timer for the old restricted app, if any.
                 onCloseRestrictedApp()
                 Log.d("bcat", "Cleaned up old timer (that might never have been started btw)")
-                if (restrictedApps.contains(foregroundApp)) {
+                if (foregroundApp != null && restrictedApps.contains(foregroundApp)) {
                     // Start the timer for the newly opened restricted app
                     onOpenRestrictedApp(foregroundApp)
                     Log.d("bcat", "Started up new timer")
@@ -321,7 +320,8 @@ class AppBlockForegroundService : Service() {
         var unblockList: MutableSet<String> = mutableSetOf()
         currentlyBlockedApps.forEach { (appName, unblockTime) ->
             if (unblockTime < System.currentTimeMillis()
-                && (appStepCounters[appName]!! >= maxStepCount)) {
+                && (appStepCounters[appName]!! >= maxStepCount)
+            ) {
                 unblockList.add(appName)
                 didChange = true
             }
@@ -362,8 +362,9 @@ class AppBlockForegroundService : Service() {
         appUsageTimers.forEach { (packageName: String, usageTime: Long) ->
             val usageStats: UsageStats? = getUsageStatsForApp(packageName)
             if (usageTime > 0 && restrictedApps.contains(packageName)
-                    && (usageStats?.lastTimeUsed != null)
-                        && ((System.currentTimeMillis() - usageStats.lastTimeUsed) > blockDuration)) {
+                && (usageStats?.lastTimeUsed != null)
+                && ((System.currentTimeMillis() - usageStats.lastTimeUsed) > blockDuration)
+            ) {
                 resetTimer(packageName)
                 Toast.makeText(
                     this.applicationContext, "Reset app usage for ${getAppNameFromPackage(
