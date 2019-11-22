@@ -3,6 +3,7 @@ package com.example.bluecatapp.ui.location
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.IBinder
 import android.os.Build
 import android.content.pm.PackageManager
@@ -44,6 +45,7 @@ class RoutineService : Service {
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var odsayService : ODsayService
     private lateinit var notificationManager: NotificationManager
+    private lateinit var sharedPreferences: SharedPreferences
     private var srcLong : Double = 0.0
     private var srcLat : Double = 0.0
     private val routineNotificationId  = "BLUECAT_ROUTINE_ALARM"
@@ -58,7 +60,7 @@ class RoutineService : Service {
 
         startNotification()
 
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val on = sharedPreferences.getBoolean("Location Based Reminder", true)
 
         //observe change in current location
@@ -81,7 +83,7 @@ class RoutineService : Service {
                     if (srcLat != 0.0 && srcLong != 0.0)
                         updateEstimatedTime(srcLat, srcLong)
                     if (on) checkTime()
-                    else updateNotification("No Alarm")
+                    else updateNotification("Alarm Disabled")
                 }
                 else {
                     destination = null
@@ -97,14 +99,14 @@ class RoutineService : Service {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val on = sharedPreferences.getBoolean("Location Based Reminder", true)
+
         if (on) {
             checkCurrentLocation()
             checkTime()
         }
         else {
-            updateNotification("No Alarm")
+            updateNotification("Alarm Disabled")
         }
         return START_NOT_STICKY
     }
@@ -188,7 +190,6 @@ class RoutineService : Service {
                 val currentTime = System.currentTimeMillis()
                 val isAlarmed = destination!!.isAlarmed
                 val daysMode = destination!!.daysMode
-                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
                 val preparationTime = sharedPreferences.getString("Preparation_time", "20")!!.toInt()
                 val alarmTime = time - timeToDest - (preparationTime * 60 * 1000)
 
