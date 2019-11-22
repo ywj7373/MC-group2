@@ -16,7 +16,7 @@ class RoutineReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "onReceive called")
         val mServiceIntent = Intent(context, RoutineService::class.java)
-
+        mServiceIntent.action = "Run"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(mServiceIntent)
         } else context.startService(mServiceIntent)
@@ -26,20 +26,28 @@ class RoutineReceiver : BroadcastReceiver() {
     fun setRoutine(context: Context) {
         // get a Calendar object with current time
         Log.d(TAG, "setRoutine called")
-        val cal = Calendar.getInstance()
-        val intent = Intent(context, RoutineReceiver::class.java)
-        val sender = PendingIntent.getBroadcast(context, ROUTINE_REQEUST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val receiverIntent = Intent(context, RoutineReceiver::class.java)
+        val sender = PendingIntent.getBroadcast(context, ROUTINE_REQEUST_CODE, receiverIntent, PendingIntent.FLAG_UPDATE_CURRENT)
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
         // Not accurate to 60 second in order to save battery. Use setExact to be accurate.
-        context.startService(Intent(context, RoutineService::class.java))
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 60000, sender)
+        val serviceIntent = Intent(context, RoutineService::class.java)
+        serviceIntent.action = "Run"
+        context.startService(serviceIntent)
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().timeInMillis, 60000, sender)
     }
 
     // Free AlarmManager
     fun unsetRoutine(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, RoutineReceiver::class.java)
-        val sender = PendingIntent.getBroadcast(context, ROUTINE_REQEUST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val receiverIntent = Intent(context, RoutineReceiver::class.java)
+        val sender = PendingIntent.getBroadcast(context, ROUTINE_REQEUST_CODE, receiverIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+        //stop foreground service
+        val serviceIntent = Intent(context, RoutineService::class.java)
+        serviceIntent.action = "Stop"
+        context.startService(serviceIntent)
+        //stop alarm manager
         alarmManager.cancel(sender)
     }
 }

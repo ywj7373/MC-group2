@@ -44,12 +44,12 @@ interface CurrentLocationDao {
 }
 
 @Dao
-interface AlarmTimeDao {
+interface TravelTimeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(alarmTime: AlarmTimeData)
+    fun insert(travelTime: TravelTimeData)
 
-    @Query("SELECT * FROM alarm_time")
-    fun getAlarmTime(): AlarmTimeData
+    @Query("SELECT * FROM travel_time")
+    fun getTravelTime(): TravelTimeData
 }
 
 @Dao
@@ -65,5 +65,4 @@ interface StatsDao {
 
     @Query("UPDATE stats SET absent = absent + 1")
     fun increaseAbsent()
-
 }

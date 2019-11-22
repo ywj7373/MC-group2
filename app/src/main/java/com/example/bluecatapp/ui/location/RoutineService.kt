@@ -1,23 +1,21 @@
 package com.example.bluecatapp.ui.location
 
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.Build
-import android.app.NotificationManager
-import android.app.NotificationChannel
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.LocationServices
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
+import androidx.preference.PreferenceManager
 import com.example.bluecatapp.R
-import com.example.bluecatapp.data.AlarmTimeData
+import com.example.bluecatapp.data.TravelTimeData
 import com.example.bluecatapp.data.CurrentLocationData
 import com.example.bluecatapp.data.LocationItemData
 import com.example.bluecatapp.data.LocationRepository
@@ -38,7 +36,7 @@ import kotlin.concurrent.thread
 const val ODsayTimeout = 5000
 const val LOCATION_TRACKER_INTERVAL: Long = 60000 //60s
 const val LOCATION_TRACKER_FASTEST_INTERVAL: Long = 55000 //55s
-const val alpha = 20 //min
+const val NOTIF_ID = 1
 
 class RoutineService : Service {
     private val TAG = "Routine Service"
@@ -84,6 +82,34 @@ class RoutineService : Service {
         odsayService.setConnectionTimeout(ODsayTimeout)
         odsayService.setReadTimeout(ODsayTimeout)
 
+        startNotification()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent!!.action.equals("Run")) {
+            checkCurrentLocation()
+            checkTime()
+        }
+        else if (intent!!.action.equals("Stop")) {
+            stopForeground(true)
+            stopSelf()
+        }
+        return START_NOT_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            stopForeground(true)
+        }
+    }
+
+    override fun onBind(p0: Intent?): IBinder? {
+        return null
+    }
+
+    private fun startNotification() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             //Initialize notification manager
             notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -103,31 +129,38 @@ class RoutineService : Service {
                 notificationManager.createNotificationChannel(channel2)
             }
 
+            val contentIntent= PendingIntent.getActivity(this, 0, Intent(this, LocationFragment::class.java),0)
+
             //start foreground notification
             val builder = NotificationCompat.Builder(this, routineNotificationId)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentText("Tracking Location")
+                .setContentText("No alarm")
+                .setContentIntent(contentIntent)
                 .build()
-            startForeground(1, builder)
+            startForeground(NOTIF_ID, builder)
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        checkCurrentLocation()
-        checkTime()
-        return START_NOT_STICKY
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
+    private fun getMyActivityNotification(text: String): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            stopForeground(true)
+            notificationManager.createNotificationChannel(
+                NotificationChannel(routineNotificationId, notificationTitle, NotificationManager.IMPORTANCE_HIGH))
         }
+
+        val contentIntent= PendingIntent.getActivity(this, 0, Intent(this, LocationFragment::class.java),0)
+
+        return NotificationCompat.Builder(this,routineNotificationId)
+            .setContentText(text)
+            .setOnlyAlertOnce(true) // so when data is updated don't make sound and alert in android 8.0+
+            .setOngoing(true)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentIntent(contentIntent)
+            .build()
     }
 
-    override fun onBind(p0: Intent?): IBinder? {
-        return null
+    private fun updateNotification(text: String) {
+        val notification: Notification = getMyActivityNotification(text)
+        notificationManager.notify(NOTIF_ID, notification)
     }
 
     //check if it is time to send notificaton or alarm
@@ -135,17 +168,25 @@ class RoutineService : Service {
         //get priority location's estimated time
         thread(start = true) {
             if (destination != null) {
-                val alarmTime = LocationRepository(application).getAlarmTime().time
-                Log.d(TAG, alarmTime)
+                val travelTime = LocationRepository(application).getTravelTime().time
+                Log.d(TAG, travelTime)
                 Log.d(TAG, destination!!.name)
                 Log.d(TAG, destination!!.time)
+
                 //when destination time is 12 -> the time is measured as 24
                 val time = timeToSeconds(destination!!.time)
-                val timeToDest = minToSeconds(alarmTime)
+                val timeToDest = minToSeconds(travelTime)
                 val currentTime = System.currentTimeMillis()
                 val isAlarmed = destination!!.isAlarmed
                 val daysMode = destination!!.daysMode
-                Log.d(TAG, "alarm rings at: " + Date(time - timeToDest - (alpha * 60 * 1000)).toString())
+                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                val preparationTime = sharedPreferences.getString(R.string.preparation_time.toString(), "20")!!.toInt()
+                val alarmTime = time - timeToDest - (preparationTime * 60 * 1000)
+
+                updateNotification(alarmTime.toString())
+
+                Log.d(TAG, preparationTime.toString())
+                Log.d(TAG, "alarm rings at: " + Date(alarmTime).toString())
                 Log.d(TAG, "current time: " + Date(currentTime).toString())
 
                 val simpleTimeFormat = SimpleDateFormat("hh:mm:ss", Locale.KOREA)
@@ -169,11 +210,11 @@ class RoutineService : Service {
                     }
                 }
                 //check if current time passed alarm time
-                else if (currentTime >= time - timeToDest - (alpha * 60 * 1000) && !isAlarmed) {
+                else if (currentTime >= alarmTime && !isAlarmed) {
                     Log.d(TAG, "entered")
                     //send notification
-                    val h = (alarmTime.toInt())/60
-                    val m = (alarmTime.toInt())%60
+                    val h = (travelTime.toInt())/60
+                    val m = (travelTime.toInt())%60
                     val text = "You need to prepare to go to " + destination!!.name +
                             ".\n It takes about " + h + "hours and " + m + " minutes to go there!"
 
@@ -289,7 +330,7 @@ class RoutineService : Service {
                         val msg = response.getJSONObject("error").getString("msg")
                         Log.d(TAG, msg)
                         thread(start = true) {
-                            LocationRepository(application).insertAlarmTime(AlarmTimeData("10"))
+                            LocationRepository(application).insertTravelTime(TravelTimeData("10"))
                         }
                     }
                     //update estimated time
@@ -299,7 +340,7 @@ class RoutineService : Service {
                             .getInt("totalTime").toString()
 
                         thread(start = true) {
-                            LocationRepository(application).insertAlarmTime(AlarmTimeData(inquiryResult))
+                            LocationRepository(application).insertTravelTime(TravelTimeData(inquiryResult))
                         }
                         Log.d(TAG, "Estimated Time of " + destination!!.name + " changed to " + inquiryResult)
                     }

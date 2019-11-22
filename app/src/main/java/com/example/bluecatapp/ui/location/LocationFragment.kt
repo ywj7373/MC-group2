@@ -3,8 +3,8 @@ package com.example.bluecatapp.ui.location
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
@@ -15,15 +15,11 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationItemData
 import kotlinx.android.synthetic.main.fragment_location.*
-import androidx.recyclerview.widget.RecyclerView
-import androidx.annotation.NonNull
-
-
-
 
 class LocationFragment : Fragment() {
     private val TAG = "Location Fragment"
@@ -138,7 +134,15 @@ class LocationFragment : Fragment() {
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
             }
-            else RoutineReceiver().setRoutine(requireContext())
+            else {
+                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                if (!sharedPreferences.getBoolean(R.string.enable_location.toString(), true)) {
+                    RoutineReceiver().setRoutine(requireContext())
+                }
+                else {
+                    RoutineReceiver().unsetRoutine(requireContext())
+                }
+            }
         }
         else requestLocationPermission()
     }
