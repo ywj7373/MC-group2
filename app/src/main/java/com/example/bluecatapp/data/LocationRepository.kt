@@ -9,28 +9,26 @@ class LocationRepository(application: Application) {
 
     private var locationItemDao: LocationItemDao
     private var currentLocationDao: CurrentLocationDao
-    private var alarmTimeDao: AlarmTimeDao
+    private var travelTimeDao: TravelTimeDao
     private var statsDao: StatsDao
     private var allLocationItems: LiveData<List<LocationItemData>>
 
     init {
         val locationItemDatabase: LocationItemDatabase = LocationItemDatabase.getInstance(application.applicationContext)!!
         val currentLocationDatabase: CurrentLocationDatabase = CurrentLocationDatabase.getInstance(application.applicationContext)!!
-        val alarmTimeDatabase: AlarmTimeDatabase = AlarmTimeDatabase.getInstance(application.applicationContext)!!
+        val travelTimeDatabase: TravelTimeDatabase = TravelTimeDatabase.getInstance(application.applicationContext)!!
         val statsDatabase: StatsDatabase = StatsDatabase.getInstance(application.applicationContext)!!
+
         locationItemDao = locationItemDatabase.locationItemDao()
         currentLocationDao = currentLocationDatabase.currentLocationDao()
-        alarmTimeDao = alarmTimeDatabase.alarmTimeDao()
+        travelTimeDao = travelTimeDatabase.travelTimeDao()
         statsDao = statsDatabase.statsDao()
         allLocationItems = locationItemDao.getAllLocationItems()
     }
 
+    //Location Item Database functions
     fun insertLocationItem(locationItem: LocationItemData) {
         InsertLocationItemAsyncTask(locationItemDao).execute(locationItem)
-    }
-
-    fun insertCurrentLocation(currentLocation: CurrentLocationData) {
-        InsertCurrentLocationAsyncTask(currentLocationDao).execute(currentLocation)
     }
 
     fun deleteAllLocationItems() {
@@ -39,10 +37,6 @@ class LocationRepository(application: Application) {
 
     fun getAllLocationItems(): LiveData<List<LocationItemData>> {
         return allLocationItems
-    }
-
-    fun getCurrentLocation(): LiveData<CurrentLocationData> {
-        return currentLocationDao.getCurrentLocation()
     }
 
     fun getPriorityDestination(dayOfWeek: String): LiveData<LocationItemData> {
@@ -61,14 +55,33 @@ class LocationRepository(application: Application) {
         locationItemDao.updateAllNotDoneDays()
     }
 
-    fun insertAlarmTime(alarmTime: AlarmTimeData) {
-        InsertAlarmTimeAsyncTask(alarmTimeDao).execute(alarmTime)
+    fun deleteLocationItem(id: Int) {
+        DeleteLocationITemAsyncTask(locationItemDao, id).execute()
     }
 
-    fun getAlarmTime(): AlarmTimeData {
-        return alarmTimeDao.getAlarmTime()
+    fun editLocationItem(name: String, x: String, y:String, time:String, isAlarmed:Boolean, done:Boolean, daysMode:Boolean, days:String, id: Int) {
+        EditLocationItemAsyncTask(locationItemDao, name, x, y, time, isAlarmed, done, daysMode, days, id).execute()
     }
 
+    //Current Location Database functions
+    fun getCurrentLocation(): LiveData<CurrentLocationData> {
+        return currentLocationDao.getCurrentLocation()
+    }
+
+    fun insertCurrentLocation(currentLocation: CurrentLocationData) {
+        InsertCurrentLocationAsyncTask(currentLocationDao).execute(currentLocation)
+    }
+
+    //Travel Time Database functions
+    fun insertTravelTime(travelTime: TravelTimeData) {
+        InsertTravelTimeAsyncTask(travelTimeDao).execute(travelTime)
+    }
+
+    fun getTravelTime(): TravelTimeData {
+        return travelTimeDao.getTravelTime()
+    }
+
+    //Statistics Database functions
     fun resetStats() {
         ResetStatsAsyncTask(statsDao).execute()
     }
@@ -77,22 +90,12 @@ class LocationRepository(application: Application) {
         return statsDao.getStatsData()
     }
 
-
     fun increaseAbsent() {
         statsDao.increaseAbsent()
     }
 
     fun increaseOntime() {
         statsDao.increaseOntime()
-    }
-
-
-    fun deleteLocationItem(id: Int) {
-        DeleteLocationITemAsyncTask(locationItemDao, id).execute()
-    }
-
-    fun editLocationItem(name: String, x: String, y:String, time:String, isAlarmed:Boolean, done:Boolean, daysMode:Boolean, days:String, id: Int) {
-        EditLocationItemAsyncTask(locationItemDao, name, x, y, time, isAlarmed, done, daysMode, days, id).execute()
     }
 
     private class InsertLocationItemAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItemData, Unit, Unit>() {
@@ -111,11 +114,11 @@ class LocationRepository(application: Application) {
         }
     }
 
-    private class InsertAlarmTimeAsyncTask(alarmTimeDao: AlarmTimeDao) : AsyncTask<AlarmTimeData, Unit, Unit>() {
-        val alarmTimeDao = alarmTimeDao
+    private class InsertTravelTimeAsyncTask(travelTimeDao: TravelTimeDao) : AsyncTask<TravelTimeData, Unit, Unit>() {
+        val travelTimeDao = travelTimeDao
 
-        override fun doInBackground(vararg params: AlarmTimeData?) {
-            alarmTimeDao.insert(params[0]!!)
+        override fun doInBackground(vararg params: TravelTimeData?) {
+            travelTimeDao.insert(params[0]!!)
         }
     }
 

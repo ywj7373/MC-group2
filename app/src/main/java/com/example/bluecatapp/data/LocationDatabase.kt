@@ -88,20 +88,20 @@ abstract class CurrentLocationDatabase : RoomDatabase() {
     }
 }
 
-@Database(entities = [AlarmTimeData::class], version = 1)
-abstract class AlarmTimeDatabase : RoomDatabase() {
+@Database(entities = [TravelTimeData::class], version = 1)
+abstract class TravelTimeDatabase : RoomDatabase() {
 
-    abstract fun alarmTimeDao(): AlarmTimeDao
+    abstract fun travelTimeDao(): TravelTimeDao
 
     companion object {
-        private var instance: AlarmTimeDatabase? = null
+        private var instance: TravelTimeDatabase? = null
 
-        fun getInstance(context: Context): AlarmTimeDatabase? {
+        fun getInstance(context: Context): TravelTimeDatabase? {
             if (instance == null) {
-                synchronized(AlarmTimeDatabase::class) {
+                synchronized(TravelTimeDatabase::class) {
                     instance = Room.databaseBuilder(
                         context.applicationContext,
-                        AlarmTimeDatabase::class.java, "alarm_time"
+                        TravelTimeDatabase::class.java, "travel_time"
                     )
                         .fallbackToDestructiveMigration()
                         .addCallback(roomCallback)

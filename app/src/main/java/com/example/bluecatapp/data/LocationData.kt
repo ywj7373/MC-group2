@@ -52,8 +52,8 @@ data class CurrentLocationData(
     var id: Int = 0
 }
 
-@Entity(tableName = "alarm_time")
-data class AlarmTimeData(
+@Entity(tableName = "travel_time")
+data class TravelTimeData(
     @field:SerializedName("time")
     val time: String
 )

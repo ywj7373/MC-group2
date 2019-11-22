@@ -13,6 +13,11 @@
     <string name="time_limit">Time Limit</string>
     <string name='pedometer'>Pedometer</string>
 
+    <string name="enable_location">Location Based Reminder</string>
+    <string name="enable_location_alarm">Enable Location Alarm</string>
+    <string name="preparation_time">Preparation Time</string>
+    <string name="reset_statistic">Reset Statistics</string>
+
     <string name='hw_time_key'>HW Mode time</string>
     <string name='hw_shake_val_key'>Shake Count HW Mode</string>
     <string name='hw_pedometer_bool_key'>Pedometer HW Mode</string>
@@ -46,6 +51,8 @@
     <string name="pedometer_count_title">Step Count</string>
     <string name="pedometer_count_summary">Select number of steps to complete</string>
 
+    <!-- Location Preferences -->
+
     <!-- hw mode -->
 
     <string name="hw_time_title">HW Mode time</string>
@@ -77,6 +84,7 @@
     </string>
 
     <!-- Location -->
+    <string name="preparation_time_value">20</string>
     <string name="odsay_key">Qyb4YWtiFBd/Oz07uS+2273XmRFWFYOTXil+4C6QsPs</string>
     <string name="naver_api_key_id">vdzq4ajyej</string>
     <string name="naver_api_key">A6CoEzf661hYYJ7qBkvILYG7spFDQOR18SBgIh1N</string>

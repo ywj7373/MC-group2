@@ -1,12 +1,18 @@
 package com.example.bluecatapp.ui.settings
 
+import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.preference.*
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.R
+import com.example.bluecatapp.data.LocationRepository
+import com.example.bluecatapp.ui.location.RoutineReceiver
+import com.example.bluecatapp.ui.location.RoutineService
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -48,6 +54,62 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+                return true
+            }
+        })
+
+        val locationReminderPreference= preferenceManager.findPreference<SwitchPreference>(getString(R.string.enable_location))
+        locationReminderPreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
+            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
+                editor.putBoolean("Location Based Reminder", locationReminderPreference.isChecked)
+                editor.commit()
+                Log.d("ds", locationReminderPreference.isChecked.toString())
+                if(!locationReminderPreference.isChecked) {
+                    Toast.makeText(
+                        activity!!.applicationContext,
+                        "Location Based Reminder enabled",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                else {
+                    Toast.makeText(
+                        activity!!.applicationContext,
+                        "Location Based Reminder disabled",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                val serviceIntent = Intent(context, RoutineService::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    requireContext().startForegroundService(serviceIntent)
+                } else requireContext().startService(serviceIntent)
+
+
+                return true
+            }
+        })
+
+        val preparationTimePreference= preferenceManager.findPreference<ListPreference>(getString(R.string.preparation_time))
+        preparationTimePreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
+            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
+
+                editor.putString("Preparation_time", newValue.toString())
+                editor.commit()
+
+                Toast.makeText(
+                    activity!!.applicationContext,
+                    "Preparation time changed to ${newValue.toString().toInt()} minutes ",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                return true
+            }
+        })
+
+        val resetStatisticsPreference= preferenceManager.findPreference<Preference>(getString(R.string.reset_statistic))
+        resetStatisticsPreference?.setOnPreferenceClickListener ( object: Preference.OnPreferenceClickListener {
+            override fun onPreferenceClick(preference: Preference?): Boolean {
+                LocationRepository(activity!!.application).resetStats()
                 return true
             }
         })

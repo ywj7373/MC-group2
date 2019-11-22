@@ -121,4 +121,29 @@
     <!-- Empty Default Array-->
     <string-array name="empty_array" />
 
+    <!-- Location Array -->
+    <string-array name="preparation_time_title">
+        <item>None</item>
+        <item>10 minutes</item>
+        <item>20 minutes</item>
+        <item>30 minutes</item>
+        <item>40 minutes</item>
+        <item>50 minutes</item>
+        <item>60 minutes</item>
+        <item>90 minutes</item>
+        <item>120 minutes</item>
+    </string-array>
+
+    <string-array name="preparation_time_values">
+        <item>0</item>
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>40</item>
+        <item>50</item>
+        <item>60</item>
+        <item>90</item>
+        <item>120</item>
+    </string-array>
+
 </resources>
