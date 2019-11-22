@@ -23,6 +23,13 @@ import com.example.bluecatapp.data.TodoItem
 import com.example.bluecatapp.ui.todo.TodoViewModel
 import com.example.bluecatapp.ui.settings.SettingsFragment
 import com.google.gson.Gson
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import androidx.fragment.app.Fragment
+import com.example.bluecatapp.ui.todo.TodoFragment
+
 
 object FragmentToLoad {
     val TODO = 0
@@ -44,6 +51,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+//        val mFragmentManager = supportFragmentManager
+//        val transaction = mFragmentManager.beginTransaction()
+//        transaction.add(TodoFragment(),"HW_MODE_OFF")
+//        transaction.commit()
 
         preference = PreferenceManager.getDefaultSharedPreferences(this)
         editor = preference.edit()
@@ -80,15 +92,27 @@ class MainActivity : AppCompatActivity() {
 
         // * if the hw_mode is turned not turn on when the app is destroyed, make sure to destroy the alarm
         // * it's deleted when the hw mode gets turned off, but just to make sure.
-        if(!preference.getBoolean(getString(R.string.hw_mode_bool),false)){
-            try{
-                hwAlarmReceiver.cancelAlarm(this,R.integer.ALARM_NOTI_REQUEST_CODE)
-                hwAlarmReceiver.cancelAlarm(this,R.integer.ALARM_FINAL_REQUEST_CODE)
-            }catch (e : Exception){
-                Log.d("Main:onDestroy",e.message)
+        if (!preference.getBoolean(getString(R.string.hw_mode_bool), false)) {
+            try {
+                hwAlarmReceiver.cancelAlarm(this, R.integer.ALARM_NOTI_REQUEST_CODE)
+                hwAlarmReceiver.cancelAlarm(this, R.integer.ALARM_FINAL_REQUEST_CODE)
+            } catch (e: Exception) {
+                Log.d("Main:onDestroy", e.message)
             }
         }
+    }
 
+    override fun onStart() {
+        super.onStart()
+        val i = intent
+
+        if(i.extras != null){
+            if(i.getStringExtra(getString(R.string.SHAKE_COMPLETE)) != null){
+                Log.d("Main:onStart", "SHAKE_COMPLETE")
+                val mTodoFragment = TodoFragment()
+                mTodoFragment.turnHWModeOff()
+            }
+        }
 
     }
 }

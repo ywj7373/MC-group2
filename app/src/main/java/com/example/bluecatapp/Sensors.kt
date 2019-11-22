@@ -13,7 +13,35 @@ import android.util.Log
 import android.widget.Toast
 import androidx.preference.PreferenceManager
 
-class Sensors(context: Context) {
+open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
+    private var creator: ((A) -> T)? = creator
+    @Volatile
+    private var instance: T? = null
+
+    fun getInstance(arg: A): T {
+        val checkInstance = instance
+        if (checkInstance != null) {
+            return checkInstance
+        }
+
+        return synchronized(this) {
+            val checkInstanceAgain = instance
+            if (checkInstanceAgain != null) {
+                checkInstanceAgain
+            } else {
+                val created = creator!!(arg)
+                instance = created
+                creator = null
+                created
+            }
+        }
+    }
+}
+
+class Sensors private constructor(context: Context) {
+
+    companion object : SingletonHolder<Sensors, Context>(::Sensors)
+
     //================================== Common ==================================//
 
     private var preference: SharedPreferences
@@ -28,8 +56,13 @@ class Sensors(context: Context) {
     private var shakeAccelLast: Float = 0.toFloat() // last acceleration including gravity
 
     private var shakeLimit: Int = 0// (at onCreate) set shake count limit from shared preferences
-    private var alarmCount: Int = 0
     private var shakeCount: Int = 0
+
+    var isShakeSensorOn: Boolean
+        get() = isShakeSensorOn
+        set(b) {
+            isShakeSensorOn = b
+        }
 
     private val shakeSensorListener = object : SensorEventListener {
 
@@ -49,7 +82,7 @@ class Sensors(context: Context) {
             val delta = shakeAccelCurrent - shakeAccelLast
             shakeAccel = shakeAccel * 0.9f + delta // perform low-cut filter
 
-            Log.d("Sensors:onSensorChanged","shakeAccel : $shakeAccel")
+            Log.d("Sensors:onSensorChanged", "shakeAccel : $shakeAccel")
             if (shakeAccel > 6) {
                 shakeCount++
                 val toast = Toast.makeText(
@@ -94,6 +127,12 @@ class Sensors(context: Context) {
     private var walkAccelCurrent: Float = 0.toFloat()
     private var walkAccelLast: Float = 0.toFloat()
 
+    var isWalkSensorOn: Boolean
+        get() = isWalkSensorOn
+        set(b) {
+            isWalkSensorOn = b
+        }
+
     private val walkSensorListener = object : SensorEventListener {
 
         override fun onSensorChanged(se: SensorEvent) {
@@ -135,48 +174,6 @@ class Sensors(context: Context) {
             SensorManager.SENSOR_DELAY_NORMAL
         )
 
-        //================================== Detect Walking ==================================//
-
-        //        walkSensorManager.registerListener(
-//            walkSensorListener,
-//            walkSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-//            SensorManager.SENSOR_DELAY_NORMAL
-//        );
-//
-//        walkAccel = 0.00f;
-//        walkAccelCurrent = SensorManager.GRAVITY_EARTH;
-//        walkAccelLast = SensorManager.GRAVITY_EARTH;
-
-    }
-
-    fun unRegister() {
-        Log.d("Sensors:unRegister", "sensor unRegistered")
-        shakeSensorManager.unregisterListener(shakeSensorListener)
-//        walkSensorManager.unregisterListener(walkSensorListener)
-    }
-
-    // * reInit the instance
-    fun reInit(context: Context) {
-        Log.d("Sensors:reInit", "sensor reInit")
-        //================================== Motion Sensors ==================================//
-        //================================== Detect Shaking ==================================//
-
-        shakeCount = 0
-        shakeLimit = preference.getInt(context.getString(R.string.hw_shake_value), 30)
-        Log.d("Sensors:reInit:shakeLimit", "value : $shakeLimit")
-
-        this.shakeSensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-//        this.walkSensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-
-        shakeAccel = 0.00f;
-        shakeAccelCurrent = SensorManager.GRAVITY_EARTH;
-        shakeAccelLast = SensorManager.GRAVITY_EARTH;
-
-        shakeSensorManager.registerListener(
-            shakeSensorListener,
-            shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
 
         //================================== Detect Walking ==================================//
 
@@ -189,6 +186,84 @@ class Sensors(context: Context) {
 //        walkAccel = 0.00f;
 //        walkAccelCurrent = SensorManager.GRAVITY_EARTH;
 //        walkAccelLast = SensorManager.GRAVITY_EARTH;
+
     }
 
+    // * s : "SHAKE" or "WALK"
+    fun unRegister(s: String): Int {
+
+        when (s) {
+            "ALL" ->{
+                shakeSensorManager.unregisterListener(shakeSensorListener)
+                isShakeSensorOn = false
+                walkSensorManager.unregisterListener(walkSensorListener)
+                isWalkSensorOn = false
+                Log.d("Sensors:unRegister", "$s Sensor unRegistered")
+                return 1
+            }
+            "SHAKE" -> {
+                shakeSensorManager.unregisterListener(shakeSensorListener)
+                isShakeSensorOn = false
+                Log.d("Sensors:unRegister", "$s Sensor unRegistered")
+                return 1
+            }
+            "WALK" -> {
+                walkSensorManager.unregisterListener(walkSensorListener)
+                isWalkSensorOn = false
+                Log.d("Sensors:unRegister", "$s Sensor unRegistered")
+                return 1
+            }
+        }
+        Log.d("Sensors:unRegister", "$s Sensor undefined")
+        return 0
+    }
+
+    // * s : "SHAKE" or "WALK"
+    fun reRegister(s: String): Int {
+        when (s) {
+            "ALL" ->{
+                shakeSensorManager.registerListener(
+                    shakeSensorListener,
+                    shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+                isShakeSensorOn = true
+
+                walkSensorManager.registerListener(
+                    walkSensorListener,
+                    walkSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+                isWalkSensorOn = true
+
+                Log.d("Sensors:reRegister", "$s Sensor reRegister")
+
+                return 1
+            }
+            "SHAKE" -> {
+                shakeSensorManager.registerListener(
+                    shakeSensorListener,
+                    shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+                isShakeSensorOn = true
+                Log.d("Sensors:reRegister", "$s Sensor reRegister")
+
+                return 1
+            }
+            "WALK" -> {
+                walkSensorManager.registerListener(
+                    walkSensorListener,
+                    walkSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+                isWalkSensorOn = true
+                Log.d("Sensors:reRegister", "$s Sensor reRegister")
+
+                return 1
+            }
+        }
+        Log.d("Sensors:reRegister", "$s Sensor undefined")
+        return 0
+    }
 }

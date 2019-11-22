@@ -56,7 +56,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         hwModeTimePreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
             override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
 
-                editor.putLong(getString(R.string.hw_time_value),newValue.toString().toLong())
+                editor.putLong(getString(R.string.SECONDS_REMAINING_ID),newValue.toString().toLong())
                 editor.commit()
 
                 Toast.makeText(

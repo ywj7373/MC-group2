@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <integer name="HW_NOTIFICATION_CODE">98</integer>
     <integer name="SHAKE_COMPLETE_CODE">99</integer>
     <integer name="ALARM_NOTI_REQUEST_CODE">100</integer>
     <integer name="ALARM_FINAL_REQUEST_CODE">101</integer>
