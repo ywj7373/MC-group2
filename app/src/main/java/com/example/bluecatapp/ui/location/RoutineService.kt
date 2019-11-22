@@ -37,6 +37,7 @@ const val ODsayTimeout = 5000
 const val LOCATION_TRACKER_INTERVAL: Long = 60000 //60s
 const val LOCATION_TRACKER_FASTEST_INTERVAL: Long = 55000 //55s
 const val NOTIF_ID = 1
+const val NOTIF_ID2 = 2
 
 class RoutineService : Service {
     private val TAG = "Routine Service"
@@ -55,6 +56,11 @@ class RoutineService : Service {
     override fun onCreate() {
         super.onCreate()
 
+        startNotification()
+
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val on = sharedPreferences.getBoolean("Location Based Reminder", true)
+
         //observe change in current location
         locationViewModel = LocationViewModel(application)
         locationViewModel.getCurrentLocation().observeForever( object : Observer<CurrentLocationData> {
@@ -62,6 +68,7 @@ class RoutineService : Service {
                 if (t != null) {
                     srcLat = t.latitude
                     srcLong = t.longitude
+                    updateEstimatedTime(srcLat, srcLong)
                 }
             }
         })
@@ -71,9 +78,15 @@ class RoutineService : Service {
             override fun onChanged(t: LocationItemData?) {
                 if (t != null) {
                     destination = t
-                    updateEstimatedTime(srcLat, srcLong)
+                    if (srcLat != 0.0 && srcLong != 0.0)
+                        updateEstimatedTime(srcLat, srcLong)
+                    if (on) checkTime()
+                    else updateNotification("No Alarm")
                 }
-                else destination = null
+                else {
+                    destination = null
+                    updateNotification("No Alarm")
+                }
             }
         })
 
@@ -81,18 +94,17 @@ class RoutineService : Service {
         odsayService = ODsayService.init(this, getString(R.string.odsay_key))
         odsayService.setConnectionTimeout(ODsayTimeout)
         odsayService.setReadTimeout(ODsayTimeout)
-
-        startNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent!!.action.equals("Run")) {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val on = sharedPreferences.getBoolean("Location Based Reminder", true)
+        if (on) {
             checkCurrentLocation()
             checkTime()
         }
-        else if (intent!!.action.equals("Stop")) {
-            stopForeground(true)
-            stopSelf()
+        else {
+            updateNotification("No Alarm")
         }
         return START_NOT_STICKY
     }
@@ -114,13 +126,14 @@ class RoutineService : Service {
             //Initialize notification manager
             notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            //Create new notification channel
+            //Routine notification channel
             var channel: NotificationChannel? = notificationManager.getNotificationChannel(routineNotificationId)
             if (channel == null) {
                 channel = NotificationChannel(routineNotificationId, notificationTitle, NotificationManager.IMPORTANCE_HIGH)
                 notificationManager.createNotificationChannel(channel)
             }
 
+            //Alarm Notification Channel
             var channel2 = notificationManager.getNotificationChannel(locationNotificationId)
             if (channel2 == null) {
                 channel2 = NotificationChannel(locationNotificationId, notificationTitle, NotificationManager.IMPORTANCE_HIGH)
@@ -129,24 +142,11 @@ class RoutineService : Service {
                 notificationManager.createNotificationChannel(channel2)
             }
 
-            val contentIntent= PendingIntent.getActivity(this, 0, Intent(this, LocationFragment::class.java),0)
-
-            //start foreground notification
-            val builder = NotificationCompat.Builder(this, routineNotificationId)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentText("No alarm")
-                .setContentIntent(contentIntent)
-                .build()
-            startForeground(NOTIF_ID, builder)
+            startForeground(NOTIF_ID, callMainNotification("No Alarm"))
         }
     }
 
-    private fun getMyActivityNotification(text: String): Notification {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                NotificationChannel(routineNotificationId, notificationTitle, NotificationManager.IMPORTANCE_HIGH))
-        }
-
+    private fun callMainNotification(text: String): Notification {
         val contentIntent= PendingIntent.getActivity(this, 0, Intent(this, LocationFragment::class.java),0)
 
         return NotificationCompat.Builder(this,routineNotificationId)
@@ -159,8 +159,17 @@ class RoutineService : Service {
     }
 
     private fun updateNotification(text: String) {
-        val notification: Notification = getMyActivityNotification(text)
+        val notification: Notification = callMainNotification(text)
         notificationManager.notify(NOTIF_ID, notification)
+    }
+
+    private fun callAlarmNotification(text: String, id: Int) {
+        val builder = NotificationCompat.Builder(this, locationNotificationId)
+            .setContentTitle("BlueCat Alarm")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .build()
+        notificationManager.notify(id, builder)
     }
 
     //check if it is time to send notificaton or alarm
@@ -179,13 +188,14 @@ class RoutineService : Service {
                 val currentTime = System.currentTimeMillis()
                 val isAlarmed = destination!!.isAlarmed
                 val daysMode = destination!!.daysMode
-                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                val preparationTime = sharedPreferences.getString(R.string.preparation_time.toString(), "20")!!.toInt()
+                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+                val preparationTime = sharedPreferences.getString("Preparation_time", "20")!!.toInt()
                 val alarmTime = time - timeToDest - (preparationTime * 60 * 1000)
 
-                updateNotification(alarmTime.toString())
+                val alarmText = "Alarm rings at: " + Date(alarmTime).toString()
+                updateNotification(alarmText)
 
-                Log.d(TAG, preparationTime.toString())
+                Log.d(TAG, "preparation time: " + preparationTime.toString())
                 Log.d(TAG, "alarm rings at: " + Date(alarmTime).toString())
                 Log.d(TAG, "current time: " + Date(currentTime).toString())
 
@@ -205,7 +215,7 @@ class RoutineService : Service {
                     else {
                         Log.d(TAG, "Missed schedule")
                         val text = "You are late!"
-                        callNotification(text, 100)
+                        callAlarmNotification(text, NOTIF_ID2)
                         LocationRepository(application).increaseAbsent()
                     }
                 }
@@ -218,33 +228,13 @@ class RoutineService : Service {
                     val text = "You need to prepare to go to " + destination!!.name +
                             ".\n It takes about " + h + "hours and " + m + " minutes to go there!"
 
-                    callNotification(text, 101)
+                    callAlarmNotification(text, 101)
 
                     //set alarm to true to stop calling alarm
                     LocationRepository(application).updateIsAlarmed(true, destination!!.id)
                 }
             }
         }
-    }
-
-    private fun callNotification(text: String, id: Int) {
-        val builder = NotificationCompat.Builder(this, locationNotificationId)
-            .setContentTitle("BlueCat Alarm")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
-            .build()
-        notificationManager.notify(id, builder)
-    }
-
-    private fun timeToSeconds(time: String): Long {
-        val sf = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.KOREA)
-        val date: Date? = sf.parse(time)
-        return date!!.time
-    }
-
-    private fun minToSeconds(time: String): Long {
-        val t: Long = time.toLong()
-        return t * 60 * 1000
     }
 
     //track current location
@@ -272,28 +262,12 @@ class RoutineService : Service {
 
             //If the user moved more than 100m, update current location
             if (dist > 0.1) {
-                val currentLocation = CurrentLocationData(destLat, destLong)
                 thread(start=true) {
+                    val currentLocation = CurrentLocationData(destLat, destLong)
                     updateCurrentLocation(currentLocation)
-                    updateEstimatedTime(srcLong, srcLat)
                 }
             }
         }
-    }
-
-    //get distance between two coordinates in KM
-    private fun getDistanceFromLatLonInKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        val R = 6371 // Radius of the earth in km
-        val dLat = deg2rad(lat2-lat1) // deg2rad below
-        val dLon = deg2rad(lon2-lon1)
-        val a = sin(dLat/2) * sin(dLat/2) +
-                cos(deg2rad(lat1)) * cos(deg2rad(lat2)) *
-                sin(dLon/2) * sin(dLon/2)
-        return  R * 2 * atan2(sqrt(a), sqrt(1-a)) // Distance in km
-    }
-
-    private fun deg2rad(deg: Double): Double {
-        return deg * (PI/180)
     }
 
     //update current location
@@ -303,10 +277,10 @@ class RoutineService : Service {
     }
 
     //update estimatedTime if current location changes
-    private fun updateEstimatedTime(srcLong: Double, srcLat: Double) {
+    private fun updateEstimatedTime(long: Double, lat: Double) {
         if (destination != null) {
             //calculate estimated time
-            estimateTravelTime(srcLat.toString(), srcLong.toString(), destination!!.x, destination!!.y)
+            estimateTravelTime(lat.toString(), long.toString(), destination!!.x, destination!!.y)
         }
         else Log.d(TAG, "No schedule!")
     }
@@ -351,5 +325,34 @@ class RoutineService : Service {
         }
 
         override fun onError(i: Int, s: String?, api: API?) {}
+    }
+
+    //get distance between two coordinates in KM
+    private fun getDistanceFromLatLonInKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val R = 6371 // Radius of the earth in km
+        val dLat = deg2rad(lat2-lat1) // deg2rad below
+        val dLon = deg2rad(lon2-lon1)
+        val a = sin(dLat/2) * sin(dLat/2) +
+                cos(deg2rad(lat1)) * cos(deg2rad(lat2)) *
+                sin(dLon/2) * sin(dLon/2)
+        return  R * 2 * atan2(sqrt(a), sqrt(1-a)) // Distance in km
+    }
+
+    //convert degree to radian
+    private fun deg2rad(deg: Double): Double {
+        return deg * (PI/180)
+    }
+
+    //convert date to seconds
+    private fun timeToSeconds(time: String): Long {
+        val sf = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.KOREA)
+        val date: Date? = sf.parse(time)
+        return date!!.time
+    }
+
+    //convert min to seconds
+    private fun minToSeconds(time: String): Long {
+        val t: Long = time.toLong()
+        return t * 60 * 1000
     }
 }

@@ -134,15 +134,7 @@ class LocationFragment : Fragment() {
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
             }
-            else {
-                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                if (!sharedPreferences.getBoolean(R.string.enable_location.toString(), true)) {
-                    RoutineReceiver().setRoutine(requireContext())
-                }
-                else {
-                    RoutineReceiver().unsetRoutine(requireContext())
-                }
-            }
+            else RoutineReceiver().setRoutine(requireContext())
         }
         else requestLocationPermission()
     }
