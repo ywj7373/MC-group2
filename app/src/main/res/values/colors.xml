@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#4099C2</color>
+    <color name="colorPrimary">#2d9cdb</color>
+    <color name="colorPrimaryDark">#babdbe</color>
+    <color name="colorAccent">#2d9cdb</color>
+    <color name="colorText">#000000</color>
+    <color name="colorLightBackground">#F7F7F7</color>
 
     <color name="color_todo_item_bg">#dddddd</color>
 
-    <color name="color_todo_hw_off">#ffffff</color>
-    <color name="color_todo_hw_on">#111111</color>
+    <color name="color_todo_hw_off">#F7F7F7</color>
+    <color name="color_todo_hw_on">#333333</color>
 
     <color name="color_location_day_on">#ff0000</color>
     <color name="color_location_day_off">#dddddd</color>
