@@ -28,7 +28,6 @@ class PrefUtil {
             editor.apply()
         }
 
-
         private const val TIMER_STATE_ID = "com.example.bluecatapp.timer_state"
 
         fun getTimerState(context: Context): TimerActivity.TimerState{
@@ -44,14 +43,16 @@ class PrefUtil {
             editor.apply()
         }
 
-
         private const val SECONDS_REMAINING_ID = "com.example.bluecatapp.seconds_remaining"
+        private const val SECONDS_REMAINING_ID2 = "com.example.bluecatapp.seconds_remaining2"
 
+        // * final alarm
         fun getSecondsRemaining(context: Context): Long{
             val preferences = PreferenceManager.getDefaultSharedPreferences(context)
             return preferences.getLong(SECONDS_REMAINING_ID, 0)
         }
 
+        // * final alarm
         fun setSecondsRemaining(seconds: Long, context: Context){
             val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()
             editor.putLong(SECONDS_REMAINING_ID, seconds)
@@ -60,16 +61,36 @@ class PrefUtil {
 
 
         private const val ALARM_SET_TIME_ID = "com.example.bluecatapp.backgrounded_time"
+        private const val ALARM_SET_TIME_ID2 = "com.example.bluecatapp.backgrounded_time2"
 
+        // * final alarm
         fun getAlarmSetTime(context: Context): Long{
             val preferences = PreferenceManager.getDefaultSharedPreferences(context)
             return  preferences.getLong(ALARM_SET_TIME_ID, 0)
         }
 
+        // * final alarm
+        fun getAlarmSetTime2(context: Context): Long{
+            val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+            return  preferences.getLong(ALARM_SET_TIME_ID2, 0)
+        }
+
+        // * final alarm
         fun setAlarmSetTime(time: Long, context: Context){
             val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()
             editor.putLong(ALARM_SET_TIME_ID, time)
             editor.apply()
+        }
+
+        // * notification alarm
+        fun setAlarmSetTime2(time: Long, context: Context){
+            val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()
+            editor.putLong(ALARM_SET_TIME_ID2, time)
+            editor.apply()
+        }
+
+        fun refreshTimer(context: Context){
+
         }
     }
 }

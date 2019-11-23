@@ -100,7 +100,29 @@
         app:iconSpaceReserved="false"
         app:title="@string/location_reminder_header">
 
-        <!-- TODO -->
+        <SwitchPreference
+            app:key="@string/enable_location"
+            app:title="@string/enable_location"
+            android:selectable="true"
+            app:iconSpaceReserved="false"
+            android:defaultValue="true"/>
+
+        <ListPreference
+            app:key="@string/preparation_time"
+            app:title="@string/preparation_time"
+            app:dialogTitle="@string/preparation_time"
+            android:entries="@array/preparation_time_title"
+            android:entryValues="@array/preparation_time_values"
+            android:defaultValue="@string/preparation_time_value"
+            android:selectable="true"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="@string/reset_statistic"
+            android:title="@string/reset_statistic"
+            android:selectable="true"
+            app:iconSpaceReserved="false"/>
+
 
     </PreferenceCategory>
 

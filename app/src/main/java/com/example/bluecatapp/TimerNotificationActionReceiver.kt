@@ -6,6 +6,7 @@ import android.content.Intent
 import com.example.bluecatapp.ui.todo.TodoFragment
 import com.example.bluecatapp.util.NotificationUtil
 import com.example.bluecatapp.util.PrefUtil
+import java.util.*
 
 class TimerNotificationActionReceiver : BroadcastReceiver() {
 
@@ -27,21 +28,33 @@ class TimerNotificationActionReceiver : BroadcastReceiver() {
                 PrefUtil.setSecondsRemaining(secondsRemaining, context)
 
                 TimerActivity.removeAlarm(context)
+                TimerActivity.removeNotificationAlarm(context)
+
                 PrefUtil.setTimerState(TimerActivity.TimerState.Paused, context)
                 NotificationUtil.showTimerPaused(context)
             }
+
             HWConstants.ACTION_RESUME -> {
                 val secondsRemaining = PrefUtil.getSecondsRemaining(context)
+                val notiAlarmSeconds = TimerActivity.notiAlarmSeconds
+
                 val wakeUpTime = TimerActivity.setAlarm(context, TimerActivity.nowSeconds, secondsRemaining)
+                TimerActivity.setNotificationAlarm(context, TimerActivity.nowSeconds, notiAlarmSeconds )
+
                 PrefUtil.setTimerState(TimerActivity.TimerState.Running, context)
                 NotificationUtil.showTimerRunning(context, wakeUpTime)
             }
             HWConstants.ACTION_START -> {
                 val minutesRemaining = PrefUtil.getTimerLength(context)
                 val secondsRemaining = minutesRemaining * 60L
+                val notiAlarmSeconds = TimerActivity.notiAlarmSeconds
                 val wakeUpTime = TimerActivity.setAlarm(context, TimerActivity.nowSeconds, secondsRemaining)
+                TimerActivity.setNotificationAlarm(context, TimerActivity.nowSeconds, notiAlarmSeconds)
+
                 PrefUtil.setTimerState(TimerActivity.TimerState.Running, context)
+
                 PrefUtil.setSecondsRemaining(secondsRemaining, context)
+
                 NotificationUtil.showTimerRunning(context, wakeUpTime)
             }
         }

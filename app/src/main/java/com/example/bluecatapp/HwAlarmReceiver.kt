@@ -86,13 +86,13 @@ class HwAlarmReceiver : BroadcastReceiver() {
 
                 mSensors = Sensors.getInstance(context)
 
-                if (!mSensors.isShakeSensorOn) {
+                if (!mSensors.isShakeOn) {
 
                     mSensors.reRegister(context.getString(R.string.SHAKE))
 
                 }
 
-                if (!mSensors.isWalkSensorOn) {
+                if (!mSensors.isWalkOn) {
 
                     mSensors.reRegister(context.getString(R.string.WALK))
 

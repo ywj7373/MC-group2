@@ -54,8 +54,6 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private var intentdays:String = ""
     private var intentdaysMode:Boolean = false
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_location)
