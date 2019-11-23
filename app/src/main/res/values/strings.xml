@@ -64,24 +64,57 @@
     <string name="hw_pedometer_summary_off">Step count feature disabled during HW mode</string>
 
     <string name="hw_time_value">
-        2700000
+        hw_time_value
     </string>
 
     <string name="hw_shake_value">
-        15
+        hw_shake_value
     </string>
 
     <string name="hw_time_notification_value">
-        300000
+        hw_time_notification_value
     </string>
 
     <string name="hw_time_alarm_value">
-        1000
+        hw_time_alarm_value
     </string>
 
     <string name="hw_pedometer_value">
-        50
+        hw_pedometer_value
     </string>
+
+    <string name="hw_time_current_clock_time">
+        hw_time_current_clock_time
+    </string>
+
+    <string name="hw_pedometer_bool">
+        hw_pedometer_bool
+    </string>
+
+    <string name="hw_mode_bool">
+        hw_mode_bool
+    </string>
+
+    <string name="SHAKE">SHAKE</string>
+    <string name="WALK">WALK</string>
+
+    <string name="SECONDS_REMAINING_ID">
+        com.example.bluecatapp.seconds_remaining
+    </string>
+
+    <string name="TIMER_LENGTH_ID">
+        com.example.bluecatapp.timer_length
+    </string>
+
+    <string name="HW_NOTIFICATION_CHANNEL_NAME">HW_CHANNEL</string>
+    <string name="HW_NOTIFICATION_CHANNEL_DESCRIPTION">HW_NOTIFICATION_CHANNEL_DESCRIPTION</string>
+    <string name="HW_NOTIFICATION_CHANNEL_ID">HW_CHANNEL_ID</string>
+    <string name="HW_NOTIFICATION_TITLE">HW Mode</string>
+    <string name="HW_NOTIFICATION_CONTENT">Are you awake?</string>
+    <string name="SHAKE_COMPLETE">SHAKE_COMPLETE</string>
+    <string name="WALK_COMPLETE">WALK_COMPLETE</string>
+    <string name="NOTIFICATION">NOTIFICATION</string>
+    <string name="FINAL_ALARM">FINAL_ALARM</string>
 
     <!-- Location -->
     <string name="preparation_time_value">20</string>

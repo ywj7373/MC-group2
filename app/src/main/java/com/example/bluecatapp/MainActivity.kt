@@ -1,8 +1,11 @@
 package com.example.bluecatapp
 
 import android.app.Activity
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Bundle
@@ -14,11 +17,19 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bluecatapp.data.TodoItem
 import com.example.bluecatapp.ui.todo.TodoViewModel
 import com.example.bluecatapp.ui.settings.SettingsFragment
 import com.google.gson.Gson
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import androidx.fragment.app.Fragment
+import com.example.bluecatapp.ui.todo.TodoFragment
+
 
 object FragmentToLoad {
     val TODO = 0
@@ -28,11 +39,6 @@ object FragmentToLoad {
 }
 
 class MainActivity : AppCompatActivity() {
-    private val ADD_TODO_REQUEST = 1
-    private lateinit var todoViewModel: TodoViewModel
-
-//    private lateinit var sensorManager: SensorManager
-
     companion object {
         val gson = Gson()
     }
@@ -40,6 +46,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+//        preference = PreferenceManager.getDefaultSharedPreferences(this)
+//        editor = preference.edit()
 
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment)
@@ -64,26 +73,15 @@ class MainActivity : AppCompatActivity() {
             3 -> navController.navigate(R.id.navigation_settings)
         }
 
-//        this.sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-//
-//        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let {
-//            this.accelerometer = it
-//        }
-//
-//        sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)?.let {
-//            this.gravity = it
-//        }
-//
-//        sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)?.let {
-//            this.gyroscope = it
-//        }
-//
-//        sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)?.let {
-//            this.linearAcceleration = it
-//        }
-//
-//        sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.let {
-//            this.rotationVector = it
-//        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("Main:onDestroy", "Main:onDestroy")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("Main:onStart", "Main:onStart")
     }
 }

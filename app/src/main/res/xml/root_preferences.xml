@@ -163,7 +163,7 @@
 
             app:title="@string/hw_pedometer_bool_title"
 
-            app:defaultValue="@bool/hw_pedometer_bool"
+            app:defaultValue="@string/hw_pedometer_bool"
 
             android:selectable="true"
             app:iconSpaceReserved="false"

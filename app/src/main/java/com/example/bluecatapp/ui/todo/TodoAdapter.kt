@@ -12,14 +12,19 @@ import com.example.bluecatapp.R
 import com.example.bluecatapp.data.TodoItem
 import com.example.bluecatapp.data.TodoItemRepository
 
-class TodoAdapter : RecyclerView.Adapter<TodoAdapter.TodoItemHolder>(){
+class TodoAdapter : RecyclerView.Adapter<TodoAdapter.TodoItemHolder>() {
 
     var onItemClick: ((TodoItem) -> Unit)? = null
     private var todoItems: List<TodoItem> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoItemHolder {
-        val itemView = LayoutInflater.from(parent.context)
+
+        var itemView = LayoutInflater.from(parent.context)
             .inflate(R.layout.todo_task_item, parent, false)
+        if (parent.id == R.id.todoDone_recycler_view) {
+            itemView = LayoutInflater.from(parent.context)
+                .inflate(R.layout.todo_task_item_done, parent, false)
+        }
 
         return TodoItemHolder(itemView)
     }
@@ -42,23 +47,22 @@ class TodoAdapter : RecyclerView.Adapter<TodoAdapter.TodoItemHolder>(){
     inner class TodoItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var textViewTask: TextView = itemView.findViewById(R.id.todo_item_task)
         var textViewDate: TextView = itemView.findViewById(R.id.todo_item_date)
-//        var textViewLocation: TextView = itemView.findViewById(R.id.todo_item_location)
+        //        var textViewLocation: TextView = itemView.findViewById(R.id.todo_item_location)
         var checkBoxDone: CheckBox = itemView.findViewById(R.id.todo_item_done)
         var lineDone: View = itemView.findViewById(R.id.todo_item_line_done)
 
-        // view 에서 변하는건 여기서 처리
         init {
             checkBoxDone.setOnClickListener {
-                if(checkBoxDone.isChecked){
+                if (checkBoxDone.isChecked) {
                     lineDone.visibility = View.GONE
-                }else{
+                } else {
                     lineDone.visibility = View.VISIBLE
                 }
                 onItemClick?.invoke(todoItems[adapterPosition])
             }
-//            itemView.setOnClickListener{
-//                onItemClick?.invoke(todoItems[adapterPosition])
-//            }
+            itemView.setOnClickListener {
+                onItemClick?.invoke(todoItems[adapterPosition])
+            }
         }
 
     }

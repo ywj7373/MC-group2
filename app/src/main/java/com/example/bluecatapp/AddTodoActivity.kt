@@ -81,9 +81,9 @@ class AddTodoActivity : AppCompatActivity() {
             putExtra(DATETIME,
                 "${todo_edit_date.year}." +
                         "$month." +
-                        "$day:" +
-                        "$hour:" +
-                        "$minute"
+                        "$day " +
+                        "($hour:" +
+                        "$minute)"
                 )
 //            putExtra(LOCATION, todo_edit_location.text.toString())
         }
