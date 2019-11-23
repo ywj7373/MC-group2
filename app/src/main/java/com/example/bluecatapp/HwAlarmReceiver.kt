@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
-import android.hardware.Sensor
 import android.os.Build
 import android.os.PowerManager
 import android.os.VibrationEffect
@@ -18,9 +17,6 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.app.NotificationCompat.getExtras
 import android.os.Bundle
-
-
-
 
 class HwAlarmReceiver : BroadcastReceiver() {
     private lateinit var mSensors: Sensors

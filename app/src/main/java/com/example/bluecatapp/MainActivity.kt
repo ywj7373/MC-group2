@@ -39,11 +39,6 @@ object FragmentToLoad {
 }
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var hwAlarmReceiver: HwAlarmReceiver
-
-    private lateinit var preference: SharedPreferences
-    private lateinit var editor: SharedPreferences.Editor
-
     companion object {
         val gson = Gson()
     }
@@ -52,15 +47,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-//        val mFragmentManager = supportFragmentManager
-//        val transaction = mFragmentManager.beginTransaction()
-//        transaction.add(TodoFragment(),"HW_MODE_OFF")
-//        transaction.commit()
-
-        preference = PreferenceManager.getDefaultSharedPreferences(this)
-        editor = preference.edit()
-
-        hwAlarmReceiver = HwAlarmReceiver()
+//        preference = PreferenceManager.getDefaultSharedPreferences(this)
+//        editor = preference.edit()
 
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment)
@@ -89,30 +77,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-
-        // * if the hw_mode is turned not turn on when the app is destroyed, make sure to destroy the alarm
-        // * it's deleted when the hw mode gets turned off, but just to make sure.
-        if (!preference.getBoolean(getString(R.string.hw_mode_bool), false)) {
-            try {
-                hwAlarmReceiver.cancelAlarm(this, R.integer.ALARM_NOTI_REQUEST_CODE)
-                hwAlarmReceiver.cancelAlarm(this, R.integer.ALARM_FINAL_REQUEST_CODE)
-            } catch (e: Exception) {
-                Log.d("Main:onDestroy", e.message)
-            }
-        }
+        Log.d("Main:onDestroy", "Main:onDestroy")
     }
 
     override fun onStart() {
         super.onStart()
-        val i = intent
-
-        if(i.extras != null){
-            if(i.getStringExtra(getString(R.string.SHAKE_COMPLETE)) != null){
-                Log.d("Main:onStart", "SHAKE_COMPLETE")
-                val mTodoFragment = TodoFragment()
-                mTodoFragment.turnHWModeOff()
-            }
-        }
-
+        Log.d("Main:onStart", "Main:onStart")
     }
 }

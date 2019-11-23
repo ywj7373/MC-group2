@@ -57,7 +57,7 @@
         </TextView>
 
         <TextClock
-            android:id="@+id/clock_homework"
+            android:id="@+id/clock_todo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/text_homework"
@@ -68,9 +68,6 @@
             android:textSize="45dp"
             android:textStyle="bold"
             android:visibility="visible"></TextClock>
-
-        <include
-            layout="@layout/content_timer" />
 
 
     </androidx.cardview.widget.CardView>

@@ -13,7 +13,9 @@ class TimerExpiredReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         NotificationUtil.showTimerExpired(context)
 
-        PrefUtil.setTimerState(TodoFragment.TimerState.Stopped, context)
+        PrefUtil.setTimerState(TimerActivity.TimerState.Stopped, context)
         PrefUtil.setAlarmSetTime(0, context)
+
+        // * @todo activate sensor and force the user to shake the phone until the shake limit
     }
 }

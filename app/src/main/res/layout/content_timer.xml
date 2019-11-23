@@ -6,9 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    android:visibility="invisible"
-    tools:context="com.example.bluecatapp.MainActivity"
-    tools:showIn="@layout/fragment_todo">
+    android:visibility="visible"
+    tools:context="com.example.bluecatapp.TimerActivity"
+    tools:showIn="@layout/activity_timer">
 
     <TextView
         android:id="@+id/textView_countdown"
@@ -37,46 +37,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-
-    <ImageButton
-        android:id="@+id/hw_start_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="left"
-
-        android:src="@drawable/ic_start"
-        android:layout_margin="@dimen/fab_bigger_margin"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/progress_countdown" />
-
-    <ImageButton
-        android:id="@+id/hw_pause_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-
-        android:src="@drawable/ic_pause"
-        android:layout_margin="@dimen/fab_bigger_margin"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/hw_start_btn"
-        app:layout_constraintTop_toBottomOf="@+id/progress_countdown" />
-
-    <ImageButton
-        android:id="@+id/hw_stop_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-
-        android:src="@drawable/ic_stop"
-        android:layout_margin="@dimen/fab_bigger_margin"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/hw_pause_btn"
-        app:layout_constraintTop_toBottomOf="@+id/progress_countdown" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

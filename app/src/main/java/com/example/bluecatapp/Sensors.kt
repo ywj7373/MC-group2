@@ -39,6 +39,7 @@ open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
 }
 
 class Sensors private constructor(context: Context) {
+    //@todo should change to interact with the TimerNotificationActionReceiver
 
     companion object : SingletonHolder<Sensors, Context>(::Sensors)
 
@@ -100,7 +101,6 @@ class Sensors private constructor(context: Context) {
                     Toast.LENGTH_SHORT
                 )
                 toast.show()
-
                 // * fire an alarm to notify that shaking has been completed
                 val hwAlarmReceiver = HwAlarmReceiver()
                 hwAlarmReceiver.setShakeDoneAlarm(context)

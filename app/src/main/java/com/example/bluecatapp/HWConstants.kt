@@ -1,6 +1,6 @@
 package com.example.bluecatapp
 
-class AppConstants {
+class HWConstants {
     companion object {
         const val ACTION_STOP = "stop"
         const val ACTION_PAUSE = "pause"
