@@ -118,6 +118,14 @@ abstract class TravelTimeDatabase : RoomDatabase() {
         private val roomCallback = object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
+                PopulateDbAsyncTask(instance).execute()
+            }
+        }
+
+        class PopulateDbAsyncTask(db: TravelTimeDatabase?) : AsyncTask<Unit, Unit, Unit>() {
+            private val travelTimeDao = db?.travelTimeDao()
+            override fun doInBackground(vararg p0: Unit?) {
+                travelTimeDao?.insert(TravelTimeData("20"))
             }
         }
     }

@@ -130,9 +130,10 @@
     <string name="stat_title">YOUR STATS</string>
     <string name="grade">A+</string>
     <string name="stat_label">On-time: 0 times | Absent: 0 time</string>
+    <string name="name_text">Display label</string>
     <string name="time_title">Time</string>
     <string name="date_title">Date</string>
-    <string name="repeat">Repeat</string>
+    <string name="repeat">Repeats on</string>
     <string name="toggle_button">ToggleButton</string>
     <string name="sun">SUN</string>
     <string name="mon">MON</string>
@@ -141,5 +142,7 @@
     <string name="thu">THU</string>
     <string name="fri">FRI</string>
     <string name="sat">SAT</string>
-    <string name="add">+ add</string>
+    <string name="hint">Edit</string>
+    <string name="word_count">0 / 17</string>
+    <string name="app_bar_add_location">add schedule</string>
 </resources>

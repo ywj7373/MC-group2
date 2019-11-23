@@ -14,4 +14,8 @@
     <color name="color_location_day_on">#ff0000</color>
     <color name="color_location_day_off">#dddddd</color>
 
+    <color name="light_grey">#EFEFEF</color>
+    <color name="button_color">#E6E6E6</color>
+    <color name="darker_gray">#5F5C5C</color>
+
 </resources>

@@ -1,13 +1,19 @@
 package com.example.bluecatapp.ui.location
 
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.graphics.Color
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.bluecatapp.R
@@ -27,9 +33,10 @@ const val default_X = "126.952162"
 class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSearchBar.OnSearchActionListener {
     private val TAG = "AddLocationActivity"
     private lateinit var locationViewModel: LocationViewModel
-    private lateinit var dateText: TextView
-    private lateinit var dateButton: Button
-    private lateinit var addButton: Button
+    private lateinit var displayNameEdit: EditText
+    private lateinit var wordCountText: TextView
+    private lateinit var dateEdit: TextView
+    private lateinit var timeEdit: TextView
     private lateinit var dayButtons : Array<ToggleButton>
     private lateinit var searchBar: MaterialSearchBar
     private lateinit var loc1: TextView
@@ -43,16 +50,18 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private var year: Int = 0
     private var monthOfYear: Int = 0
     private var dayOfMonth: Int = 0
+    private var hour: Int = 0
+    private var min: Int = 0
     private var days_mode_set: Boolean = false
     private var picked = false
     private var editmode = false
 
-    private var intentx:String = ""
-    private var intenty:String = ""
-    private var intentname:String = ""
-    private var intenttime:String = ""
-    private var intentdays:String = ""
-    private var intentdaysMode:Boolean = false
+    private var intentx: String = ""
+    private var intenty: String = ""
+    private var intentname: String = ""
+    private var intenttime: String = ""
+    private var intentdays: String = ""
+    private var intentdaysMode: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,20 +81,22 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             it.setDisplayHomeAsUpEnabled(true)
             it.setDisplayShowHomeEnabled(true)
         }
+        title = "Add Schedule"
 
         //initialize layout components
         searchBar = findViewById(R.id.searchBar)
         searchBar.setHint("Search")
-        searchBar.setOnSearchActionListener(this);
+        searchBar.setOnSearchActionListener(this)
 
         loc1 = findViewById(R.id.loc1)
         loc2 = findViewById(R.id.loc2)
         loc3 = findViewById(R.id.loc3)
         loc4 = findViewById(R.id.loc4)
         loc5 = findViewById(R.id.loc5)
-        dateText = findViewById(R.id.dateText)
-        dateButton = findViewById(R.id.dateButton)
-        addButton = findViewById(R.id.addButton)
+        displayNameEdit = findViewById(R.id.displayNameEdit)
+        wordCountText = findViewById(R.id.wordCountText)
+        dateEdit = findViewById(R.id.dateEdit)
+        timeEdit = findViewById(R.id.timeEdit)
         dayButtons = arrayOf(findViewById(R.id.toggleButton1),
             findViewById(R.id.toggleButton2),
             findViewById(R.id.toggleButton3),
@@ -94,15 +105,18 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             findViewById(R.id.toggleButton6),
             findViewById(R.id.toggleButton7))
 
-        // At first, date is today
+        // set date and time to current date
         val current = Calendar.getInstance()
         year = current.get(Calendar.YEAR)
         monthOfYear = current.get(Calendar.MONTH)
         dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
-        dateText.text = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(current.time)
+        hour = current.get(Calendar.HOUR_OF_DAY)
+        min = current.get(Calendar.MINUTE)
+        dateEdit.text = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(current.time)
+        timeEdit.text = String.format("%02d:%02d", hour, min)
 
         // Edit Mode Initialization
-        if(editmode) {
+        if (editmode) {
             intentname = intent.getStringExtra("name")
             intentx = intent.getStringExtra("x")
             intenty = intent.getStringExtra("y")
@@ -110,16 +124,17 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             intentdays = intent.getStringExtra("days")
             intentdaysMode = intent.getBooleanExtra("daysMode", false)
 
-            addButton.setText("Edit")
             year = intenttime.substring(0,4).toInt()
             monthOfYear = intenttime.substring(5,7).toInt()
             dayOfMonth = intenttime.substring(8, 10).toInt()
-            location_edit_time.hour = intenttime.substring(11, 13).toInt()
-            location_edit_time.minute = intenttime.substring(14, 16).toInt()
-            dateText.text = intenttime.substring(0, 10)
+            hour = intenttime.substring(11, 13).toInt()
+            min = intenttime.substring(14, 16).toInt()
+            displayNameEdit.setText(intentname)
+            dateEdit.text = intenttime.substring(0, 10)
+            timeEdit.text = intenttime.substring(11, 16)
 
             if(intentdaysMode) {
-                dateText.text = intentdays
+                dateEdit.text = intentdays
 
                 if(intentdays.contains("SUN")) dayButtons[0].setChecked(true)
                 if(intentdays.contains("MON")) dayButtons[1].setChecked(true)
@@ -128,26 +143,45 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                 if(intentdays.contains("THU")) dayButtons[4].setChecked(true)
                 if(intentdays.contains("FRI")) dayButtons[5].setChecked(true)
                 if(intentdays.contains("SAT")) dayButtons[6].setChecked(true)
+
+                for (tb in dayButtons) {
+                    if(tb.isChecked) {
+                        tb.setBackgroundResource(R.drawable.button_bg_round_2)
+                        tb.setTextColor(Color.WHITE)
+                    }
+                    else {
+                        tb.setBackgroundResource(R.drawable.button_bg_round)
+                        tb.setTextColor(ContextCompat.getColor(this, R.color.darker_gray))
+                    }
+                }
             }
             days_mode_set = intentdaysMode
-
-            loc1.setText(intentname)
-            loc1.setBackgroundColor(Color.GREEN)
         }
 
-        //set click listener
-        dateButton.setOnClickListener(this)
-        addButton.setOnClickListener(this)
-        loc1.setOnClickListener(this)
-        loc2.setOnClickListener(this)
-        loc3.setOnClickListener(this)
-        loc4.setOnClickListener(this)
-        loc5.setOnClickListener(this)
-
+        //set onclick listener
+        displayNameEdit.setOnClickListener(this)
+        dateEdit.setOnClickListener(this)
+        timeEdit.setOnClickListener(this)
         for (tb in dayButtons)
             tb.setOnClickListener(this)
 
+        displayNameEdit.addTextChangedListener(object: TextWatcher {
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val len = s?.length.toString()
+                val text = "$len / 17"
+                wordCountText.text = text
+            }
 
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {}
+
+        })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.add_location_menu, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onSearchConfirmed(text: CharSequence?) {
@@ -156,27 +190,30 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     }
 
     override fun onOptionsItemSelected(item: MenuItem) =
-        if (item.itemId == android.R.id.home) {
-            finish()
-            true
-        } else {
-            super.onOptionsItemSelected(item)
+        when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
+            R.id.saveLocation -> {
+                if (picked or editmode) addNewSchedule()
+                else Toast.makeText(this@AddLocationActivity, "Please select a valid location!", Toast.LENGTH_SHORT).show()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.dateButton -> openDatePickDialog()
-            R.id.addButton -> {
-                if (picked or editmode) addNewSchedule()
-                else Toast.makeText(this@AddLocationActivity, "Please select a valid location!", Toast.LENGTH_SHORT).show()
-            }
+            R.id.loc1 -> if (results.isNotEmpty()) saveLocation(1, results[0])
+            R.id.loc2 -> if (results.size >= 2) saveLocation(2, results[1])
+            R.id.loc3 -> if (results.size >= 3) saveLocation(3, results[2])
+            R.id.loc4 -> if (results.size >= 4) saveLocation(4, results[3])
+            R.id.loc5 -> if (results.size >= 5) saveLocation(5, results[4])
+            R.id.dateEdit -> openDatePickDialog()
+            R.id.timeEdit -> openTimePickDialog()
             R.id.toggleButton1, R.id.toggleButton2, R.id.toggleButton3, R.id.toggleButton4,
             R.id.toggleButton5, R.id.toggleButton6, R.id.toggleButton7 -> daysMode()
-            R.id.loc1 -> saveLocation(1, results[0])
-            R.id.loc2 -> saveLocation(2, results[1])
-            R.id.loc3 -> saveLocation(3, results[2])
-            R.id.loc4 -> saveLocation(4, results[3])
-            R.id.loc5 -> saveLocation(5, results[4])
         }
     }
 
@@ -205,6 +242,11 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                                 4 -> loc5.text = results[i].name
                             }
                         }
+                        loc1.setOnClickListener(this@AddLocationActivity)
+                        loc2.setOnClickListener(this@AddLocationActivity)
+                        loc3.setOnClickListener(this@AddLocationActivity)
+                        loc4.setOnClickListener(this@AddLocationActivity)
+                        loc5.setOnClickListener(this@AddLocationActivity)
                     }
                 }
                 else if (response.body()!!.status == "INVALID_REQUEST")
@@ -213,11 +255,12 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         })
     }
 
+    //clear all highlight
     private fun clearAll() {
         loc1.setBackgroundColor(Color.WHITE)
-        loc2.setBackgroundColor(Color.WHITE)
+        loc2.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey))
         loc3.setBackgroundColor(Color.WHITE)
-        loc4.setBackgroundColor(Color.WHITE)
+        loc4.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey))
         loc5.setBackgroundColor(Color.WHITE)
     }
 
@@ -225,43 +268,44 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private fun saveLocation(text: Int, place: SearchPlacePlaces) {
         when (text) {
             1 -> {
-                loc1.setBackgroundColor(Color.GREEN)
-                loc2.setBackgroundColor(Color.WHITE)
+                loc1.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary))
+                loc2.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey))
                 loc3.setBackgroundColor(Color.WHITE)
-                loc4.setBackgroundColor(Color.WHITE)
+                loc4.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey))
                 loc5.setBackgroundColor(Color.WHITE)
             }
             2 -> {
                 loc1.setBackgroundColor(Color.WHITE)
-                loc2.setBackgroundColor(Color.GREEN)
+                loc2.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 loc3.setBackgroundColor(Color.WHITE)
-                loc4.setBackgroundColor(Color.WHITE)
+                loc4.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey))
                 loc5.setBackgroundColor(Color.WHITE)
             }
             3 -> {
                 loc1.setBackgroundColor(Color.WHITE)
-                loc2.setBackgroundColor(Color.WHITE)
-                loc3.setBackgroundColor(Color.GREEN)
-                loc4.setBackgroundColor(Color.WHITE)
+                loc2.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey))
+                loc3.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary))
+                loc4.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey))
                 loc5.setBackgroundColor(Color.WHITE)
             }
             4 -> {
                 loc1.setBackgroundColor(Color.WHITE)
-                loc2.setBackgroundColor(Color.WHITE)
+                loc2.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey))
                 loc3.setBackgroundColor(Color.WHITE)
-                loc4.setBackgroundColor(Color.GREEN)
+                loc4.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 loc5.setBackgroundColor(Color.WHITE)
             }
             5 -> {
                 loc1.setBackgroundColor(Color.WHITE)
-                loc2.setBackgroundColor(Color.WHITE)
+                loc2.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey))
                 loc3.setBackgroundColor(Color.WHITE)
-                loc4.setBackgroundColor(Color.WHITE)
-                loc5.setBackgroundColor(Color.GREEN)
+                loc4.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey))
+                loc5.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary))
             }
         }
         //set current place to user's place
         this.place = place
+        displayNameEdit.setText(place.name)
         picked = true
     }
 
@@ -273,10 +317,23 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                 this@AddLocationActivity.year = year
                 this@AddLocationActivity.monthOfYear = monthOfYear
                 this@AddLocationActivity.dayOfMonth = dayOfMonth
-                dateText.text = (String.format("%04d-%02d-%02d", year, monthOfYear+1, dayOfMonth))
+                dateEdit.text = String.format("%04d-%02d-%02d", year, monthOfYear+1, dayOfMonth)
                 clearDays()
             }
         }, Integer.parseInt(current.substring(0,4)), Integer.parseInt(current.substring(4,6))-1, Integer.parseInt(current.substring(6,8)) )
+        dialog.show()
+    }
+
+    //open time pick dialog
+    private fun openTimePickDialog() {
+        val cal = Calendar.getInstance()
+        val dialog = TimePickerDialog(this, object: TimePickerDialog.OnTimeSetListener {
+            override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
+                this@AddLocationActivity.hour = hourOfDay
+                this@AddLocationActivity.min = minute
+                timeEdit.text = String.format("%02d:%02d", hourOfDay, minute)
+            }
+        }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true)
         dialog.show()
     }
 
@@ -293,7 +350,13 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         var str = ""
         for (tb in dayButtons) {
             if(tb.isChecked) {
+                tb.setBackgroundResource(R.drawable.button_bg_round_2)
+                tb.setTextColor(Color.WHITE)
                 str = str + tb.textOn + ","
+            }
+            else {
+                tb.setBackgroundResource(R.drawable.button_bg_round)
+                tb.setTextColor(ContextCompat.getColor(this, R.color.darker_gray))
             }
         }
 
@@ -303,12 +366,12 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             year = current.get(Calendar.YEAR)
             monthOfYear = current.get(Calendar.MONTH)
             dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
-            dateText.text = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(current.time)
+            dateEdit.text = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(current.time)
             days_mode_set = false
         }
         // if there is at least one day checked
         else {
-            dateText.text = str.substring(0, str.length-1)
+            dateEdit.text = str.substring(0, str.length-1)
             days_mode_set = true
         }
     }
@@ -319,24 +382,19 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         val done = false
 
         //add data to the database
-        val time = String.format("%04d-%02d-%02d %02d:%02d:00", year, monthOfYear+1, dayOfMonth,
-            location_edit_time.hour, location_edit_time.minute)
+        val time = String.format("%04d-%02d-%02d %02d:%02d:00", year, monthOfYear+1, dayOfMonth, hour, min)
 
         val newLocationItem =
             if (!picked and editmode)
-                LocationItemData(
-                intentname,
-                intentx, intenty,
-                time, isAlarmed, done,
-                days_mode_set, dateText.text.toString())
+                LocationItemData(displayNameEdit.text.toString(),
+                intentx, intenty, time, isAlarmed, done,
+                days_mode_set, dateEdit.text.toString())
             else
-                LocationItemData(
-            place?.name ?: "Unknown",
-            place?.x ?: "0", place?.y ?: "0",
-             time, isAlarmed, done,
-             days_mode_set, dateText.text.toString())
+                LocationItemData(displayNameEdit.text.toString(),
+                place?.x ?: "0", place?.y ?: "0", time, isAlarmed, done,
+                days_mode_set, dateEdit.text.toString())
 
-        if(editmode) {
+        if (editmode) {
             val id = intent.getIntExtra("Id", 0)
             locationViewModel.editLocationItem(newLocationItem.name,
                 newLocationItem.x, newLocationItem.y, newLocationItem.time,
