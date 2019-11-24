@@ -106,7 +106,7 @@
 
     <TextView
         android:id="@+id/dateEdit"
-        android:layout_width="86dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/date_title"
         android:textSize="16sp"
@@ -116,11 +116,12 @@
 
     <RelativeLayout
         android:id="@+id/divider"
-        android:layout_width="86dp"
+        android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#E5E5E5"
-        android:layout_below="@id/dateEdit"
-        android:layout_marginStart="20dp"/>
+        android:layout_alignStart="@id/dateEdit"
+        android:layout_alignEnd="@id/dateEdit"
+        android:background="@color/darker_gray"
+        android:layout_below="@id/dateEdit" />
 
     <TextView
         android:id="@+id/timeText"
@@ -134,7 +135,7 @@
 
     <TextView
         android:id="@+id/timeEdit"
-        android:layout_width="46dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/time_title"
         android:textSize="16sp"
@@ -144,11 +145,12 @@
 
     <RelativeLayout
         android:id="@+id/divider2"
-        android:layout_width="46dp"
+        android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#E5E5E5"
+        android:background="@color/darker_gray"
         android:layout_below="@id/timeEdit"
-        android:layout_marginStart="20dp"/>
+        android:layout_alignStart="@id/timeEdit"
+        android:layout_alignEnd="@id/timeEdit"/>
 
     <TextView
         android:id="@+id/repeat"

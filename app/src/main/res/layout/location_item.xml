@@ -17,14 +17,16 @@ android:layout_width="match_parent" android:layout_height="50dp">
         android:background="@color/colorPrimary"
         android:text = "EDIT"
         android:id="@+id/edit_button"
+        android:textColor="#FFFFFF"
         />
     <Button
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="#B80000"
+        android:background="#EE2121"
         android:text = "DELETE"
         android:id="@+id/delete_button"
+        android:textColor="#FFFFFF"
         />
 </LinearLayout>
 <!-- Bottom View End-->
