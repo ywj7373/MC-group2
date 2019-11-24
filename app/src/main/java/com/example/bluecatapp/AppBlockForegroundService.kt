@@ -320,7 +320,7 @@ class AppBlockForegroundService : Service() {
         var unblockList: MutableSet<String> = mutableSetOf()
         currentlyBlockedApps.forEach { (appName, unblockTime) ->
             if (unblockTime < System.currentTimeMillis()
-                && (appStepCounters[appName]!! >= maxStepCount)
+                && (appStepCounters[appName]==null || appStepCounters[appName]!! >= maxStepCount)
             ) {
                 unblockList.add(appName)
                 didChange = true
@@ -330,7 +330,7 @@ class AppBlockForegroundService : Service() {
             // remove apps from unblock lists
             unblockList.forEach {
                 currentlyBlockedApps.remove(it)
-                appStepCounters.remove(it)
+                if(appStepCounters[it]!=null) appStepCounters.remove(it)
             }
             var unblockListPrettyNames = ""
             unblockList.forEach { appName ->

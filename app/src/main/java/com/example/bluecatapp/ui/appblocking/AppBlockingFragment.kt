@@ -75,22 +75,20 @@ class AppBlockingFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        sharedPrefs = getDefaultSharedPreferences(this.context)
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//        sensorManager.registerListener(
-//            stepCounter(),
-//            sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),
-//            SensorManager.SENSOR_DELAY_NORMAL
-//        )
-//        Toast.makeText(
-//            activity!!.applicationContext,
-//            "PEDOMETER RESUMED",
-//            Toast.LENGTH_SHORT
-//        ).show()
-//    }
+    override fun onResume() {
+        super.onResume()
+        Toast.makeText(
+            activity!!.applicationContext,
+            "PEDOMETER RESUMED",
+            Toast.LENGTH_SHORT
+        ).show()
+        startActivityForResult(
+            Intent(requireContext(), Pedometer::class.java), 200
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -175,10 +173,10 @@ class AppBlockingFragment : Fragment() {
                         chrono
                     ).start()
                 }
-                if (appStepCounters[appPackageName]!! < maxStepCount) {
-                    // Start pedometer simulation
-                    simulatePedometer(appPackageName, maxStepCount)
-                }
+//                if (appStepCounters[appPackageName]!=null && appStepCounters[appPackageName]!! < maxStepCount) {
+//                    // Start pedometer simulation
+//                    simulatePedometer(appPackageName, maxStepCount)
+//                }
             }
         }
         return root

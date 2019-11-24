@@ -43,8 +43,8 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private v
             getBlockCountdown(finishTimeStamp, holder.appTime).start()
         }
         holder.appProgress.max = maxStepCount //initialize max progress value
-        val stepCount= BlockedAppList[position][2] as Int
-        simulatePedometer(stepCount, holder.appStepCount, holder.appProgress, maxStepCount)
+//        val stepCount= BlockedAppList[position][2] as Int
+//        simulatePedometer(stepCount, holder.appStepCount, holder.appProgress, maxStepCount)
 //        holder.appProgress.max = maxStepCount
 //        holder.appProgress.progress = stepCount
 //        holder.appStepCount.setText("$stepCount / $maxStepCount")
@@ -77,7 +77,7 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private v
 
     /**Function to simulate pedometer
      * Increments step count every 2s
-     */
+
     private fun simulatePedometer(initialStepCount: Int, appStepCount: TextView,
                                   appProgress: ProgressBar, totalNumberOfSteps: Int) {
         val countDownFromTime = ((totalNumberOfSteps - initialStepCount) * 2000).toLong()
@@ -94,5 +94,5 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private v
             }
             override fun onFinish() {}
         }.start()
-    }
+    }*/
 }
