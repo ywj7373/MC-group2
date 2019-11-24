@@ -56,6 +56,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var appIcon: ImageView
 
     //Pedometer variables
+    private lateinit var pedometer: Pedometer
     private lateinit var sensorManager: SensorManager
     private lateinit var pedometerTitle: TextView
     private lateinit var pedometerLabel: TextView
@@ -85,9 +86,14 @@ class AppBlockingFragment : Fragment() {
             "PEDOMETER RESUMED",
             Toast.LENGTH_SHORT
         ).show()
-        startActivityForResult(
-            Intent(requireContext(), Pedometer::class.java), 200
-        )
+//        startActivityForResult(
+//            Intent(requireContext(), Pedometer::class.java), 200
+//        )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        sensorManager.unregisterListener(pedometer)
     }
 
     override fun onCreateView(
@@ -173,10 +179,10 @@ class AppBlockingFragment : Fragment() {
                         chrono
                     ).start()
                 }
-//                if (appStepCounters[appPackageName]!=null && appStepCounters[appPackageName]!! < maxStepCount) {
-//                    // Start pedometer simulation
-//                    simulatePedometer(appPackageName, maxStepCount)
-//                }
+                if (appStepCounters[appPackageName]!=null && appStepCounters[appPackageName]!! < maxStepCount) {
+                    // Start pedometer simulation
+                   startPedometer(appPackageName, maxStepCount)
+                }
             }
         }
         return root
@@ -337,6 +343,31 @@ class AppBlockingFragment : Fragment() {
 //                }
             }
         }
+    }
+
+    private fun startPedometer(appName: String, numberOfSteps: Int){
+
+        pedometer = object: Pedometer() {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if(appStepCounters[appName]!! < maxStepCount) {
+                    super.onSensorChanged(event)
+                }
+            }
+
+            override fun step(timeNs: Long) {
+                super.step(timeNs)
+                appStepCounters[appName] = appStepCounters[appName]!! + super.numSteps
+                with(sharedPrefs.edit()) {
+                    // update changed values
+                    putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
+                    commit()
+                }
+                pedometerValue.setText("${appStepCounters[appName]} / $numberOfSteps")
+            }
+        }
+        sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        sensorManager!!.registerListener(pedometer, sensorManager!!
+            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     /**Function to simulate pedometer
