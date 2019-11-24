@@ -118,10 +118,13 @@ class LocationFragment : Fragment() {
                 startActivity(intent)
                 true
             }
+            /*
+            allDelete button is disabled
             R.id.deleteItems -> {
                 locationViewModel.deleteAllLocationItems()
                 true
             }
+            */
             else -> super.onOptionsItemSelected(item)
         }
     }
