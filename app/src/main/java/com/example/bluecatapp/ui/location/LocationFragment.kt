@@ -58,7 +58,7 @@ class LocationFragment : Fragment() {
                 if (it != null) {
                     val ontime = it.ontime
                     val absent = it.absent
-                    val ratio = if( ontime+absent != 0 ) ontime.toDouble()/(ontime+absent) else 1.0
+                    val ratio = if( ontime+absent != 0 ) (ontime.toDouble()+3.0)/(ontime+absent+3) else 1.0
 
                     if(ratio >= 0.9)
                         grade.text = "A+"
