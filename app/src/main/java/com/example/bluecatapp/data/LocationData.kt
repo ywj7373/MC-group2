@@ -76,3 +76,14 @@ data class StatsData(
     @field:SerializedName("id")
     var id: Int = 0
 }
+
+@Entity(tableName = "mcurrent_date_table")
+data class DateData(
+    @field:SerializedName("mcurrent_date")
+    val mcurrent_date: String
+)
+{
+    @PrimaryKey
+    @field:SerializedName("id")
+    var id: Int = 0
+}

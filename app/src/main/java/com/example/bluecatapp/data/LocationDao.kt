@@ -66,3 +66,12 @@ interface StatsDao {
     @Query("UPDATE stats SET absent = absent + 1")
     fun increaseAbsent()
 }
+
+@Dao
+interface DateDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(dateData: DateData)
+
+    @Query("SELECT * FROM mcurrent_date_table")
+    fun getCurrentDate(): DateData
+}

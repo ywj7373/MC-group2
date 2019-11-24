@@ -16,10 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
 import com.example.bluecatapp.R
-import com.example.bluecatapp.data.TravelTimeData
-import com.example.bluecatapp.data.CurrentLocationData
-import com.example.bluecatapp.data.LocationItemData
-import com.example.bluecatapp.data.LocationRepository
+import com.example.bluecatapp.data.*
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -102,6 +99,7 @@ class RoutineService : Service {
         val on = sharedPreferences.getBoolean("Location Based Reminder", true)
 
         if (on) {
+            checkDate()
             checkCurrentLocation()
             checkTime()
         }
@@ -236,6 +234,28 @@ class RoutineService : Service {
                 }
             }
         }
+    }
+
+    //check if date has changed or not and if changed reset repeated schedule
+    private fun checkDate() {
+
+
+        val dateData:DateData = LocationRepository(application).getCurrentDate()
+        val current_date: String = SimpleDateFormat("yyyyMMdd").format(Date())
+        if(dateData==null) {
+            LocationRepository(application).updateCurrentDate()
+            return
+        }
+
+        if(dateData.mcurrent_date!=current_date) {              // if date has changed
+            LocationRepository(application).updateAllNotDoneDays()
+            LocationRepository(application).updateCurrentDate()
+            Log.d("checkDate", "Date has changed : " + dateData.mcurrent_date + ", " + current_date)
+        }
+        else {
+            Log.d("checkDate", "Date not changed : " + dateData.mcurrent_date + ", " + current_date)
+        }
+
     }
 
     //track current location
