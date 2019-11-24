@@ -64,6 +64,10 @@ class LocationRepository(application: Application) {
         DeleteLocationITemAsyncTask(locationItemDao, id).execute()
     }
 
+    fun updateToTodayDateDays(today: String, day: String) {
+        UpdateToTodayDateAsyncTask(locationItemDao, today, day).execute()
+    }
+
     fun editLocationItem(name: String, x: String, y:String, time:String, isAlarmed:Boolean, done:Boolean, daysMode:Boolean, days:String, id: Int) {
         EditLocationItemAsyncTask(locationItemDao, name, x, y, time, isAlarmed, done, daysMode, days, id).execute()
     }
@@ -118,6 +122,12 @@ class LocationRepository(application: Application) {
 
         override fun doInBackground(vararg p0: LocationItemData?) {
             locationItemDao.insert(p0[0]!!)
+        }
+    }
+
+    private class UpdateToTodayDateAsyncTask(val locationItemDao: LocationItemDao, val today: String, val day: String) : AsyncTask<Unit, Unit, Unit>() {
+        override fun doInBackground(vararg p0: Unit?) {
+            locationItemDao.updateToTodayDateDays(today, day)
         }
     }
 

@@ -238,8 +238,6 @@ class RoutineService : Service {
 
     //check if date has changed or not and if changed reset repeated schedule
     private fun checkDate() {
-
-
         val dateData:DateData = LocationRepository(application).getCurrentDate()
         val current_date: String = SimpleDateFormat("yyyyMMdd").format(Date())
         if(dateData==null) {
@@ -248,6 +246,56 @@ class RoutineService : Service {
         }
 
         if(dateData.mcurrent_date!=current_date) {              // if date has changed
+            var calendar = Calendar.getInstance()
+            calendar.add(Calendar.DATE, 6)
+            var future_date = SimpleDateFormat("yyyy-MM-dd").format(calendar.time)
+            val dayOfToday_encoded = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            var iterating_day = (dayOfToday_encoded + 6) % 7
+            var dayOfToday:String = ""
+
+            // Iteration for sorting
+            while(iterating_day != dayOfToday_encoded) {
+                dayOfToday   = when(iterating_day) {
+                    1 -> "%SUN%"
+                    2 -> "%MON%"
+                    3 -> "%TUE%"
+                    4 -> "%WED%"
+                    5 -> "%THU%"
+                    6 -> "%FRI%"
+                    7 -> "%SAT%"
+                    else -> ""
+                }
+
+                LocationRepository(application).updateToTodayDateDays(future_date, dayOfToday)
+
+                iterating_day = iterating_day - 1
+                if(iterating_day == -1)
+                    iterating_day = 7
+                calendar.add(Calendar.DATE, -1)
+                future_date = SimpleDateFormat("yyyy-MM-dd").format(calendar.time)
+            }
+            run {           // one more for today
+                dayOfToday   = when(iterating_day) {
+                    1 -> "%SUN%"
+                    2 -> "%MON%"
+                    3 -> "%TUE%"
+                    4 -> "%WED%"
+                    5 -> "%THU%"
+                    6 -> "%FRI%"
+                    7 -> "%SAT%"
+                    else -> ""
+                }
+
+                LocationRepository(application).updateToTodayDateDays(future_date, dayOfToday)
+
+                iterating_day = iterating_day - 1
+                if(iterating_day == -1)
+                    iterating_day = 7
+                calendar.add(Calendar.DATE, -1)
+                future_date = SimpleDateFormat("yyyy-MM-dd").format(calendar.time)
+            }
+
+            LocationRepository(application).updateToTodayDateDays(current_date, dayOfToday)
             LocationRepository(application).updateAllNotDoneDays()
             LocationRepository(application).updateCurrentDate()
             Log.d("checkDate", "Date has changed : " + dateData.mcurrent_date + ", " + current_date)

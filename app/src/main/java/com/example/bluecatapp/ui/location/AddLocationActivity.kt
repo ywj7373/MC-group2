@@ -373,6 +373,35 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         else {
             dateEdit.text = str.substring(0, str.length-1)
             days_mode_set = true
+
+            val calendar = Calendar.getInstance()
+            var dayOfToday_encoded = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            var dayOfToday:String = ""
+            var count = 0                       // To prevent infinite loop
+
+            // Iteration for get closest time
+            while(true) {
+                dayOfToday = when (dayOfToday_encoded) {
+                    1 -> "SUN"
+                    2 -> "MON"
+                    3 -> "TUE"
+                    4 -> "WED"
+                    5 -> "THU"
+                    6 -> "FRI"
+                    7 -> "SAT"
+                    else -> ""
+                }
+                if (dateEdit.text.contains(dayOfToday) || count > 10)
+                    break
+                dayOfToday_encoded = dayOfToday_encoded + 1
+                calendar.add(Calendar.DATE, 1)
+                if(dayOfToday_encoded > 7)
+                    dayOfToday_encoded = 1
+                count++
+            }
+            year = calendar.get(Calendar.YEAR)
+            monthOfYear = calendar.get(Calendar.MONTH)
+            dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
         }
     }
 
