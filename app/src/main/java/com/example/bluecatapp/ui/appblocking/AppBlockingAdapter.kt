@@ -43,11 +43,10 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private v
             getBlockCountdown(finishTimeStamp, holder.appTime).start()
         }
         holder.appProgress.max = maxStepCount //initialize max progress value
-//        val stepCount= BlockedAppList[position][2] as Int
-//        simulatePedometer(stepCount, holder.appStepCount, holder.appProgress, maxStepCount)
-//        holder.appProgress.max = maxStepCount
-//        holder.appProgress.progress = stepCount
-//        holder.appStepCount.setText("$stepCount / $maxStepCount")
+        val stepCount= BlockedAppList[position][2] as Int
+        holder.appProgress.max = maxStepCount
+        holder.appProgress.progress = stepCount
+        holder.appStepCount.setText("$stepCount / $maxStepCount")
         holder.appIcon.setImageDrawable(BlockedAppList[position][3] as Drawable?)
     }
 

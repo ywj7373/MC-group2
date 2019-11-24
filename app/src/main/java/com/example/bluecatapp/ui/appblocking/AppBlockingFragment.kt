@@ -86,9 +86,6 @@ class AppBlockingFragment : Fragment() {
             "PEDOMETER RESUMED",
             Toast.LENGTH_SHORT
         ).show()
-//        startActivityForResult(
-//            Intent(requireContext(), Pedometer::class.java), 200
-//        )
     }
 
     override fun onDestroy() {
@@ -128,32 +125,32 @@ class AppBlockingFragment : Fragment() {
             )
         }
         sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)?.let {
-            pedometerSensor = it
-        }
-        sharedPrefs = getDefaultSharedPreferences(this.context)
-        val pedometerEnabled = sharedPrefs.getBoolean("Pedometer", false)
-        Log.d("bcat", "behehehehheeh " + pedometerEnabled)
-        if (pedometerEnabled) {
-            if (pedometerSensor != null) {
-                sensorManager.registerListener(
-                    stepCounter(),
-                    pedometerSensor,
-                    SensorManager.SENSOR_DELAY_NORMAL
-                )
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "PEDOMETER CREATED",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "PEDOMETER NOT FOUND",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
+//        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)?.let {
+//            pedometerSensor = it
+//        }
+//        sharedPrefs = getDefaultSharedPreferences(this.context)
+//        val pedometerEnabled = sharedPrefs.getBoolean("Pedometer", false)
+//        Log.d("bcat", "behehehehheeh " + pedometerEnabled)
+//        if (pedometerEnabled) {
+//            if (pedometerSensor != null) {
+//                sensorManager.registerListener(
+//                    stepCounter(),
+//                    pedometerSensor,
+//                    SensorManager.SENSOR_DELAY_NORMAL
+//                )
+//                Toast.makeText(
+//                    activity!!.applicationContext,
+//                    "PEDOMETER CREATED",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            } else {
+//                Toast.makeText(
+//                    activity!!.applicationContext,
+//                    "PEDOMETER NOT FOUND",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//        }
 
         // Retrieve makeStepCount from sharedPreferences
         maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
