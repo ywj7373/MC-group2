@@ -17,6 +17,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.google.gson.reflect.TypeToken
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class AppBlockForegroundService : Service() {
@@ -237,6 +239,32 @@ class AppBlockForegroundService : Service() {
                      * or checking time limit until HW mode turned off
                      */
                     blockApp(foregroundApp)
+                } else if (shouldUseStrictMode()) {
+                    var totalAppUsageTime: Long = 0
+
+                    appUsageTimers.forEach {
+                        totalAppUsageTime += it.value
+                    }
+
+                    if ((maxTimeLimit - totalAppUsageTime) == 1000 * 60 * 5.toLong()) {
+                        val toast = Toast.makeText(
+                            this.applicationContext,
+                            "Strict mode: We will block all restricted apps in 5 minutes if you continue using them",
+                            Toast.LENGTH_LONG
+                        )
+                        toast.show()
+                    }
+                    if ((maxTimeLimit - totalAppUsageTime) == 1000 * 60 * 1.toLong()) {
+                        val toast = Toast.makeText(
+                            this.applicationContext,
+                            "Strict mode: We will block all restricted apps in 1 minute if you continue using them",
+                            Toast.LENGTH_LONG
+                        )
+                        toast.show()
+                    } else if (totalAppUsageTime >= maxTimeLimit) {
+                        // All apps should be blocked
+                        addAllToBlockList()
+                    }
                 } else {
                     /**
                      * Use regular app blocking algorithm based on usage time
@@ -513,6 +541,32 @@ class AppBlockForegroundService : Service() {
             }
         }
         return packageName
+    }
+
+    private fun shouldUseStrictMode(): Boolean {
+        // If the time is between 00:00 and 10:00, be stricter in terms of when to block.
+
+        val startTimeHarshModeRaw = "00:00:00"
+        val startTime: Date = SimpleDateFormat("HH:mm:ss").parse(startTimeHarshModeRaw)
+        val startTimeHarshMode: Calendar = Calendar.getInstance()
+        startTimeHarshMode.time = startTime
+        startTimeHarshMode.add(Calendar.DATE, 1)
+
+
+        val endTimeHarshModeRaw = "10:00:00"
+        val endTime: Date = SimpleDateFormat("HH:mm:ss").parse(endTimeHarshModeRaw)
+        val endTimeHarshMode: Calendar = Calendar.getInstance()
+        endTimeHarshMode.time = endTime
+        endTimeHarshMode.add(Calendar.DATE, 1)
+
+        val currentDateTime: Calendar = Calendar.getInstance()
+        currentDateTime.add(Calendar.DATE, 1)
+
+        val currentTime: Date = currentDateTime.time
+        if (currentTime.after(startTimeHarshMode.time) && currentTime.before(endTimeHarshMode.time)) { // Checks whether the current time is between 00:00:00 and 10:00:00.
+            return true
+        }
+        return false
     }
 }
 
