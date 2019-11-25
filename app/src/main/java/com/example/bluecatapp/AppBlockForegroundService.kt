@@ -223,6 +223,8 @@ class AppBlockForegroundService : Service() {
         currentlyBlockedApps = getCurrentlyBlockedApps()
         appStepCounters = getAppStepCounters()
         hwModeOn = sharedPrefs.getBoolean("hw_mode_bool", false)
+        val smartBlockingEnabled = sharedPrefs.getBoolean("smart_blocking", false)
+
 
         if (hasUsageDataAccessPermission()) {
             val foregroundApp = getForegroundApp()
@@ -239,7 +241,7 @@ class AppBlockForegroundService : Service() {
                      * or checking time limit until HW mode turned off
                      */
                     blockApp(foregroundApp)
-                } else if (shouldUseStrictMode()) {
+                } else if (smartBlockingEnabled && shouldUseStrictMode()) {
                     var totalAppUsageTime: Long = 0
 
                     appUsageTimers.forEach {
@@ -308,7 +310,7 @@ class AppBlockForegroundService : Service() {
                 onCloseRestrictedApp()
                 Log.d("bcat", "Cleaned up old timer (that might never have been started)")
                 if (foregroundApp != null && restrictedApps.contains(foregroundApp)) {
-                    if (!(currentlyBlockedApps.size == restrictedApps.size)) {
+                    if (smartBlockingEnabled && (currentlyBlockedApps.size != restrictedApps.size)) {
                         // Count the switch since the newly opened app is a restricted app
                         countSwitchedApps.add(System.currentTimeMillis())
 //                        Toast.makeText(
