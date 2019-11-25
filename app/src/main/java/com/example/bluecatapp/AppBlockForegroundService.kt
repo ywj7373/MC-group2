@@ -33,11 +33,14 @@ class AppBlockForegroundService : Service() {
     private lateinit var appOps: AppOpsManager
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
-    private lateinit var sharedPrefs: SharedPreferences
     private lateinit var currentAppUsageTimerHandler: Handler
     private var currentAppUsageTimerRunnable: Runnable = Runnable {}
     private var currentAppUsage: Long = 0
     private var prevDetectedForegroundAppPackageName: String? = null
+
+    // Shared Preferences
+    private lateinit var sharedPrefs: SharedPreferences
+    private var hwModeOn: Boolean = false
     private var pedometerEnabled: Boolean = false
     private var maxStepCount = 0
 
@@ -199,10 +202,16 @@ class AppBlockForegroundService : Service() {
             "Attempting to block app $packageName"
         )
 
+        var fragmentToLoad: Int = FragmentToLoad.APPBLOCK
+        if(hwModeOn){
+            // If HW mode enabled redirect to HW mode screen
+            fragmentToLoad = FragmentToLoad.TODO
+        }
+
         application.startActivity(
             Intent(this, MainActivity::class.java).putExtra(
                 "frgToLoad",
-                FragmentToLoad.APPBLOCK
+                fragmentToLoad
             ).putExtra("blockedAppName", packageName).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         )
     }
@@ -210,6 +219,7 @@ class AppBlockForegroundService : Service() {
     private fun checkIfShouldBlockForegroundApp() {
         currentlyBlockedApps = getCurrentlyBlockedApps()
         appStepCounters = getAppStepCounters()
+        hwModeOn = sharedPrefs.getBoolean("hw_mode_bool", false)
 
         if (hasUsageDataAccessPermission()) {
             val foregroundApp = getForegroundApp()
@@ -219,37 +229,52 @@ class AppBlockForegroundService : Service() {
                         * 1000) // Default 10 seconds
             val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
             if (foregroundApp != null) {
-                currentAppUsage = appUsageTimers.getOrPut(foregroundApp) { 0 }
-                // Send notification 5 min before block
-                if ((maxTimeLimit - currentAppUsage) == 1000 * 60 * 5.toLong()) {
-                    val toast = Toast.makeText(
-                        this.applicationContext, "We will block ${getAppNameFromPackage(
+
+
+                if (hwModeOn && restrictedApps.contains(foregroundApp)) {
+                    /**
+                     * block restricted app without adding to blocked app list
+                     * or checking time limit
+                     * until HW mode turned off
+                     */
+                    foregroundApp?.let { blockApp(it) }
+                }
+                else {
+                    /**
+                     * Use regular app blocking algorithm based on usage time
+                     */
+                    currentAppUsage = appUsageTimers.getOrPut(foregroundApp) { 0 }
+                    // Send notification 5 min before block
+                    if ((maxTimeLimit - currentAppUsage) == 1000 * 60 * 5.toLong()) {
+                        val toast = Toast.makeText(
+                            this.applicationContext, "We will block ${getAppNameFromPackage(
+                                foregroundApp,
+                                this.applicationContext
+                            )} in 5 minutes if you continue using it", Toast.LENGTH_LONG
+                        )
+                        toast.show()
+                    }
+                    if ((maxTimeLimit - currentAppUsage) == 1000 * 60 * 1.toLong()) {
+                        val toast = Toast.makeText(
+                            this.applicationContext, "We will block ${getAppNameFromPackage(
+                                foregroundApp,
+                                this.applicationContext
+                            )} in 1 minute if you continue using it", Toast.LENGTH_LONG
+                        )
+                        toast.show()
+                    }
+                    if (currentAppUsage >= maxTimeLimit) {
+                        // App should be blocked
+                        addToBlockList(foregroundApp)
+                    }
+                    Log.d(
+                        "bcat",
+                        "| Open app: ${getAppNameFromPackage(
                             foregroundApp,
                             this.applicationContext
-                        )} in 5 minutes if you continue using it", Toast.LENGTH_LONG
+                        )} | Blocked apps: $currentlyBlockedApps | Restricted app usage: $currentAppUsage | Max time: ${maxTimeLimit / 1000}s | Block duration: ${blockDuration / 1000}s |"
                     )
-                    toast.show()
                 }
-                if ((maxTimeLimit - currentAppUsage) == 1000 * 60 * 1.toLong()) {
-                    val toast = Toast.makeText(
-                        this.applicationContext, "We will block ${getAppNameFromPackage(
-                            foregroundApp,
-                            this.applicationContext
-                        )} in 1 minute if you continue using it", Toast.LENGTH_LONG
-                    )
-                    toast.show()
-                }
-                if (currentAppUsage >= maxTimeLimit) {
-                    // App should be blocked
-                    addToBlockList(foregroundApp)
-                }
-                Log.d(
-                    "bcat",
-                    "| Open app: ${getAppNameFromPackage(
-                        foregroundApp,
-                        this.applicationContext
-                    )} | Blocked apps: $currentlyBlockedApps | Restricted app usage: $currentAppUsage | Max time: ${maxTimeLimit / 1000}s | Block duration: ${blockDuration / 1000}s |"
-                )
             }
 
             if (!prevDetectedForegroundAppPackageName.equals(foregroundApp)) {
