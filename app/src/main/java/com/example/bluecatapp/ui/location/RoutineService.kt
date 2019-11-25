@@ -16,10 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
 import com.example.bluecatapp.R
-import com.example.bluecatapp.data.TravelTimeData
-import com.example.bluecatapp.data.CurrentLocationData
-import com.example.bluecatapp.data.LocationItemData
-import com.example.bluecatapp.data.LocationRepository
+import com.example.bluecatapp.data.*
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -102,6 +99,7 @@ class RoutineService : Service {
         val on = sharedPreferences.getBoolean("Location Based Reminder", true)
 
         if (on) {
+            checkDate()
             checkCurrentLocation()
             checkTime()
         }
@@ -200,7 +198,10 @@ class RoutineService : Service {
                 Log.d(TAG, "alarm rings at: " + Date(alarmTime).toString())
                 Log.d(TAG, "current time: " + Date(currentTime).toString())
 
-                val simpleTimeFormat = SimpleDateFormat("hh:mm:ss", Locale.KOREA)
+                val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
+
+                Log.d("Debug12 ", "currentTime : " +currentTime)
+                Log.d("Debug12 ", "destinationtime : " +time)
 
                 //check if current time passed arrival time
                 if ((!daysMode && currentTime >= time) || (daysMode && (simpleTimeFormat.format(Date(currentTime))>=(simpleTimeFormat.format(Date(time)))) )) {
@@ -236,6 +237,76 @@ class RoutineService : Service {
                 }
             }
         }
+    }
+
+    //check if date has changed or not and if changed reset repeated schedule
+    private fun checkDate() {
+        val dateData:DateData = LocationRepository(application).getCurrentDate()
+        val current_date: String = SimpleDateFormat("yyyyMMdd").format(Date())
+        if(dateData==null) {
+            LocationRepository(application).updateCurrentDate()
+            return
+        }
+
+        if(dateData.mcurrent_date!=current_date) {              // if date has changed
+            var calendar = Calendar.getInstance()
+            calendar.add(Calendar.DATE, 6)
+            var future_date = SimpleDateFormat("yyyy-MM-dd").format(calendar.time)
+            val dayOfToday_encoded = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            var iterating_day = (dayOfToday_encoded + 6) % 7
+            var dayOfToday:String = ""
+
+            // Iteration for sorting
+            while(iterating_day != dayOfToday_encoded) {
+                dayOfToday   = when(iterating_day) {
+                    1 -> "%SUN%"
+                    2 -> "%MON%"
+                    3 -> "%TUE%"
+                    4 -> "%WED%"
+                    5 -> "%THU%"
+                    6 -> "%FRI%"
+                    7 -> "%SAT%"
+                    else -> ""
+                }
+
+                LocationRepository(application).updateToTodayDateDays(future_date, dayOfToday)
+
+                iterating_day = iterating_day - 1
+                if(iterating_day == -1)
+                    iterating_day = 7
+                calendar.add(Calendar.DATE, -1)
+                future_date = SimpleDateFormat("yyyy-MM-dd").format(calendar.time)
+            }
+            run {           // one more for today
+                dayOfToday   = when(iterating_day) {
+                    1 -> "%SUN%"
+                    2 -> "%MON%"
+                    3 -> "%TUE%"
+                    4 -> "%WED%"
+                    5 -> "%THU%"
+                    6 -> "%FRI%"
+                    7 -> "%SAT%"
+                    else -> ""
+                }
+
+                LocationRepository(application).updateToTodayDateDays(future_date, dayOfToday)
+
+                iterating_day = iterating_day - 1
+                if(iterating_day == -1)
+                    iterating_day = 7
+                calendar.add(Calendar.DATE, -1)
+                future_date = SimpleDateFormat("yyyy-MM-dd").format(calendar.time)
+            }
+
+            LocationRepository(application).updateToTodayDateDays(current_date, dayOfToday)
+            LocationRepository(application).updateAllNotDoneDays()
+            LocationRepository(application).updateCurrentDate()
+            Log.d("checkDate", "Date has changed : " + dateData.mcurrent_date + ", " + current_date)
+        }
+        else {
+            Log.d("checkDate", "Date not changed : " + dateData.mcurrent_date + ", " + current_date)
+        }
+
     }
 
     //track current location
@@ -346,7 +417,7 @@ class RoutineService : Service {
 
     //convert date to seconds
     private fun timeToSeconds(time: String): Long {
-        val sf = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.KOREA)
+        val sf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
         val date: Date? = sf.parse(time)
         return date!!.time
     }

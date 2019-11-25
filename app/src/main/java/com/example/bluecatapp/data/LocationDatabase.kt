@@ -165,3 +165,39 @@ abstract class StatsDatabase : RoomDatabase() {
         }
     }
 }
+
+@Database(entities = [DateData::class], version = 1)
+abstract class DateDatabase : RoomDatabase() {
+
+    abstract fun dateDao(): DateDao
+
+    companion object {
+        private var instance: DateDatabase? = null
+
+        fun getInstance(context: Context): DateDatabase? {
+            if (instance == null) {
+                synchronized(DateDatabase::class) {
+                    instance = Room.databaseBuilder(
+                        context.applicationContext,
+                        DateDatabase::class.java, "mcurrent_date_table"
+                    )
+                        .allowMainThreadQueries()
+                        .fallbackToDestructiveMigration()
+                        .addCallback(roomCallback)
+                        .build()
+                }
+            }
+            return instance
+        }
+
+        fun destroyInstance() {
+            instance = null
+        }
+
+        private val roomCallback = object : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+            }
+        }
+    }
+}

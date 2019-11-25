@@ -6,9 +6,12 @@
         android:icon="@drawable/ic_add_black_24dp"
         android:title="Add Item"
         app:showAsAction="always" />
+    <!--
+    allDelete button is disabled
     <item
         android:id="@+id/deleteItems"
         android:icon="@drawable/ic_location_delete"
         android:title="Delete Item"
         app:showAsAction="always" />
+    -->
 </menu>

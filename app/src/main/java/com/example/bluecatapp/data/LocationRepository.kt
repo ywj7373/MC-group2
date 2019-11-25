@@ -3,6 +3,8 @@ package com.example.bluecatapp.data
 import android.app.Application
 import android.os.AsyncTask
 import androidx.lifecycle.LiveData
+import java.text.SimpleDateFormat
+import java.util.*
 
 //connect database with livedata with repository
 class LocationRepository(application: Application) {
@@ -11,6 +13,7 @@ class LocationRepository(application: Application) {
     private var currentLocationDao: CurrentLocationDao
     private var travelTimeDao: TravelTimeDao
     private var statsDao: StatsDao
+    private var dateDao: DateDao
     private var allLocationItems: LiveData<List<LocationItemData>>
 
     init {
@@ -18,11 +21,13 @@ class LocationRepository(application: Application) {
         val currentLocationDatabase: CurrentLocationDatabase = CurrentLocationDatabase.getInstance(application.applicationContext)!!
         val travelTimeDatabase: TravelTimeDatabase = TravelTimeDatabase.getInstance(application.applicationContext)!!
         val statsDatabase: StatsDatabase = StatsDatabase.getInstance(application.applicationContext)!!
+        val dateDatabase: DateDatabase = DateDatabase.getInstance(application.applicationContext)!!
 
         locationItemDao = locationItemDatabase.locationItemDao()
         currentLocationDao = currentLocationDatabase.currentLocationDao()
         travelTimeDao = travelTimeDatabase.travelTimeDao()
         statsDao = statsDatabase.statsDao()
+        dateDao = dateDatabase.dateDao()
         allLocationItems = locationItemDao.getAllLocationItems()
     }
 
@@ -52,11 +57,15 @@ class LocationRepository(application: Application) {
     }
 
     fun updateAllNotDoneDays() {
-        locationItemDao.updateAllNotDoneDays()
+        UpdateAllNotDoneDaysAsyncTask(locationItemDao).execute()
     }
 
     fun deleteLocationItem(id: Int) {
         DeleteLocationITemAsyncTask(locationItemDao, id).execute()
+    }
+
+    fun updateToTodayDateDays(today: String, day: String) {
+        UpdateToTodayDateAsyncTask(locationItemDao, today, day).execute()
     }
 
     fun editLocationItem(name: String, x: String, y:String, time:String, isAlarmed:Boolean, done:Boolean, daysMode:Boolean, days:String, id: Int) {
@@ -98,11 +107,27 @@ class LocationRepository(application: Application) {
         statsDao.increaseOntime()
     }
 
+    //Current Date Database functions
+    fun getCurrentDate(): DateData {
+        return dateDao.getCurrentDate()
+    }
+    fun updateCurrentDate() {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd").format(Date())
+        val dateData = DateData(timeStamp)
+        dateDao.insert(dateData)
+    }
+
     private class InsertLocationItemAsyncTask(locationItemDao: LocationItemDao) : AsyncTask<LocationItemData, Unit, Unit>() {
         val locationItemDao = locationItemDao
 
         override fun doInBackground(vararg p0: LocationItemData?) {
             locationItemDao.insert(p0[0]!!)
+        }
+    }
+
+    private class UpdateToTodayDateAsyncTask(val locationItemDao: LocationItemDao, val today: String, val day: String) : AsyncTask<Unit, Unit, Unit>() {
+        override fun doInBackground(vararg p0: Unit?) {
+            locationItemDao.updateToTodayDateDays(today, day)
         }
     }
 
@@ -146,6 +171,12 @@ class LocationRepository(application: Application) {
 
         override fun doInBackground(vararg p0: Unit?) {
             statsDao.insert(StatsData(0,0))
+        }
+    }
+
+    private class UpdateAllNotDoneDaysAsyncTask(val locationItemDao: LocationItemDao) : AsyncTask<Unit, Unit, Unit>() {
+        override fun doInBackground(vararg  p0: Unit?) {
+            locationItemDao.updateAllNotDoneDays()
         }
     }
 }
