@@ -5,15 +5,17 @@
  * Availability: https://github.com/AndroidCodility/Pedometer
  * */
 
-package com.example.bluecatapp.ui.appblocking
+package com.example.bluecatapp
 
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.util.Log
 
-open class Pedometer : SensorEventListener, StepListener {
-    private var stepDetector: StepDetector = StepDetector()
+open class Pedometer : SensorEventListener,
+    StepListener {
+    private var stepDetector: StepDetector =
+        StepDetector()
     var numSteps: Int = 0
 
     init {
