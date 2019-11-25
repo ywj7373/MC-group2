@@ -40,7 +40,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.appblocking.Pedometer"/>
         <activity android:name=".AddTodoActivity" />
         <activity android:name=".TimerActivity" />
         <activity android:name=".ui.location.AddLocationActivity" />

@@ -79,14 +79,14 @@ class AppBlockingFragment : Fragment() {
         sharedPrefs = getDefaultSharedPreferences(this.context)
     }
 
-    override fun onResume() {
-        super.onResume()
-        Toast.makeText(
-            activity!!.applicationContext,
-            "PEDOMETER RESUMED",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        Toast.makeText(
+//            activity!!.applicationContext,
+//            "PEDOMETER RESUMED",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
 
 //    override fun onDestroy() {
 //        super.onDestroy()
