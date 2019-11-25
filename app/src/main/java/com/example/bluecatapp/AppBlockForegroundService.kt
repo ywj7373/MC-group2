@@ -37,6 +37,7 @@ class AppBlockForegroundService : Service() {
     private var currentAppUsageTimerRunnable: Runnable = Runnable {}
     private var currentAppUsage: Long = 0
     private var prevDetectedForegroundAppPackageName: String? = null
+    private var countSwitchedApps: MutableList<Long> = mutableListOf()
 
     // Shared Preferences
     private lateinit var sharedPrefs: SharedPreferences
@@ -203,7 +204,7 @@ class AppBlockForegroundService : Service() {
         )
 
         var fragmentToLoad: Int = FragmentToLoad.APPBLOCK
-        if(hwModeOn){
+        if (hwModeOn) {
             // If HW mode enabled redirect to HW mode screen
             fragmentToLoad = FragmentToLoad.TODO
         }
@@ -230,16 +231,13 @@ class AppBlockForegroundService : Service() {
             val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
             if (foregroundApp != null) {
 
-
                 if (hwModeOn && restrictedApps.contains(foregroundApp)) {
                     /**
                      * block restricted app without adding to blocked app list
-                     * or checking time limit
-                     * until HW mode turned off
+                     * or checking time limit until HW mode turned off
                      */
-                    foregroundApp?.let { blockApp(it) }
-                }
-                else {
+                    blockApp(foregroundApp)
+                } else {
                     /**
                      * Use regular app blocking algorithm based on usage time
                      */
@@ -262,8 +260,7 @@ class AppBlockForegroundService : Service() {
                             )} in 1 minute if you continue using it", Toast.LENGTH_LONG
                         )
                         toast.show()
-                    }
-                    if (currentAppUsage >= maxTimeLimit) {
+                    } else if (currentAppUsage >= maxTimeLimit) {
                         // App should be blocked
                         addToBlockList(foregroundApp)
                     }
@@ -281,8 +278,19 @@ class AppBlockForegroundService : Service() {
                 // A new app has been opened
                 // Stop the timer for the old restricted app, if any.
                 onCloseRestrictedApp()
-                Log.d("bcat", "Cleaned up old timer (that might never have been started btw)")
+                Log.d("bcat", "Cleaned up old timer (that might never have been started)")
                 if (foregroundApp != null && restrictedApps.contains(foregroundApp)) {
+                    if (!(currentlyBlockedApps.size == restrictedApps.size)) {
+                        // Count the switch since the newly opened app is a restricted app
+                        countSwitchedApps.add(System.currentTimeMillis())
+//                        Toast.makeText(
+//                            this.applicationContext,
+//                            "Opened restricted apps count " + countSwitchedApps.size,
+//                            Toast.LENGTH_SHORT
+//                        ).show()
+                        checkIfFrequentAppSwitching()
+                    }
+
                     // Start the timer for the newly opened restricted app
                     onOpenRestrictedApp(foregroundApp)
                     Log.d("bcat", "Started up new timer")
@@ -295,12 +303,51 @@ class AppBlockForegroundService : Service() {
                 )
                 if (currentlyBlockedApps.keys.contains(foregroundApp)) {
                     foregroundApp?.let { blockApp(it) }
+                    Toast.makeText(
+                        this.applicationContext,
+                        "Try again it's been unblocked!",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
             if (!TextUtils.isEmpty(foregroundApp)) {
                 prevDetectedForegroundAppPackageName = foregroundApp
             }
         }
+    }
+
+    private fun checkIfFrequentAppSwitching() {
+        removeOldAppSwitchingCounts()
+
+        if (countSwitchedApps.size == 7) {
+            Toast.makeText(
+                this.applicationContext,
+                "You're jumping between restricted apps quite frequently. Are you procrastinating?",
+                Toast.LENGTH_LONG
+            ).show()
+        } else if (countSwitchedApps.size == 10) {
+            Toast.makeText(
+                this.applicationContext,
+                "Based on your behaviour we think you are procrastination. Let's take a short break.",
+                Toast.LENGTH_LONG
+            ).show()
+
+            countSwitchedApps.clear()
+            // Block logic
+            addAllToBlockList()
+        }
+    }
+
+    private fun removeOldAppSwitchingCounts() {
+        var tempRemoveList = mutableListOf<Long>()
+        // Ensure that the list reflects the past 15 minutes only
+        countSwitchedApps.forEach { timestamp: Long ->
+            if (System.currentTimeMillis() - timestamp > 15 * 60 * 1000) { // 15*60*1000 = 15 min in ms
+                tempRemoveList.add(timestamp)
+            }
+        }
+        countSwitchedApps.removeAll(tempRemoveList)
+
     }
 
     private fun retryBlockIfFailed(packageName: String) {
@@ -312,7 +359,6 @@ class AppBlockForegroundService : Service() {
             )
             blockApp(packageName)
         }
-
     }
 
     // Queries all device's app usage stats in a given time interval
@@ -348,7 +394,7 @@ class AppBlockForegroundService : Service() {
         var unblockList: MutableSet<String> = mutableSetOf()
         currentlyBlockedApps.forEach { (appName, unblockTime) ->
             if (unblockTime < System.currentTimeMillis()
-                && !pedometerEnabled || (appStepCounters[appName]==null || appStepCounters[appName]!! >= maxStepCount)
+                && !pedometerEnabled || (appStepCounters[appName] == null || appStepCounters[appName]!! >= maxStepCount)
             ) {
                 unblockList.add(appName)
                 didChange = true
@@ -358,7 +404,7 @@ class AppBlockForegroundService : Service() {
             // remove apps from unblock lists
             unblockList.forEach {
                 currentlyBlockedApps.remove(it)
-                if(pedometerEnabled && appStepCounters[it]!=null) appStepCounters.remove(it)
+                if (pedometerEnabled && appStepCounters[it] != null) appStepCounters.remove(it)
             }
             var unblockListPrettyNames = ""
             unblockList.forEach { appName ->
@@ -394,12 +440,6 @@ class AppBlockForegroundService : Service() {
                 && ((System.currentTimeMillis() - usageStats.lastTimeUsed) > blockDuration)
             ) {
                 resetTimer(packageName)
-                Toast.makeText(
-                    this.applicationContext, "Reset app usage for ${getAppNameFromPackage(
-                        packageName,
-                        this.applicationContext
-                    )}", Toast.LENGTH_SHORT
-                ).show()
             }
         }
     }
@@ -420,7 +460,7 @@ class AppBlockForegroundService : Service() {
     private fun addToBlockList(packageName: String) {
         val blockDuration: Long =
             sharedPrefs.getString("block_duration", "${10 * 60 * 1000}")?.toLong() ?: (10 * 60
-                    * 1000) // Default 10 seconds
+                    * 1000) // Default 10 min
 
         currentlyBlockedApps[packageName] = System.currentTimeMillis() + blockDuration
         appStepCounters[packageName] = 0 // initialize step count as 0
@@ -436,9 +476,28 @@ class AppBlockForegroundService : Service() {
             "Added ${getAppNameFromPackage(
                 packageName,
                 this.applicationContext
-            )} to block list (${blockDuration / 1000}s",
+            )} to block list (${blockDuration / 1000}s)",
             Toast.LENGTH_SHORT
         ).show()
+    }
+
+    private fun addAllToBlockList() {
+        val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
+        restrictedApps.forEach {
+            currentlyBlockedApps[it] =
+                System.currentTimeMillis() + 10 * 60 * 1000 // 10 minutes in ms
+            appStepCounters[it] = 0 // initialize step count as 0
+        }
+
+        with(sharedPrefs.edit()) {
+            putString("currentlyBlockedApps", MainActivity.gson.toJson(currentlyBlockedApps))
+            putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
+            commit()
+        }
+
+        appUsageTimers.forEach {
+            resetTimer(it.key)
+        }
     }
 
     private fun getAppNameFromPackage(packageName: String, context: Context): String? {
