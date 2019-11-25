@@ -1,4 +1,4 @@
-package com.example.bluecatapp.ui.appblocking
+package com.example.bluecatapp
 
 
 interface StepListener {
