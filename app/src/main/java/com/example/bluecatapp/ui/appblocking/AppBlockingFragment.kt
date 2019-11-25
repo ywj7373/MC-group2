@@ -56,11 +56,12 @@ class AppBlockingFragment : Fragment() {
     private lateinit var appIcon: ImageView
 
     //Pedometer variables
+    private lateinit var pedometer: Pedometer
+    private var pedometerEnabled: Boolean = false
     private lateinit var sensorManager: SensorManager
     private lateinit var pedometerTitle: TextView
     private lateinit var pedometerLabel: TextView
     private lateinit var pedometerValue: TextView
-    private var pedometerSensor: Sensor? = null
     private var maxStepCount: Int = 10
 
 
@@ -75,21 +76,21 @@ class AppBlockingFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        sharedPrefs = getDefaultSharedPreferences(this.context)
     }
 
 //    override fun onResume() {
 //        super.onResume()
-//        sensorManager.registerListener(
-//            stepCounter(),
-//            sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),
-//            SensorManager.SENSOR_DELAY_NORMAL
-//        )
 //        Toast.makeText(
 //            activity!!.applicationContext,
 //            "PEDOMETER RESUMED",
 //            Toast.LENGTH_SHORT
 //        ).show()
+//    }
+
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        sensorManager.unregisterListener(pedometer)
 //    }
 
     override fun onCreateView(
@@ -124,34 +125,36 @@ class AppBlockingFragment : Fragment() {
             )
         }
         sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)?.let {
-            pedometerSensor = it
-        }
-        sharedPrefs = getDefaultSharedPreferences(this.context)
-        val pedometerEnabled = sharedPrefs.getBoolean("Pedometer", false)
-        Log.d("bcat", "behehehehheeh " + pedometerEnabled)
-        if (pedometerEnabled) {
-            if (pedometerSensor != null) {
-                sensorManager.registerListener(
-                    stepCounter(),
-                    pedometerSensor,
-                    SensorManager.SENSOR_DELAY_NORMAL
-                )
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "PEDOMETER CREATED",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "PEDOMETER NOT FOUND",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
+//        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)?.let {
+//            pedometerSensor = it
+//        }
+//        sharedPrefs = getDefaultSharedPreferences(this.context)
+//        val pedometerEnabled = sharedPrefs.getBoolean("Pedometer", false)
+//        Log.d("bcat", "behehehehheeh " + pedometerEnabled)
+//        if (pedometerEnabled) {
+//            if (pedometerSensor != null) {
+//                sensorManager.registerListener(
+//                    stepCounter(),
+//                    pedometerSensor,
+//                    SensorManager.SENSOR_DELAY_NORMAL
+//                )
+//                Toast.makeText(
+//                    activity!!.applicationContext,
+//                    "PEDOMETER CREATED",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            } else {
+//                Toast.makeText(
+//                    activity!!.applicationContext,
+//                    "PEDOMETER NOT FOUND",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//        }
 
-        // Retrieve makeStepCount from sharedPreferences
+        // Check if pedometer enabled
+        pedometerEnabled = sharedPrefs.getBoolean ("pedometer",false)
+
         maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
 
         // Check if app blocking enabled in Settings
@@ -175,9 +178,12 @@ class AppBlockingFragment : Fragment() {
                         chrono
                     ).start()
                 }
-                if (appStepCounters[appPackageName]!! < maxStepCount) {
-                    // Start pedometer simulation
-                    simulatePedometer(appPackageName, maxStepCount)
+                if (!pedometerEnabled){
+                    hidePedometerViews()
+                } else if( appStepCounters[appPackageName]!=null
+                    && appStepCounters[appPackageName]!! < maxStepCount) {
+                    // Activate pedometer sensor
+                    startPedometer(appPackageName, maxStepCount)
                 }
             }
         }
@@ -190,7 +196,7 @@ class AppBlockingFragment : Fragment() {
         appblocking_recycler_view.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(activity)
-            adapter = AppBlockingAdapter(getAdapterList(), maxStepCount)
+            adapter = AppBlockingAdapter(getAdapterList(), maxStepCount, pedometerEnabled)
         }
     }
 
@@ -341,6 +347,31 @@ class AppBlockingFragment : Fragment() {
         }
     }
 
+    private fun startPedometer(appName: String, numberOfSteps: Int){
+
+        pedometer = object: Pedometer() {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if(appStepCounters[appName]!! < maxStepCount) {
+                    super.onSensorChanged(event)
+                }
+            }
+
+            override fun step(timeNs: Long) {
+                super.step(timeNs)
+                appStepCounters[appName] = appStepCounters[appName]!! + super.numSteps
+                with(sharedPrefs.edit()) {
+                    // update changed values
+                    putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
+                    commit()
+                }
+                pedometerValue.setText("${appStepCounters[appName]} / $numberOfSteps")
+            }
+        }
+        sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        sensorManager!!.registerListener(pedometer, sensorManager!!
+            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
+    }
+
     /**Function to simulate pedometer
      * Increments step count every 2s
      */
@@ -385,6 +416,12 @@ class AppBlockingFragment : Fragment() {
         appIcon.visibility = View.INVISIBLE
         chrono.visibility = View.INVISIBLE
         blockTimeLabel.visibility = View.INVISIBLE
+        pedometerTitle.visibility = View.INVISIBLE
+        pedometerLabel.visibility = View.INVISIBLE
+        pedometerValue.visibility = View.INVISIBLE
+    }
+
+    private fun hidePedometerViews() {
         pedometerTitle.visibility = View.INVISIBLE
         pedometerLabel.visibility = View.INVISIBLE
         pedometerValue.visibility = View.INVISIBLE

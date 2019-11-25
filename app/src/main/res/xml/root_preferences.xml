@@ -80,7 +80,7 @@
         <SwitchPreference
             android:selectable="true"
             app:iconSpaceReserved="false"
-            app:key="@string/pedometer"
+            app:key="pedometer"
             app:title="@string/pedometer_title"
             android:summaryOff="@string/pedometer_summary_off"
             android:summaryOn="@string/pedometer_summary_on"/>

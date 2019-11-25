@@ -13,7 +13,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bluecatapp.R
 
-class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private val maxStepCount: Int) :
+class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>,
+                         private val maxStepCount: Int,
+                         private val pedometerEnabled: Boolean) :
     RecyclerView.Adapter<AppBlockingAdapter.AppViewHolder>() {
 
 //    private var BlockedAppList = blockedAppList
@@ -21,10 +23,10 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private v
     class AppViewHolder(appListItem: View) : RecyclerView.ViewHolder(appListItem) {
         var appName: TextView = appListItem.findViewById(R.id.appItemName)
         var appTime: Chronometer = appListItem.findViewById(R.id.appItemTime)
+        var appIcon: ImageView = appListItem.findViewById(R.id.appItemIcon)
         var appProgress: ProgressBar = appListItem.findViewById(R.id.appItemProgress)
         var appStepCount: TextView = appListItem.findViewById(R.id.appItemStepCount)
-        var appIcon: ImageView = appListItem.findViewById(R.id.appItemIcon)
-    }
+     }
 
     // Create new app blocking views invoked by layout manager
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppViewHolder {
@@ -39,16 +41,20 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private v
     override fun onBindViewHolder(holder: AppViewHolder, position: Int) {
         holder.appName.text = BlockedAppList[position][0].toString()
         val finishTimeStamp = BlockedAppList[position][1] as Long
+        holder.appIcon.setImageDrawable(BlockedAppList[position][3] as Drawable?)
+
         if(System.currentTimeMillis() < finishTimeStamp) {
             getBlockCountdown(finishTimeStamp, holder.appTime).start()
         }
-        holder.appProgress.max = maxStepCount //initialize max progress value
-        val stepCount= BlockedAppList[position][2] as Int
-        simulatePedometer(stepCount, holder.appStepCount, holder.appProgress, maxStepCount)
-//        holder.appProgress.max = maxStepCount
-//        holder.appProgress.progress = stepCount
-//        holder.appStepCount.setText("$stepCount / $maxStepCount")
-        holder.appIcon.setImageDrawable(BlockedAppList[position][3] as Drawable?)
+        if(pedometerEnabled) {
+            holder.appProgress.max = maxStepCount //initialize max progress value
+            val stepCount = BlockedAppList[position][2] as Int
+            holder.appProgress.max = maxStepCount
+            holder.appProgress.progress = stepCount
+            holder.appStepCount.setText("$stepCount / $maxStepCount")
+        } else {
+            hideViews(holder.appProgress, holder.appStepCount)
+        }
     }
 
     override fun getItemCount(): Int = BlockedAppList.size
@@ -75,9 +81,14 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private v
         }
     }
 
+    private fun hideViews(appProgress: ProgressBar, appStepCount: TextView){
+        appProgress.visibility = View.INVISIBLE
+        appStepCount.visibility = View.INVISIBLE
+    }
+
     /**Function to simulate pedometer
      * Increments step count every 2s
-     */
+
     private fun simulatePedometer(initialStepCount: Int, appStepCount: TextView,
                                   appProgress: ProgressBar, totalNumberOfSteps: Int) {
         val countDownFromTime = ((totalNumberOfSteps - initialStepCount) * 2000).toLong()
@@ -94,5 +105,5 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>, private v
             }
             override fun onFinish() {}
         }.start()
-    }
+    }*/
 }
