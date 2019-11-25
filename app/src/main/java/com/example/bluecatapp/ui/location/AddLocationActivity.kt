@@ -125,7 +125,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             intentdaysMode = intent.getBooleanExtra("daysMode", false)
 
             year = intenttime.substring(0,4).toInt()
-            monthOfYear = intenttime.substring(5,7).toInt()
+            monthOfYear = intenttime.substring(5,7).toInt() - 1
             dayOfMonth = intenttime.substring(8, 10).toInt()
             hour = intenttime.substring(11, 13).toInt()
             min = intenttime.substring(14, 16).toInt()

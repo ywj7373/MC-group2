@@ -198,7 +198,10 @@ class RoutineService : Service {
                 Log.d(TAG, "alarm rings at: " + Date(alarmTime).toString())
                 Log.d(TAG, "current time: " + Date(currentTime).toString())
 
-                val simpleTimeFormat = SimpleDateFormat("hh:mm:ss", Locale.KOREA)
+                val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
+
+                Log.d("Debug12 ", "currentTime : " +currentTime)
+                Log.d("Debug12 ", "destinationtime : " +time)
 
                 //check if current time passed arrival time
                 if ((!daysMode && currentTime >= time) || (daysMode && (simpleTimeFormat.format(Date(currentTime))>=(simpleTimeFormat.format(Date(time)))) )) {
@@ -414,7 +417,7 @@ class RoutineService : Service {
 
     //convert date to seconds
     private fun timeToSeconds(time: String): Long {
-        val sf = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.KOREA)
+        val sf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
         val date: Date? = sf.parse(time)
         return date!!.time
     }
