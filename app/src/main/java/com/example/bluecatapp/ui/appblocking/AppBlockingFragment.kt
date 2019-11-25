@@ -57,11 +57,11 @@ class AppBlockingFragment : Fragment() {
 
     //Pedometer variables
     private lateinit var pedometer: Pedometer
+    private var pedometerEnabled: Boolean = false
     private lateinit var sensorManager: SensorManager
     private lateinit var pedometerTitle: TextView
     private lateinit var pedometerLabel: TextView
     private lateinit var pedometerValue: TextView
-    private var pedometerSensor: Sensor? = null
     private var maxStepCount: Int = 10
 
 
@@ -88,10 +88,10 @@ class AppBlockingFragment : Fragment() {
         ).show()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        sensorManager.unregisterListener(pedometer)
-    }
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        sensorManager.unregisterListener(pedometer)
+//    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -152,7 +152,9 @@ class AppBlockingFragment : Fragment() {
 //            }
 //        }
 
-        // Retrieve makeStepCount from sharedPreferences
+        // Check if pedometer enabled
+        pedometerEnabled = sharedPrefs.getBoolean ("pedometer",false)
+
         maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
 
         // Check if app blocking enabled in Settings
@@ -176,9 +178,12 @@ class AppBlockingFragment : Fragment() {
                         chrono
                     ).start()
                 }
-                if (appStepCounters[appPackageName]!=null && appStepCounters[appPackageName]!! < maxStepCount) {
-                    // Start pedometer simulation
-                   startPedometer(appPackageName, maxStepCount)
+                if (!pedometerEnabled){
+                    hidePedometerViews()
+                } else if( appStepCounters[appPackageName]!=null
+                    && appStepCounters[appPackageName]!! < maxStepCount) {
+                    // Activate pedometer sensor
+                    startPedometer(appPackageName, maxStepCount)
                 }
             }
         }
@@ -191,7 +196,7 @@ class AppBlockingFragment : Fragment() {
         appblocking_recycler_view.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(activity)
-            adapter = AppBlockingAdapter(getAdapterList(), maxStepCount)
+            adapter = AppBlockingAdapter(getAdapterList(), maxStepCount, pedometerEnabled)
         }
     }
 
@@ -411,6 +416,12 @@ class AppBlockingFragment : Fragment() {
         appIcon.visibility = View.INVISIBLE
         chrono.visibility = View.INVISIBLE
         blockTimeLabel.visibility = View.INVISIBLE
+        pedometerTitle.visibility = View.INVISIBLE
+        pedometerLabel.visibility = View.INVISIBLE
+        pedometerValue.visibility = View.INVISIBLE
+    }
+
+    private fun hidePedometerViews() {
         pedometerTitle.visibility = View.INVISIBLE
         pedometerLabel.visibility = View.INVISIBLE
         pedometerValue.visibility = View.INVISIBLE

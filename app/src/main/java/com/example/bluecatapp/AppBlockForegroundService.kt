@@ -38,6 +38,7 @@ class AppBlockForegroundService : Service() {
     private var currentAppUsageTimerRunnable: Runnable = Runnable {}
     private var currentAppUsage: Long = 0
     private var prevDetectedForegroundAppPackageName: String? = null
+    private var pedometerEnabled: Boolean = false
     private var maxStepCount = 0
 
 
@@ -66,6 +67,8 @@ class AppBlockForegroundService : Service() {
 
         // Load preferences
 //        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        pedometerEnabled = sharedPrefs.getBoolean("pedometer", false)
         maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
 
         val input = intent?.getStringExtra("inputExtra")
@@ -320,7 +323,7 @@ class AppBlockForegroundService : Service() {
         var unblockList: MutableSet<String> = mutableSetOf()
         currentlyBlockedApps.forEach { (appName, unblockTime) ->
             if (unblockTime < System.currentTimeMillis()
-                && (appStepCounters[appName]==null || appStepCounters[appName]!! >= maxStepCount)
+                && !pedometerEnabled || (appStepCounters[appName]==null || appStepCounters[appName]!! >= maxStepCount)
             ) {
                 unblockList.add(appName)
                 didChange = true
@@ -330,7 +333,7 @@ class AppBlockForegroundService : Service() {
             // remove apps from unblock lists
             unblockList.forEach {
                 currentlyBlockedApps.remove(it)
-                if(appStepCounters[it]!=null) appStepCounters.remove(it)
+                if(pedometerEnabled && appStepCounters[it]!=null) appStepCounters.remove(it)
             }
             var unblockListPrettyNames = ""
             unblockList.forEach { appName ->
