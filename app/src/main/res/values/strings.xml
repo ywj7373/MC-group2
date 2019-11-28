@@ -106,6 +106,10 @@
         com.example.bluecatapp.timer_length
     </string>
 
+    <string name="TIMER_EXPIRED_TXT">
+        WAKE UP! SHAKE YOUT DEVICE
+    </string>
+
     <string name="HW_NOTIFICATION_CHANNEL_NAME">HW_CHANNEL</string>
     <string name="HW_NOTIFICATION_CHANNEL_DESCRIPTION">HW_NOTIFICATION_CHANNEL_DESCRIPTION</string>
     <string name="HW_NOTIFICATION_CHANNEL_ID">HW_CHANNEL_ID</string>

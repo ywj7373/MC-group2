@@ -175,11 +175,11 @@ class TimerActivity : AppCompatActivity() {
             updateButtons()
         }
 
-        fab_pause.setOnClickListener { v ->
-            timer.cancel()
-            timerState = TimerState.Paused
-            updateButtons()
-        }
+//        fab_pause.setOnClickListener { v ->
+//            timer.cancel()
+//            timerState = TimerState.Paused
+//            updateButtons()
+//        }
 
         fab_stop.setOnClickListener { v ->
             turnHWModeOff()
@@ -376,23 +376,23 @@ class TimerActivity : AppCompatActivity() {
     private fun updateButtons() {
         if (isShaking) { // block all the buttons
             fab_start.isEnabled = false
-            fab_pause.isEnabled = false
+//            fab_pause.isEnabled = false
             fab_stop.isEnabled = false
         } else {
             when (timerState) {
                 TimerState.Running -> {
                     fab_start.isEnabled = false
-                    fab_pause.isEnabled = true
+//                    fab_pause.isEnabled = true
                     fab_stop.isEnabled = true
                 }
                 TimerState.Stopped -> {
                     fab_start.isEnabled = true
-                    fab_pause.isEnabled = false
+//                    fab_pause.isEnabled = false
                     fab_stop.isEnabled = false
                 }
                 TimerState.Paused -> {
                     fab_start.isEnabled = true
-                    fab_pause.isEnabled = false
+//                    fab_pause.isEnabled = false
                     fab_stop.isEnabled = true
                 }
             }

@@ -17,13 +17,13 @@
         android:layout_margin="@dimen/fab_bigger_margin"
         app:srcCompat="@drawable/ic_start" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_pause"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:layout_margin="@dimen/fab_bigger_margin"
-        app:srcCompat="@drawable/ic_pause" />
+<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--        android:id="@+id/fab_pause"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="bottom|center"-->
+<!--        android:layout_margin="@dimen/fab_bigger_margin"-->
+<!--        app:srcCompat="@drawable/ic_pause" />-->
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_stop"
@@ -43,7 +43,7 @@
             android:id="@+id/tv_wakeUp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="WAKE UP! SHAKE YOUT DEVICE"
+            android:text="@string/TIMER_EXPIRED_TXT"
             android:textSize="35sp"
             android:textAlignment="center"
             android:textStyle="bold"

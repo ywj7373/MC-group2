@@ -18,4 +18,6 @@
     <color name="button_color">#E6E6E6</color>
     <color name="darker_gray">#5F5C5C</color>
 
+    <color name="todo_item_boundary">#2d9cdb</color>
+
 </resources>

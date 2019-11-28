@@ -111,6 +111,8 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                 Sensors.vibratePhone(context)
                 NotificationUtil.showTimerSoonBeExpired(context)
 
+                Toast.makeText(context!!.applicationContext, "Timer Will be Expired!", Toast.LENGTH_LONG).show()
+
                 TimerActivity.notiAlarmSeconds = 0
                 PrefUtil.setAlarmSetTime2(0, context)
 
