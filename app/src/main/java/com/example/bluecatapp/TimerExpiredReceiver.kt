@@ -23,7 +23,7 @@ class TimerExpiredReceiver : BroadcastReceiver() {
 
             if(status){
                 Log.d("TimerExpiredReceiver:initiateSensor", "already initiated.")
-                return 1
+                return 2
             }else{
                 mSensors = Sensors.getInstance(context)
                 Log.d("TimerExpiredReceiver:initiateSensor", "initiated the sensor.")
@@ -87,15 +87,31 @@ class TimerExpiredReceiver : BroadcastReceiver() {
 
 
                 // * activate sensor and force the user to shake the phone until the shake limit
-                if(initiateSensor(context) == 1){
-                    Sensors.vibratePhone(context)
-                    mSensors.isShakeOn= true
+                var state = initiateSensor(context)
+                if(state > 0){
+                    if(state == 1){ // new
+                        mSensors.isShakeOn= true
+                        Sensors.vibratePhone(context)
+                        var i = Intent(context, TimerActivity::class.java)
 
-                    var i = Intent(context, TimerActivity::class.java)
+                        i.putExtra("id", context.getString(R.string.SHAKE))
+                        i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
+                        context.startActivity(i)
 
-                    intent.putExtra("id", context.getString(R.string.SHAKE))
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    context.startActivity(i)
+                    }else if(state == 2){ // already exist
+                        mSensors.isShakeOn= true
+                        mSensors.reRegister("SHAKE")
+                        Sensors.vibratePhone(context)
+                        var i = Intent(context, TimerActivity::class.java)
+
+                        i.putExtra("id", context.getString(R.string.SHAKE))
+                        i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(i)
+
+                    }else{
+                        Log.d("TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL","[ERROR] Initializing")
+                        Toast.makeText(context!!.applicationContext, "Sensor Error", Toast.LENGTH_LONG).show()
+                    }
 
 //                    mSensors.isWalkSensorOn= true
 //                    Toast.makeText(context!!.applicationContext, "Wake UP !!!!!!!!!! Start Walking", Toast.LENGTH_LONG).show()

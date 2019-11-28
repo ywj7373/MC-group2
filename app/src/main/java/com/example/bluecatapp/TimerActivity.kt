@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -29,9 +30,11 @@ import kotlinx.android.synthetic.main.content_timer.*
 import kotlinx.android.synthetic.main.fragment_todo.*
 import java.util.*
 
+
 class TimerActivity : AppCompatActivity() {
 
     companion object {
+
         // * final alarm
         fun setAlarm(context: Context, nowSeconds: Long, secondsRemaining: Long): Long {
 
@@ -108,6 +111,8 @@ class TimerActivity : AppCompatActivity() {
         Stopped, Paused, Running
     }
 
+    //    private lateinit var preference : SharedPreferences
+//    private var shakeLimit = 0
     //================================== Homework mode general ==================================//
     val hwDoneDisplayText = "I have done my homework."
     val hwDoneConfirmText = hwDoneDisplayText.replace("\\s".toRegex(), "").toLowerCase()
@@ -116,36 +121,51 @@ class TimerActivity : AppCompatActivity() {
     private lateinit var todoViewModel: TodoViewModel
     private val todoAdapter = TodoAdapter()
 
-
     private lateinit var timer: CountDownTimer
     private var timerLengthSeconds: Long = 0
     private var timerState = TimerState.Stopped
-
     private var secondsRemaining: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_timer)
 
-        Log.d("TimerActivity:onCreate", "isShaking : $isShaking")
         if (intent.getStringExtra("id") == getString(R.string.SHAKE)) {
 //
-//            Toast.makeText(this,
-//                "Wake UP !!!!!!!!!! Shake your Phone",
-//                Toast.LENGTH_SHORT).show()
+
+            Log.d("TimerActivity:onCreate", "flag SHAKE intent")
+            Toast.makeText(
+                this,
+                "Wake UP !!!!!!!!!! Shake your Phone",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            include_time_counter.visibility = View.GONE
+//            include_sensor_counter.visibility = View.VISIBLE
 
             tv_wakeUp.visibility = View.VISIBLE
             isShaking = true
 
-        }else if (intent.getStringExtra("id") == getString(R.string.SHAKE_COMPLETE)) {
+        } else if (intent.getStringExtra("id") == getString(R.string.SHAKE_COMPLETE)) {
+            Log.d("TimerActivity:onCreate", "flag SHAKE Complete")
+
             Toast.makeText(
                 this,
                 "Mission Complete. Hope you are Awake!",
                 Toast.LENGTH_SHORT
             ).show()
+
+            include_time_counter.visibility = View.VISIBLE
+//            include_sensor_counter.visibility = View.GONE
+
             tv_wakeUp.visibility = View.GONE
             isShaking = false
         }
+
+//        preference = PreferenceManager.getDefaultSharedPreferences(this)
+//        shakeLimit = preference.getInt(getString(R.string.hw_shake_value),30)
+
+        Log.d("TimerActivity:onCreate", "isShaking : $isShaking")
 
         todoViewModel =
             ViewModelProviders.of(this).get(TodoViewModel::class.java)
@@ -191,10 +211,49 @@ class TimerActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        initTimer()
+        Log.d("TimerActivity:onResume", "isShaking : $isShaking")
 
+        if (intent.getStringExtra("id") == getString(R.string.SHAKE)) {
+//
+
+            Log.d("TimerActivity:onResume", "flag SHAKE intent")
+            Toast.makeText(
+                this,
+                "Wake UP !!!!!!!!!! Shake your Phone",
+                Toast.LENGTH_SHORT
+            ).show()
+
+//            include_time_counter.visibility = View.GONE
+////            include_sensor_counter.visibility = View.VISIBLE
+//
+//            tv_wakeUp.visibility = View.VISIBLE
+            isShaking = true
+
+        } else if (intent.getStringExtra("id") == getString(R.string.SHAKE_COMPLETE)) {
+            Log.d("TimerActivity:onResume", "flag SHAKE Complete")
+
+            Toast.makeText(
+                this,
+                "Mission Complete. Hope you are Awake!",
+                Toast.LENGTH_SHORT
+            ).show()
+//
+//            include_time_counter.visibility = View.VISIBLE
+//            include_sensor_counter.visibility = View.GONE
+
+//            tv_wakeUp.visibility = View.GONE
+            isShaking = false
+        }
+
+
+//        if (!(intent.getStringExtra("id") == getString(R.string.SHAKE)
+//                    || intent.getStringExtra("id") == getString(R.string.SHAKE_COMPLETE))) {
+        initTimer()
         removeAlarm(this)
+        removeNotificationAlarm(this)
         NotificationUtil.hideTimerNotification(this)
+//        }
+
     }
 
     override fun onPause() {
@@ -206,17 +265,20 @@ class TimerActivity : AppCompatActivity() {
                 "TimerActivity:onPause",
                 "nowSeconds : $nowSeconds, secondsRemaining : $secondsRemaining , notiAlarmSeconds : $notiAlarmSeconds"
             )
-            //* final alarm
-            val wakeUpTime = setAlarm(this, nowSeconds, secondsRemaining)
-            //* notification alarm
-            val wakeUpTime2 = setNotificationAlarm(this, nowSeconds, notiAlarmSeconds)
 
-            Log.d(
-                "TimerActivity:onPause",
-                "wakeUpTime : $wakeUpTime, wakeUpTime2 : $wakeUpTime2"
-            )
+            if (secondsRemaining > notiAlarmSeconds) {
+                //* final alarm
+                val wakeUpTime = setAlarm(this, nowSeconds, secondsRemaining)
+                //* notification alarm
+                val wakeUpTime2 = setNotificationAlarm(this, nowSeconds, notiAlarmSeconds)
 
-            NotificationUtil.showTimerRunning(this, wakeUpTime)
+                Log.d(
+                    "TimerActivity:onPause",
+                    "wakeUpTime : $wakeUpTime, wakeUpTime2 : $wakeUpTime2"
+                )
+                NotificationUtil.showTimerRunning(this, wakeUpTime)
+            }
+
         } else if (timerState == TimerState.Paused) {
             NotificationUtil.showTimerPaused(this)
         }
@@ -231,17 +293,22 @@ class TimerActivity : AppCompatActivity() {
         // * if the timer is stopped ( not started yet or stopped after the full cycle. )
         Log.d("TimerActivity:onBackPressed", "timerState : $timerState")
         if (timerState == TimerState.Stopped) {
-            val editor = PreferenceManager.getDefaultSharedPreferences(this).edit()
-            editor.putBoolean(getString(R.string.hw_mode_bool), false)
-            editor.apply()
+
+            if (isShaking) {
+                Toast.makeText(this, "You Still need to shake your Phone!", Toast.LENGTH_SHORT)
+            } else {
+                val editor = PreferenceManager.getDefaultSharedPreferences(this).edit()
+                editor.putBoolean(getString(R.string.hw_mode_bool), false)
+                editor.apply()
 
 //            super.onBackPressed()
-            val data = Intent().apply {
-                action = "NORMAL_BACKBUTTON"
-            }
+                val data = Intent().apply {
+                    action = "NORMAL_BACKBUTTON"
+                }
 
-            setResult(Activity.RESULT_OK, data)
-            finish()
+                setResult(Activity.RESULT_OK, data)
+                finish()
+            }
             // * if the timer is not stopped turning off the hw mode logic
         } else {
             turnHWModeOff()
@@ -267,8 +334,8 @@ class TimerActivity : AppCompatActivity() {
 
         Log.d(
             "TimerActivity:initTimer",
-            "isShaking : $isShaking, "+
-            "secondsRemaining : $secondsRemaining , notiAlarmSeconds : $notiAlarmSeconds"
+            "isShaking : $isShaking, " +
+                    "secondsRemaining : $secondsRemaining , notiAlarmSeconds : $notiAlarmSeconds"
         )
 
         val alarmSetTime = PrefUtil.getAlarmSetTime(this)
@@ -333,6 +400,7 @@ class TimerActivity : AppCompatActivity() {
     private fun startTimer() {
         timerState = TimerState.Running
 
+        Toast.makeText(this, "Homework mode Start.", Toast.LENGTH_SHORT).show()
         setAlarm(this, nowSeconds, secondsRemaining)
         setNotificationAlarm(this, nowSeconds, notiAlarmSeconds)
 
@@ -355,7 +423,13 @@ class TimerActivity : AppCompatActivity() {
     private fun setNewTimerLength() {
         val lengthInMinutes = PrefUtil.getTimerLength(this)
         timerLengthSeconds = (lengthInMinutes * 60L)
-        notiAlarmSeconds = timerLengthSeconds - threeMinutes
+
+        if(nowSeconds> notiAlarmSeconds){
+            notiAlarmSeconds = timerLengthSeconds - threeMinutes
+        }else{
+            notiAlarmSeconds = 0
+        }
+
         progress_countdown.max = timerLengthSeconds.toInt()
     }
 
@@ -464,14 +538,5 @@ class TimerActivity : AppCompatActivity() {
             })
 
         alertDialog.show()
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        return super.onKeyDown(keyCode, event)
-
-        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            Log.d("TimerActivity", "back button pressed");
-        }
-        return super.onKeyDown(keyCode, event);
     }
 }

@@ -7,7 +7,26 @@
     android:layout_height="match_parent"
     tools:context="com.example.bluecatapp.TimerActivity">
 
-    <include layout="@layout/content_timer" />
+    <TextView
+        android:id="@+id/tv_wakeUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/TIMER_EXPIRED_TXT"
+        android:textColor="@color/colorText"
+        android:textAlignment="center"
+        android:textSize="35sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+    <include
+        android:id="@+id/include_time_counter"
+        android:visibility="visible"
+        layout="@layout/content_timer" />
+
+    <include
+        android:id="@+id/include_sensor_counter"
+        android:visibility="gone"
+        layout="@layout/content_timer_sensor_count" />
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_start"
@@ -39,16 +58,7 @@
         android:layout_gravity="center"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
-        <TextView
-            android:id="@+id/tv_wakeUp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/TIMER_EXPIRED_TXT"
-            android:textSize="35sp"
-            android:textAlignment="center"
-            android:textStyle="bold"
-            android:visibility="gone"
-            />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/timerActivity_todo_recycler_view"
             android:layout_width="match_parent"

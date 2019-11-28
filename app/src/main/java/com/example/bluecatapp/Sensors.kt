@@ -1,5 +1,6 @@
 package com.example.bluecatapp
 
+import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -15,6 +16,7 @@ import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
 import androidx.preference.PreferenceManager
+import android.widget.TextView
 
 open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
 
@@ -54,6 +56,7 @@ open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
         }
     }
 
+    var shakeCount = 0
     var isShakeSensorOn = false
     var isWalkSensorOn = false
     val registerDelay = 10 * 1000
@@ -78,7 +81,6 @@ class Sensors private constructor(context: Context) {
     private var shakeAccelLast: Float = 0.toFloat() // last acceleration including gravity
 
     private var shakeLimit: Int = 0// (at onCreate) set shake count limit from shared preferences
-    private var shakeCount: Int = 0
 
     private val shakeSensorListener = object : SensorEventListener {
 
@@ -105,6 +107,7 @@ class Sensors private constructor(context: Context) {
             shakeAccel = shakeAccel * 0.9f + delta // perform low-cut filter
 
             Log.d("Sensors:onSensorChanged", "shakeAccel : $shakeAccel")
+
             vibratePhone(context)
             if (shakeAccel > 6) {
                 shakeCount++
@@ -119,11 +122,12 @@ class Sensors private constructor(context: Context) {
                 shakeCount = 0
 
                 isShakeOn = false
+                isShakeSensorOn = false
 
                 var i = Intent(context, TimerActivity::class.java)
 
                 i.putExtra("id", context.getString(R.string.SHAKE_COMPLETE))
-                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
                 context.startActivity(i)
             }
 
@@ -167,6 +171,7 @@ class Sensors private constructor(context: Context) {
     }
 
     init {
+
         Log.d("Sensors:init", "sensor init")
         preference = PreferenceManager.getDefaultSharedPreferences(context)
         editor = preference.edit()
@@ -213,20 +218,25 @@ class Sensors private constructor(context: Context) {
             "ALL" ->{
                 shakeSensorManager.unregisterListener(shakeSensorListener)
                 isShakeOn = false
+                isShakeSensorOn = false
+
                 walkSensorManager.unregisterListener(walkSensorListener)
                 isWalkOn = false
+                isWalkSensorOn = false
                 Log.d("Sensors:unRegister", "$s Sensor unRegistered")
                 return 1
             }
             "SHAKE" -> {
                 shakeSensorManager.unregisterListener(shakeSensorListener)
                 isShakeOn = false
+                isShakeSensorOn = false
                 Log.d("Sensors:unRegister", "$s Sensor unRegistered")
                 return 1
             }
             "WALK" -> {
                 walkSensorManager.unregisterListener(walkSensorListener)
                 isWalkOn = false
+                isWalkSensorOn = false
                 Log.d("Sensors:unRegister", "$s Sensor unRegistered")
                 return 1
             }
@@ -246,6 +256,7 @@ class Sensors private constructor(context: Context) {
                     SensorManager.SENSOR_DELAY_NORMAL
                 )
                 isShakeOn = true
+                isShakeSensorOn = true
 
                 walkSensorManager.registerListener(
                     walkSensorListener,
@@ -253,6 +264,7 @@ class Sensors private constructor(context: Context) {
                     SensorManager.SENSOR_DELAY_NORMAL
                 )
                 isWalkOn = true
+                isWalkSensorOn = true
 
                 Log.d("Sensors:reRegister", "$s Sensor reRegister")
 
@@ -265,6 +277,7 @@ class Sensors private constructor(context: Context) {
                     SensorManager.SENSOR_DELAY_NORMAL
                 )
                 isShakeOn = true
+                isShakeSensorOn = true
                 Log.d("Sensors:reRegister", "$s Sensor reRegister")
 
                 return 1
@@ -276,6 +289,7 @@ class Sensors private constructor(context: Context) {
                     SensorManager.SENSOR_DELAY_NORMAL
                 )
                 isWalkOn = true
+                isWalkSensorOn = true
                 Log.d("Sensors:reRegister", "$s Sensor reRegister")
 
                 return 1
