@@ -41,7 +41,7 @@ const val NOTIF_ID2 = 2
 const val NOTIF_ID3 = 3
 const val ROUTINE_INTERVAL: Long = 60000
 
-class RoutineService : Service() {
+class LocationReminderForegroundService : Service() {
     private val TAG = "Routine Service"
     private lateinit var runnable: Runnable
     private lateinit var locationViewModel: LocationViewModel
@@ -57,12 +57,12 @@ class RoutineService : Service() {
 
     companion object {
         fun startService(context: Context) {
-            val startIntent = Intent(context, RoutineService::class.java)
+            val startIntent = Intent(context, LocationReminderForegroundService::class.java)
             ContextCompat.startForegroundService(context, startIntent)
         }
 
         fun stopService(context:Context) {
-            val stopIntent = Intent(context, RoutineService::class.java)
+            val stopIntent = Intent(context, LocationReminderForegroundService::class.java)
             context.stopService(stopIntent)
         }
     }
@@ -196,7 +196,7 @@ class RoutineService : Service() {
                 val daysMode = destination!!.daysMode
                 val preparationTime = sharedPreferences.getString("Preparation_time", "20")!!.toInt()
                 val alarmTime = time - timeToDest - (preparationTime * 60 * 1000)
-                val alarmText = "Alarm rings at: " + Date(alarmTime).toString()
+                val alarmText = "Alarm rings at: " + SimpleDateFormat("yyyy MMM d, EEE, h:mm a", Locale.KOREA).format(Date(alarmTime))
 
                 updateNotification(alarmText)
 
@@ -232,7 +232,7 @@ class RoutineService : Service() {
                     if (h == 0) {
                         secondText = "Travel Time: $m minutes"
                     }
-                    if (travelTime.toInt() < 10) {
+                    if (travelTime.toInt() == 10) {
                         secondText = "Travel Time: less than 10 minutes"
                     }
 
@@ -247,9 +247,9 @@ class RoutineService : Service() {
 
     //check if date has changed or not and if changed reset repeated schedule
     private fun checkDate() {
-        val dateData:DateData = LocationRepository(application).getCurrentDate()
+        val dateData:DateData? = LocationRepository(application).getCurrentDate()
         val currentDate: String = SimpleDateFormat("yyyyMMdd", Locale.KOREA).format(Date())
-        if(dateData==null) {
+        if(dateData == null) {
             LocationRepository(application).updateCurrentDate()
             return
         }

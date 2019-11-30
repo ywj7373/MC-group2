@@ -131,7 +131,7 @@ class LocationFragment : Fragment() {
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
             }
-            else RoutineService.startService(requireContext())
+            else LocationReminderForegroundService.startService(requireContext())
         }
         else requestLocationPermission()
     }
@@ -167,7 +167,7 @@ class LocationFragment : Fragment() {
     override fun onRequestPermissionsResult(requestCode: Int, permission: Array<String>, grantResults: IntArray) {
         if (requestCode == PERMISSION_ID) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                RoutineService.startService(requireContext())
+                LocationReminderForegroundService.startService(requireContext())
             }
             else {
                 //turn off location reminder

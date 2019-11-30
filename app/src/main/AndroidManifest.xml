@@ -45,8 +45,8 @@
         <activity android:name=".ui.location.AddLocationActivity" />
         <activity android:name=".ui.location.MapActivity" />
 
-        <receiver android:name=".ui.location.RoutineReceiver" />
-        <service android:name=".ui.location.RoutineService" />
+        <receiver android:name=".ui.location.LocationReminderForegroundService" />
+        <service android:name=".ui.location.LocationReminderForegroundService" />
 
         <receiver android:name=".ui.location.DateChangeReceiver">
             <intent-filter>
