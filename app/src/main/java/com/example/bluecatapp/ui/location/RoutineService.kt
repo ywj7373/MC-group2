@@ -8,11 +8,13 @@ import android.os.IBinder
 import android.os.Build
 import android.content.pm.PackageManager
 import android.location.Location
+import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.LocationServices
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
 import com.example.bluecatapp.R
@@ -36,9 +38,10 @@ const val LOCATION_TRACKER_INTERVAL: Long = 60000 //60s
 const val LOCATION_TRACKER_FASTEST_INTERVAL: Long = 55000 //55s
 const val NOTIF_ID = 1
 const val NOTIF_ID2 = 2
-
-class RoutineService : Service {
+const val ROUTINE_INTERVAL: Long = 60000
+class RoutineService : Service() {
     private val TAG = "Routine Service"
+    private lateinit var runnable: Runnable
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var odsayService : ODsayService
     private lateinit var notificationManager: NotificationManager
@@ -50,7 +53,17 @@ class RoutineService : Service {
     private val notificationTitle = "BLUECAT_APP"
     private var destination: LocationItemData? = null
 
-    constructor() : super()
+    companion object {
+        fun startService(context: Context) {
+            val startIntent = Intent(context, RoutineService::class.java)
+            ContextCompat.startForegroundService(context, startIntent)
+        }
+
+        fun stopService(context:Context) {
+            val stopIntent = Intent(context, RoutineService::class.java)
+            context.stopService(stopIntent)
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -99,9 +112,16 @@ class RoutineService : Service {
         val on = sharedPreferences.getBoolean("Location Based Reminder", true)
 
         if (on) {
-            checkDate()
-            checkCurrentLocation()
-            checkTime()
+            updateNotification("No Alarm")
+            val handler = Handler()
+            runnable = Runnable {
+                Log.d(TAG, "new routine!")
+                checkDate()
+                checkCurrentLocation()
+                checkTime()
+                handler.postDelayed(runnable, ROUTINE_INTERVAL)
+            }
+            handler.post(runnable)
         }
         else {
             updateNotification("Alarm Disabled")

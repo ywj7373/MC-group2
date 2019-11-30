@@ -118,13 +118,7 @@ class LocationFragment : Fragment() {
                 startActivity(intent)
                 true
             }
-            /*
-            allDelete button is disabled
-            R.id.deleteItems -> {
-                locationViewModel.deleteAllLocationItems()
-                true
-            }
-            */
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -137,7 +131,7 @@ class LocationFragment : Fragment() {
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
             }
-            else RoutineReceiver().setRoutine(requireContext())
+            else RoutineService.startService(requireContext())
         }
         else requestLocationPermission()
     }
@@ -173,10 +167,14 @@ class LocationFragment : Fragment() {
     override fun onRequestPermissionsResult(requestCode: Int, permission: Array<String>, grantResults: IntArray) {
         if (requestCode == PERMISSION_ID) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                RoutineReceiver().setRoutine(requireContext())
+                RoutineService.startService(requireContext())
             }
             else {
-                //-----------------------not yet implemented -------------------------------
+                //turn off location reminder
+                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                val editor = sharedPreferences.edit()
+                editor.putBoolean("Location Based Reminder", false)
+                editor.apply()
             }
         }
     }
