@@ -1,5 +1,6 @@
 package com.example.bluecatapp
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -7,6 +8,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -16,10 +18,12 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.data.TodoItem
+import com.example.bluecatapp.ui.location.RoutineReceiver
 import com.example.bluecatapp.ui.todo.TodoAdapter
 import com.example.bluecatapp.ui.todo.TodoFragment
 import com.example.bluecatapp.ui.todo.TodoViewModel
@@ -104,6 +108,7 @@ class TimerActivity : AppCompatActivity() {
         var notiAlarmSeconds: Long = 0
 
         var isShaking = false
+        var isWalking = false
 
     }
 
@@ -130,42 +135,79 @@ class TimerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_timer)
 
-        if (intent.getStringExtra("id") == getString(R.string.SHAKE)) {
-//
+        var shouldCheckPerm = checkPermissions()
+        Log.d("TimerActivity:onCreate:checkPermissions","shouldCheckPerm : $shouldCheckPerm")
+        if(!shouldCheckPerm){
+            requestPermissions()
+        }
 
-            Log.d("TimerActivity:onCreate", "flag SHAKE intent")
-            Toast.makeText(
-                this,
-                "Wake UP !!!!!!!!!! Shake your Phone",
-                Toast.LENGTH_SHORT
-            ).show()
+        when(intent.getStringExtra("id")){
+            getString(R.string.SHAKE)->{
+                Log.d("TimerActivity:onCreate", "flag SHAKE intent")
+                Toast.makeText(
+                    this,
+                    "Wake UP !!!!!!!!!! Shake your Phone!",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-            include_time_counter.visibility = View.GONE
+                include_time_counter.visibility = View.GONE
 //            include_sensor_counter.visibility = View.VISIBLE
 
-            tv_wakeUp.visibility = View.VISIBLE
-            isShaking = true
+                tv_wakeUp_shake.visibility = View.VISIBLE
+                isShaking = true
+            }
+            getString(R.string.SHAKE_COMPLETE)->{
+                Log.d("TimerActivity:onCreate", "flag SHAKE Complete")
 
-        } else if (intent.getStringExtra("id") == getString(R.string.SHAKE_COMPLETE)) {
-            Log.d("TimerActivity:onCreate", "flag SHAKE Complete")
+                Toast.makeText(
+                    this,
+                    "Mission Complete. Hope you are Awake!",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-            Toast.makeText(
-                this,
-                "Mission Complete. Hope you are Awake!",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            include_time_counter.visibility = View.VISIBLE
+                include_time_counter.visibility = View.VISIBLE
 //            include_sensor_counter.visibility = View.GONE
 
-            tv_wakeUp.visibility = View.GONE
-            isShaking = false
+                tv_wakeUp_shake.visibility = View.GONE
+                isShaking = false
+            }
+            getString(R.string.WALK)->{
+                Log.d("TimerActivity:onCreate", "flag WALK intent")
+                Toast.makeText(
+                    this,
+                    "Wake UP !!!!!!!!!! Walk Around!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                include_time_counter.visibility = View.GONE
+//            include_sensor_counter.visibility = View.VISIBLE
+
+                tv_wakeUp_walk.visibility = View.VISIBLE
+                isWalking = true
+            }
+            getString(R.string.WALK_COMPLETE)->{
+                Log.d("TimerActivity:onCreate", "flag WALK Complete")
+
+                Toast.makeText(
+                    this,
+                    "Mission Complete. Hope you are Awake!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                include_time_counter.visibility = View.VISIBLE
+//            include_sensor_counter.visibility = View.GONE
+
+                tv_wakeUp_walk.visibility = View.GONE
+                isWalking = false
+            }
         }
+
 
 //        preference = PreferenceManager.getDefaultSharedPreferences(this)
 //        shakeLimit = preference.getInt(getString(R.string.hw_shake_value),30)
 
         Log.d("TimerActivity:onCreate", "isShaking : $isShaking")
+        Log.d("TimerActivity:onCreate", "isWalking : $isWalking")
 
         todoViewModel =
             ViewModelProviders.of(this).get(TodoViewModel::class.java)
@@ -212,42 +254,68 @@ class TimerActivity : AppCompatActivity() {
         super.onResume()
 
         Log.d("TimerActivity:onResume", "isShaking : $isShaking")
+        Log.d("TimerActivity:onResume", "isWalking : $isWalking")
 
-        if (intent.getStringExtra("id") == getString(R.string.SHAKE)) {
-//
+        when(intent.getStringExtra("id")){
+            getString(R.string.SHAKE)->{
+                Log.d("TimerActivity:onCreate", "flag SHAKE intent")
+                Toast.makeText(
+                    this,
+                    "Wake UP !!!!!!!!!! Shake your Phone!",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-            Log.d("TimerActivity:onResume", "flag SHAKE intent")
-            Toast.makeText(
-                this,
-                "Wake UP !!!!!!!!!! Shake your Phone",
-                Toast.LENGTH_SHORT
-            ).show()
-
-//            include_time_counter.visibility = View.GONE
+//                include_time_counter.visibility = View.GONE
 ////            include_sensor_counter.visibility = View.VISIBLE
 //
-//            tv_wakeUp.visibility = View.VISIBLE
-            isShaking = true
+//                tv_wakeUp_shake.visibility = View.VISIBLE
+                isShaking = true
+            }
+            getString(R.string.SHAKE_COMPLETE)->{
+                Log.d("TimerActivity:onCreate", "flag SHAKE Complete")
 
-        } else if (intent.getStringExtra("id") == getString(R.string.SHAKE_COMPLETE)) {
-            Log.d("TimerActivity:onResume", "flag SHAKE Complete")
+                Toast.makeText(
+                    this,
+                    "Mission Complete. Hope you are Awake!",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-            Toast.makeText(
-                this,
-                "Mission Complete. Hope you are Awake!",
-                Toast.LENGTH_SHORT
-            ).show()
+//                include_time_counter.visibility = View.VISIBLE
+////            include_sensor_counter.visibility = View.GONE
 //
-//            include_time_counter.visibility = View.VISIBLE
-//            include_sensor_counter.visibility = View.GONE
+//                tv_wakeUp_shake.visibility = View.GONE
+                isShaking = false
+            }
+            getString(R.string.WALK)->{
+                Log.d("TimerActivity:onCreate", "flag WALK intent")
+                Toast.makeText(
+                    this,
+                    "Wake UP !!!!!!!!!! Walk Around!",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-//            tv_wakeUp.visibility = View.GONE
-            isShaking = false
+//                include_time_counter.visibility = View.GONE
+////            include_sensor_counter.visibility = View.VISIBLE
+//
+//                tv_wakeUp_shake.visibility = View.VISIBLE
+                isWalking = true
+            }
+            getString(R.string.WALK_COMPLETE)->{
+                Log.d("TimerActivity:onCreate", "flag WALK Complete")
+
+                Toast.makeText(
+                    this,
+                    "Mission Complete. Hope you are Awake!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+//                include_time_counter.visibility = View.VISIBLE
+////            include_sensor_counter.visibility = View.GONE
+//
+//                tv_wakeUp_walk.visibility = View.GONE
+                isWalking = false
+            }
         }
-
-
-//        if (!(intent.getStringExtra("id") == getString(R.string.SHAKE)
-//                    || intent.getStringExtra("id") == getString(R.string.SHAKE_COMPLETE))) {
         initTimer()
         removeAlarm(this)
         removeNotificationAlarm(this)
@@ -294,8 +362,8 @@ class TimerActivity : AppCompatActivity() {
         Log.d("TimerActivity:onBackPressed", "timerState : $timerState")
         if (timerState == TimerState.Stopped) {
 
-            if (isShaking) {
-                Toast.makeText(this, "You Still need to shake your Phone!", Toast.LENGTH_SHORT)
+            if (isShaking || isWalking) {
+                Toast.makeText(this, "You Still need to WAKE UP!", Toast.LENGTH_SHORT).show()
             } else {
                 val editor = PreferenceManager.getDefaultSharedPreferences(this).edit()
                 editor.putBoolean(getString(R.string.hw_mode_bool), false)
@@ -335,6 +403,7 @@ class TimerActivity : AppCompatActivity() {
         Log.d(
             "TimerActivity:initTimer",
             "isShaking : $isShaking, " +
+                    "isWalking : $isWalking, " +
                     "secondsRemaining : $secondsRemaining , notiAlarmSeconds : $notiAlarmSeconds"
         )
 
@@ -448,7 +517,7 @@ class TimerActivity : AppCompatActivity() {
     }
 
     private fun updateButtons() {
-        if (isShaking) { // block all the buttons
+        if (isShaking || isWalking) { // block all the buttons
             fab_start.isEnabled = false
 //            fab_pause.isEnabled = false
             fab_stop.isEnabled = false
@@ -539,4 +608,50 @@ class TimerActivity : AppCompatActivity() {
 
         alertDialog.show()
     }
+
+    private fun checkPermissions(): Boolean {
+        val permissionState = checkSelfPermission(Manifest.permission.SYSTEM_ALERT_WINDOW)
+        val permissionState2 = checkSelfPermission(Manifest.permission.VIBRATE)
+        return (permissionState == PackageManager.PERMISSION_GRANTED &&
+                permissionState2 == PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun requestPermissions() {
+//        val shouldProvideRationale = shouldShowRequestPermissionRationale(Manifest.permission.SYSTEM_ALERT_WINDOW)
+        val shouldProvideRationale2 = shouldShowRequestPermissionRationale(Manifest.permission.VIBRATE)
+        if (
+//            shouldProvideRationale ||
+            shouldProvideRationale2) {
+            Log.d("TimerActivity:requestPermissions", "Displaying permission")
+            //-----------------------permission rationale not yet implemented -------------------------------
+
+        }
+        else {
+            Log.d("TimerActivity:requestPermissions", "Requesting Permission")
+            requestPermissions( arrayOf(
+//                Manifest.permission.SYSTEM_ALERT_WINDOW,
+                        Manifest.permission.VIBRATE), 800)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if(requestCode == 800){
+
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                Log.d("TimerActivity:onRequestPermissionsResult:permission_granted", "grantResults : $${grantResults[0]}")
+            }
+            else {
+                //-----------------------not yet implemented -------------------------------
+                Log.d("TimerActivity:onRequestPermissionsResult:permission_not_granted", "grantResults : ${grantResults[0]}")
+            }
+        }
+
+    }
+
 }

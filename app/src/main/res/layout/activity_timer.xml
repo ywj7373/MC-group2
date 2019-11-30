@@ -8,10 +8,21 @@
     tools:context="com.example.bluecatapp.TimerActivity">
 
     <TextView
-        android:id="@+id/tv_wakeUp"
+        android:id="@+id/tv_wakeUp_shake"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/TIMER_EXPIRED_TXT"
+        android:text="@string/TIMER_EXPIRED_TXT_SHAKE"
+        android:textColor="@color/colorText"
+        android:textAlignment="center"
+        android:textSize="35sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_wakeUp_walk"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/TIMER_EXPIRED_TXT_WALK"
         android:textColor="@color/colorText"
         android:textAlignment="center"
         android:textSize="35sp"

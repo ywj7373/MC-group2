@@ -17,6 +17,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.preference.PreferenceManager
 import android.widget.TextView
+import com.google.gson.reflect.TypeToken
 
 open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
 
@@ -33,6 +34,7 @@ open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
             vibrator.vibrate(1000)
         }
     }
+
     private var creator: ((A) -> T)? = creator
     @Volatile
     private var instance: T? = null
@@ -92,9 +94,9 @@ class Sensors private constructor(context: Context) {
         //the sensor that generated the data
         //the timestamp at which the data was generated
         override fun onSensorChanged(se: SensorEvent) {
-            if(!isShakeOn){
+            if (!isShakeOn) {
                 // unregister the sensors as shaking completed
-                unRegister("SHAKE")
+                unRegister("SHAKE", context)
                 return
             }
 
@@ -113,7 +115,7 @@ class Sensors private constructor(context: Context) {
                 shakeCount++
                 val toast = Toast.makeText(
                     context,
-                    "Device has shaken $shakeCount times",
+                    "You have shaken $shakeCount times.\n${shakeLimit-shakeCount} times left",
                     Toast.LENGTH_SHORT
                 )
                 toast.show()
@@ -127,7 +129,8 @@ class Sensors private constructor(context: Context) {
                 var i = Intent(context, TimerActivity::class.java)
 
                 i.putExtra("id", context.getString(R.string.SHAKE_COMPLETE))
-                i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
+                i.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
                 context.startActivity(i)
             }
 
@@ -146,29 +149,13 @@ class Sensors private constructor(context: Context) {
     }
 
     //================================== Detect Walking ==================================//
-    //    @todo own version of pedometer
-    private lateinit var walkSensorManager: SensorManager
+    //Pedometer variables
+    private var pedometer: Pedometer
+    private var isPedometerEnabled: Boolean = false
+    private var walkSensorManager: SensorManager
+    private var hwStepCounter: Int = 0
+    private var walkLimit: Int = 10
     var isWalkOn = isWalkSensorOn
-
-    private var walkAccel: Float = 0.toFloat()
-    private var walkAccelCurrent: Float = 0.toFloat()
-    private var walkAccelLast: Float = 0.toFloat()
-
-    private val walkSensorListener = object : SensorEventListener {
-
-        override fun onSensorChanged(se: SensorEvent) {
-//            val x = se.values[0]
-//            val y = se.values[1]
-//            val z = se.values[2]
-//            shakeAccelLast = shakeAccelCurrent
-//            shakeAccelCurrent = Math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
-//            val delta = shakeAccelCurrent - shakeAccelLast
-//            shakeAccel = shakeAccel * 0.9f + delta // perform low-cut filter
-
-        }
-
-        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
-    }
 
     init {
 
@@ -181,10 +168,11 @@ class Sensors private constructor(context: Context) {
 
         shakeCount = 0
         shakeLimit = preference.getInt(context.getString(R.string.hw_shake_value), 30)
+
+
         Log.d("Sensors:init:shakeLimit", "value : $shakeLimit")
 
         this.shakeSensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-//        this.walkSensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
         shakeAccel = 0.00f;
         shakeAccelCurrent = SensorManager.GRAVITY_EARTH;
@@ -198,45 +186,98 @@ class Sensors private constructor(context: Context) {
         isShakeOn = true
 
         //================================== Detect Walking ==================================//
+        hwStepCounter = 0
+        isPedometerEnabled =
+            preference.getBoolean(context.getString(R.string.hw_pedometer_bool), false)
+        walkLimit = preference.getInt(context.getString(R.string.hw_pedometer_value), 10)
+        walkSensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        pedometer = object : Pedometer() {
+            override fun onSensorChanged(event: SensorEvent?) {
 
-        //        walkSensorManager.registerListener(
-//            walkSensorListener,
-//            walkSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-//            SensorManager.SENSOR_DELAY_NORMAL
-//        );
-//
-//        walkAccel = 0.00f;
-//        walkAccelCurrent = SensorManager.GRAVITY_EARTH;
-//        walkAccelLast = SensorManager.GRAVITY_EARTH;
+                if (!isWalkOn) {
+                    // unregister the sensors as shaking completed
+                    unRegister("WALK", context)
+                    return
+                }
+                if (hwStepCounter < walkLimit) {
+                    super.onSensorChanged(event)
+                    val toast = Toast.makeText(
+                        context,
+                        "You have walked $hwStepCounter steps.\n${walkLimit-hwStepCounter} steps left.",
+                        Toast.LENGTH_SHORT
+                    )
+                    toast.show()
+                } else {
+
+                    isWalkOn = false
+                    isWalkSensorOn = false
+
+                    var i = Intent(context, TimerActivity::class.java)
+
+                    i.putExtra("id", context.getString(R.string.WALK_COMPLETE))
+                    i.flags =
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
+                    context.startActivity(i)
+                }
+            }
+
+            override fun step(timeNs: Long) {
+                super.step(timeNs)
+                hwStepCounter += super.numSteps
+                with(preference.edit()) {
+                    // update changed values
+                    putInt(
+                        "hwStepCounters",
+                        hwStepCounter
+                    )
+                    commit()
+                }
+            }
+        }
+
+        Log.d("Sensors:init:walkLimit", "value : $walkLimit")
+        Log.d("Sensors:init:isPedometerEnabled", "value : $isPedometerEnabled")
+
+        if (isPedometerEnabled) {
+            Log.d("Sensors:init:pedometerOn", "isPedometerEnabled : $isPedometerEnabled")
+            isWalkOn = true
+            togglePedometer(context, true)
+        }
 
     }
 
     // * s : "SHAKE" or "WALK"
-    fun unRegister(s: String): Int {
-        shakeCount = 0
+    fun unRegister(s: String, context: Context): Int {
         when (s) {
-            "ALL" ->{
-                shakeSensorManager.unregisterListener(shakeSensorListener)
+            "ALL" -> {
+                shakeCount = 0
+                hwStepCounter = 0
                 isShakeOn = false
                 isShakeSensorOn = false
+                shakeSensorManager.unregisterListener(shakeSensorListener)
 
-                walkSensorManager.unregisterListener(walkSensorListener)
                 isWalkOn = false
                 isWalkSensorOn = false
+                togglePedometer(context, false)
+
                 Log.d("Sensors:unRegister", "$s Sensor unRegistered")
                 return 1
             }
             "SHAKE" -> {
-                shakeSensorManager.unregisterListener(shakeSensorListener)
+                shakeCount = 0
                 isShakeOn = false
                 isShakeSensorOn = false
+                shakeSensorManager.unregisterListener(shakeSensorListener)
+
                 Log.d("Sensors:unRegister", "$s Sensor unRegistered")
                 return 1
             }
             "WALK" -> {
-                walkSensorManager.unregisterListener(walkSensorListener)
+                hwStepCounter = 0
                 isWalkOn = false
                 isWalkSensorOn = false
+                togglePedometer(context, false)
+
                 Log.d("Sensors:unRegister", "$s Sensor unRegistered")
                 return 1
             }
@@ -246,10 +287,12 @@ class Sensors private constructor(context: Context) {
     }
 
     // * s : "SHAKE" or "WALK"
-    fun reRegister(s: String): Int {
+    fun reRegister(s: String, context: Context): Int {
         shakeCount = 0
         when (s) {
-            "ALL" ->{
+            "ALL" -> {
+                shakeCount = 0
+                hwStepCounter = 0
                 shakeSensorManager.registerListener(
                     shakeSensorListener,
                     shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -258,11 +301,7 @@ class Sensors private constructor(context: Context) {
                 isShakeOn = true
                 isShakeSensorOn = true
 
-                walkSensorManager.registerListener(
-                    walkSensorListener,
-                    walkSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                    SensorManager.SENSOR_DELAY_NORMAL
-                )
+                togglePedometer(context, true)
                 isWalkOn = true
                 isWalkSensorOn = true
 
@@ -271,6 +310,7 @@ class Sensors private constructor(context: Context) {
                 return 1
             }
             "SHAKE" -> {
+                shakeCount = 0
                 shakeSensorManager.registerListener(
                     shakeSensorListener,
                     shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -283,11 +323,8 @@ class Sensors private constructor(context: Context) {
                 return 1
             }
             "WALK" -> {
-                walkSensorManager.registerListener(
-                    walkSensorListener,
-                    walkSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                    SensorManager.SENSOR_DELAY_NORMAL
-                )
+                hwStepCounter = 0
+                togglePedometer(context, true)
                 isWalkOn = true
                 isWalkSensorOn = true
                 Log.d("Sensors:reRegister", "$s Sensor reRegister")
@@ -297,5 +334,17 @@ class Sensors private constructor(context: Context) {
         }
         Log.d("Sensors:reRegister", "$s Sensor undefined")
         return 0
+    }
+
+    private fun togglePedometer(context: Context, makeOn: Boolean) {
+        Log.d("Sensors:togglePedometer", "makeOn : $makeOn")
+        if (makeOn) { // on
+            walkSensorManager.registerListener(
+                pedometer, walkSensorManager
+                    .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL
+            )
+        } else { // off
+            walkSensorManager.unregisterListener(pedometer)
+        }
     }
 }

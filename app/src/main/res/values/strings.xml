@@ -106,8 +106,12 @@
         com.example.bluecatapp.timer_length
     </string>
 
-    <string name="TIMER_EXPIRED_TXT">
+    <string name="TIMER_EXPIRED_TXT_SHAKE">
         WAKE UP! SHAKE YOUR DEVICE
+    </string>
+
+    <string name="TIMER_EXPIRED_TXT_WALK">
+        WAKE UP! WALK AROUND
     </string>
 
     <string name="HW_NOTIFICATION_CHANNEL_NAME">HW_CHANNEL</string>
