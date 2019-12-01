@@ -303,7 +303,6 @@ class AppBlockingFragment : Fragment() {
     }
 
     private fun startPedometer(appName: String, numberOfSteps: Int){
-
         // initialize step counter views
         pedometerValue.setText("${appStepCounters[appName]}")
         pedometerMaxValue.setText(" of $numberOfSteps")
@@ -328,7 +327,7 @@ class AppBlockingFragment : Fragment() {
         }
         sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         sensorManager!!.registerListener(pedometer, sensorManager!!
-            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
+            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME)
     }
 
     /**
