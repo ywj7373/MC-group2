@@ -51,10 +51,14 @@ class AppBlockingFragment : Fragment() {
     private lateinit var sharedPrefs: SharedPreferences
 
     //Appblock variables
+    private lateinit var blockTitle: TextView
     private lateinit var blockedAppName: TextView
     private lateinit var chrono: Chronometer
     private lateinit var blockTimeLabel: TextView
     private lateinit var appIcon: ImageView
+    private lateinit var appUsageTime: TextView
+    private lateinit var appBlockListTitle: TextView
+    private lateinit var divider: View
 
     //Pedometer variables
     private lateinit var pedometer: Pedometer
@@ -63,6 +67,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var pedometerTitle: TextView
     private lateinit var pedometerLabel: TextView
     private lateinit var pedometerValue: TextView
+    private lateinit var pedometerMaxValue: TextView
     private var maxStepCount: Int = 10
 
 
@@ -108,54 +113,23 @@ class AppBlockingFragment : Fragment() {
 //        })
 
         // Initialize app block views
-        blockedAppName = root.findViewById(R.id.currently_blocked_app)
+        blockTitle = root.findViewById(R.id.block_title)
+        blockedAppName = root.findViewById(R.id.blocked_app_name)
+        appIcon = root.findViewById(R.id.app_icon)
+        appUsageTime = root.findViewById(R.id.app_usage_time)
         chrono = root.findViewById(R.id.view_timer)
         blockTimeLabel = root.findViewById(R.id.block_explanation)
-        appIcon = root.findViewById(R.id.appIcon)
+        appBlockListTitle = root.findViewById(R.id.app_list_title)
+        divider = root.findViewById(R.id.app_divider)
 
         // Initialize pedometer views
         pedometerTitle = root.findViewById(R.id.step_title)
         pedometerLabel = root.findViewById(R.id.step_explanation)
         pedometerValue = root.findViewById(R.id.step_count)
+        pedometerMaxValue = root.findViewById(R.id.max_step_count)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(ACTIVITY_RECOGNITION),
-                200
-            )
-        }
-        sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-//        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)?.let {
-//            pedometerSensor = it
-//        }
-//        sharedPrefs = getDefaultSharedPreferences(this.context)
-//        val pedometerEnabled = sharedPrefs.getBoolean("Pedometer", false)
-//        Log.d("bcat", "behehehehheeh " + pedometerEnabled)
-//        if (pedometerEnabled) {
-//            if (pedometerSensor != null) {
-//                sensorManager.registerListener(
-//                    stepCounter(),
-//                    pedometerSensor,
-//                    SensorManager.SENSOR_DELAY_NORMAL
-//                )
-//                Toast.makeText(
-//                    activity!!.applicationContext,
-//                    "PEDOMETER CREATED",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            } else {
-//                Toast.makeText(
-//                    activity!!.applicationContext,
-//                    "PEDOMETER NOT FOUND",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
-//        }
-
-        // Check if pedometer enabled
+        // Check if pedometer enabled in preferences
         pedometerEnabled = sharedPrefs.getBoolean ("pedometer",false)
-
         maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
 
         // Check if app blocking enabled in Settings
@@ -169,6 +143,8 @@ class AppBlockingFragment : Fragment() {
         if (currentlyBlockedApps.entries.count() == 0) {
             hideViews()
         } else {
+            blockTitle.setText("ACTIVE APP BLOCK")
+
             currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
                 blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
                 pedometerValue.setText("${appStepCounters[appPackageName]} / $maxStepCount")
@@ -326,29 +302,11 @@ class AppBlockingFragment : Fragment() {
         return blockedAppList
     }
 
-    private fun stepCounter(): SensorEventListener {
-        return object : SensorEventListener {
-
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
-
-            override fun onSensorChanged(event: SensorEvent?) {
-                val currentStepCount = event!!.values[0].toInt()
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "YOU MOVED $currentStepCount STEPS",
-                    Toast.LENGTH_SHORT
-                ).show()
-                pedometerValue.setText("$currentStepCount / $maxStepCount")
-
-//                if(currentStepCount==maxStepCount){
-//                    pedometerTitle.setText("All steps completed")
-//                    pedometerLabel.setText("Great job!")
-//                }
-            }
-        }
-    }
-
     private fun startPedometer(appName: String, numberOfSteps: Int){
+
+        // initialize step counter views
+        pedometerValue.setText("${appStepCounters[appName]}")
+        pedometerMaxValue.setText(" of $numberOfSteps")
 
         pedometer = object: Pedometer() {
             override fun onSensorChanged(event: SensorEvent?) {
@@ -365,7 +323,7 @@ class AppBlockingFragment : Fragment() {
                     putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
                     commit()
                 }
-                pedometerValue.setText("${appStepCounters[appName]} / $numberOfSteps")
+                pedometerValue.setText("${appStepCounters[appName]}")
             }
         }
         sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -373,7 +331,8 @@ class AppBlockingFragment : Fragment() {
             .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
     }
 
-    /**Function to simulate pedometer
+    /**
+     * Function to simulate pedometer
      * Increments step count every 2s
      */
     private fun simulatePedometer(appName: String, numberOfSteps: Int) {
@@ -411,21 +370,43 @@ class AppBlockingFragment : Fragment() {
         }
     }
 
+    // Pedometer feature using built in pedometer hardware
+    private fun stepCounter(): SensorEventListener {
+        return object : SensorEventListener {
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+            override fun onSensorChanged(event: SensorEvent?) {
+                val currentStepCount = event!!.values[0].toInt()
+                Toast.makeText(
+                    activity!!.applicationContext,
+                    "YOU MOVED $currentStepCount STEPS",
+                    Toast.LENGTH_SHORT
+                ).show()
+                pedometerValue.setText("$currentStepCount / $maxStepCount")
+            }
+        }
+    }
+
     private fun hideViews() {
         //Hide app blocking countdown and pedometer views if no currently blocked apps
-        blockedAppName.text = "No blocked apps at the moment"
+        blockTitle.text = "NO ACTIVE APP BLOCK"
+        divider.visibility = View.INVISIBLE
+        blockedAppName.visibility = View.INVISIBLE
         appIcon.visibility = View.INVISIBLE
         chrono.visibility = View.INVISIBLE
         blockTimeLabel.visibility = View.INVISIBLE
-        pedometerTitle.visibility = View.INVISIBLE
-        pedometerLabel.visibility = View.INVISIBLE
-        pedometerValue.visibility = View.INVISIBLE
+        appUsageTime.visibility = View.INVISIBLE
+        appBlockListTitle.visibility = View.INVISIBLE
+        hidePedometerViews()
     }
 
     private fun hidePedometerViews() {
-        pedometerTitle.visibility = View.INVISIBLE
-        pedometerLabel.visibility = View.INVISIBLE
-        pedometerValue.visibility = View.INVISIBLE
+        // Hide and collapse pedometer views
+        pedometerTitle.visibility = View.GONE
+        pedometerLabel.visibility = View.GONE
+        pedometerValue.visibility = View.GONE
+        pedometerMaxValue.visibility = View.GONE
     }
 }
 

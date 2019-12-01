@@ -94,7 +94,9 @@ class RestrictAppsPreference : DialogPreference {
         val packageManager = context.packageManager
 
         return packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-            .filter { appInfo -> isNotSystemPackage(appInfo) }
+            .filter { appInfo -> isNotSystemPackage(appInfo)
+                    // BlueCat app should be excluded from app list
+                    && appInfo.packageName!=("com.example.bluecatapp") }
             .sortedWith(compareBy { it.loadLabel(packageManager).toString() })
             .map { appInfo ->
                 if (usePrettyName) appInfo.loadLabel(packageManager).toString() else appInfo.packageName
