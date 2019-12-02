@@ -1,23 +1,26 @@
 package com.example.bluecatapp.ui.settings
 
+import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.DialogFragment
 import androidx.preference.*
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationRepository
-import com.example.bluecatapp.ui.location.RoutineReceiver
-import com.example.bluecatapp.ui.location.RoutineService
+import com.example.bluecatapp.ui.location.LocationReminderForegroundService
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
     private lateinit var preference: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
+    private val PERMISSION_ID = 270
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,17 +64,30 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val locationReminderPreference= preferenceManager.findPreference<SwitchPreference>(getString(R.string.enable_location))
         locationReminderPreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
             override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
-                editor.putBoolean("Location Based Reminder", locationReminderPreference.isChecked)
-                editor.commit()
-                Log.d("ds", locationReminderPreference.isChecked.toString())
+
                 if(!locationReminderPreference.isChecked) {
-                    Toast.makeText(
-                        activity!!.applicationContext,
-                        "Location Based Reminder enabled",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        editor.putBoolean("Location Based Reminder", locationReminderPreference.isChecked)
+                        editor.commit()
+                        LocationReminderForegroundService.startService(requireContext())
+                        Toast.makeText(
+                            activity!!.applicationContext,
+                            "Location Based Reminder enabled",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    else {
+                        Toast.makeText(
+                            activity!!.applicationContext,
+                            "Enable location permission!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        requestLocationPermission()
+                    }
                 }
                 else {
+                    editor.putBoolean("Location Based Reminder", locationReminderPreference.isChecked)
+                    editor.commit()
                     Toast.makeText(
                         activity!!.applicationContext,
                         "Location Based Reminder disabled",
@@ -79,7 +95,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     ).show()
                 }
 
-                val serviceIntent = Intent(context, RoutineService::class.java)
+                val serviceIntent = Intent(context, LocationReminderForegroundService::class.java)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     requireContext().startForegroundService(serviceIntent)
                 } else requireContext().startService(serviceIntent)
@@ -211,5 +227,42 @@ class SettingsFragment : PreferenceFragmentCompat() {
             dialogFragment.setTargetFragment(this, 0)
             dialogFragment.show(fragmentManager!!, null)
         } else super.onDisplayPreferenceDialog(preference)
+    }
+
+    //Request for permission for location
+    private fun requestLocationPermission() {
+        val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (shouldProvideRationale) {
+            Log.d("Setting", "Displaying permission rationale")
+            //-----------------------permission rationale not yet implemented -------------------------------
+
+        }
+        else {
+            Log.d("Setting", "Requesting Permission")
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_ID)
+        }
+    }
+
+    //Called after the user allows or denies our requested permission
+    override fun onRequestPermissionsResult(requestCode: Int, permission: Array<String>, grantResults: IntArray) {
+        if (requestCode == PERMISSION_ID) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                editor.putBoolean("Location Based Reminder", true)
+                editor.apply()
+                LocationReminderForegroundService.startService(requireContext())
+                Toast.makeText(
+                    activity!!.applicationContext,
+                    "Location Based Reminder enabled",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            else {
+                //turn off location reminder
+                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                val editor = sharedPreferences.edit()
+                editor.putBoolean("Location Based Reminder", false)
+                editor.apply()
+            }
+        }
     }
 }

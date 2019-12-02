@@ -119,11 +119,12 @@
         android:gravity="center_vertical" />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/location_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/remind_text"
         android:layout_marginTop="10dp"
-        android:id="@+id/location_recycler_view"
+        android:layout_marginBottom="50dp"
         android:scrollbars="vertical"
         tools:listitem="@layout/location_item">
     </androidx.recyclerview.widget.RecyclerView>
