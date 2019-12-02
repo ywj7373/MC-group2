@@ -19,6 +19,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationItemData
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_location.*
 
 class LocationFragment : Fragment() {
@@ -154,28 +155,32 @@ class LocationFragment : Fragment() {
         val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
         if (shouldProvideRationale) {
             Log.d(TAG, "Displaying permission rationale")
-            //-----------------------permission rationale not yet implemented -------------------------------
+            Toast.makeText(requireContext(),"We need permission to enable location reminder", Toast.LENGTH_LONG).show()
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_ID)
 
         }
         else {
             Log.d(TAG, "Requesting Permission")
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_ID)
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_ID)
         }
     }
 
     //Called after the user allows or denies our requested permission
     override fun onRequestPermissionsResult(requestCode: Int, permission: Array<String>, grantResults: IntArray) {
-        if (requestCode == PERMISSION_ID) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                LocationReminderForegroundService.startService(requireContext())
+        if (requestCode == PERMISSION_ID && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (!isLocationEnabled()) {
+                Toast.makeText(requireActivity(), "Turn on location", Toast.LENGTH_LONG).show()
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(intent)
             }
-            else {
-                //turn off location reminder
-                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                val editor = sharedPreferences.edit()
-                editor.putBoolean("Location Based Reminder", false)
-                editor.apply()
-            }
+            else LocationReminderForegroundService.startService(requireContext())
+        }
+        else {
+            //turn off location reminder
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            val editor = sharedPreferences.edit()
+            editor.putBoolean("Location Based Reminder", false)
+            editor.apply()
         }
     }
 }

@@ -40,6 +40,7 @@ const val NOTIF_ID = 1
 const val NOTIF_ID2 = 2
 const val NOTIF_ID3 = 3
 const val ROUTINE_INTERVAL: Long = 60000
+const val DEFAULT_TRAVEL_TIME = "20"
 
 class LocationReminderForegroundService : Service() {
     private val TAG = "Routine Service"
@@ -54,6 +55,7 @@ class LocationReminderForegroundService : Service() {
     private val locationNotificationId = "BLUE_CAT_LOCATION_ALARM"
     private val notificationTitle = "BLUECAT_APP"
     private var destination: LocationItemData? = null
+    private var travelTime: String = DEFAULT_TRAVEL_TIME
 
     companion object {
         fun startService(context: Context) {
@@ -100,6 +102,15 @@ class LocationReminderForegroundService : Service() {
                 else {
                     destination = null
                     updateNotification("No Alarm")
+                }
+            }
+        })
+
+        locationViewModel.getTravelTime().observeForever( object: Observer<TravelTimeData> {
+            override fun onChanged(t: TravelTimeData?) {
+                if (t != null) {
+                    travelTime = t.time
+                    checkTime()
                 }
             }
         })
@@ -188,32 +199,44 @@ class LocationReminderForegroundService : Service() {
         //get priority location's estimated time
         thread(start = true) {
             if (destination != null) {
-                val travelTime = LocationRepository(application).getTravelTime().time
+                Log.d(TAG, travelTime)
                 val time = timeToSeconds(destination!!.time)
                 val timeToDest = minToSeconds(travelTime)
                 val currentTime = System.currentTimeMillis()
                 val isAlarmed = destination!!.isAlarmed
                 val daysMode = destination!!.daysMode
-                val preparationTime = sharedPreferences.getString("Preparation_time", "20")!!.toInt()
+                val preparationTime =
+                    sharedPreferences.getString("Preparation_time", "20")!!.toInt()
                 val alarmTime = time - timeToDest - (preparationTime * 60 * 1000)
-                val alarmText = "Alarm rings at: " + SimpleDateFormat("yyyy MMM d, EEE, h:mm a", Locale.KOREA).format(Date(alarmTime))
+                val alarmText = "Alarm rings at: " + SimpleDateFormat(
+                    "yyyy MMM d, EEE, h:mm a",
+                    Locale.KOREA
+                ).format(Date(alarmTime))
 
                 updateNotification(alarmText)
 
                 val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
 
                 //check if current time passed arrival time
-                if ((!daysMode && currentTime >= time) || (daysMode && (simpleTimeFormat.format(Date(currentTime))>=(simpleTimeFormat.format(Date(time)))) )) {
+                if ((!daysMode && currentTime >= time) || (daysMode && (simpleTimeFormat.format(
+                        Date(currentTime)
+                    ) >= (simpleTimeFormat.format(Date(time)))))
+                ) {
                     //set the schedule to done
                     LocationRepository(application).updateDone(true, destination!!.id)
                     Log.d(TAG, "schedule time passed! " + destination!!.x)
 
                     //check if the user is around schedule's location
-                    if (getDistanceFromLatLonInKm(srcLat, srcLong, destination!!.y.toDouble(), destination!!.x.toDouble()) <= 0.3 ) {
+                    if (getDistanceFromLatLonInKm(
+                            srcLat,
+                            srcLong,
+                            destination!!.y.toDouble(),
+                            destination!!.x.toDouble()
+                        ) <= 0.3
+                    ) {
                         Log.d(TAG, "Made on time")
                         LocationRepository(application).increaseOntime()
-                    }
-                    else {
+                    } else {
                         Log.d(TAG, "Missed schedule")
                         val text = "You are late!"
                         callAlarmNotification(text, NOTIF_ID2)
@@ -225,9 +248,13 @@ class LocationReminderForegroundService : Service() {
                     Log.d(TAG, "entered")
                     //send notification
                     val destinationTime = simpleTimeFormat.format(Date(time))
-                    val h = (travelTime.toInt())/60
-                    val m = (travelTime.toInt())%60
-                    val firstText = "Reminder: " + destination!!.name + " at " + destinationTime.substring(0, 5) + "\n"
+                    val h = (travelTime.toInt()) / 60
+                    val m = (travelTime.toInt()) % 60
+                    val firstText =
+                        "Reminder: " + destination!!.name + " at " + destinationTime.substring(
+                            0,
+                            5
+                        ) + "\n"
                     var secondText = "Travel Time: " + h + "hours and " + m + " minutes"
                     if (h == 0) {
                         secondText = "Travel Time: $m minutes"
@@ -394,7 +421,6 @@ class LocationReminderForegroundService : Service() {
                         thread(start = true) {
                             LocationRepository(application).insertTravelTime(TravelTimeData(inquiryResult))
                         }
-                        Log.d(TAG, "Estimated Time of " + destination!!.name + " changed to " + inquiryResult)
                     }
                 }
             } catch (e: JSONException) {
