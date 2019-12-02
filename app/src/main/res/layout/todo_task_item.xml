@@ -13,7 +13,8 @@
         android:id="@+id/todo_task_item_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/color_todo_item_bg"
+        android:background="@drawable/todo_task_item_bg"
+        android:padding="2dp"
         android:orientation="vertical">
 
         <TextView
@@ -24,11 +25,11 @@
 
         <View
             android:id="@+id/todo_item_line_done"
-            android:visibility="gone"
             android:layout_width="fill_parent"
             android:layout_height="7dp"
             android:layout_below="@id/todo_item_task"
-            android:background="#ff0000"/>
+            android:background="#ff0000"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/todo_item_date"
@@ -37,12 +38,12 @@
             android:layout_below="@+id/todo_item_task"
             android:text="Task Date" />
 
-<!--        <TextView-->
-<!--            android:id="@+id/todo_item_location"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_below="@+id/todo_item_date"-->
-<!--            android:text="Task Location" />-->
+        <!--        <TextView-->
+        <!--            android:id="@+id/todo_item_location"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_below="@+id/todo_item_date"-->
+        <!--            android:text="Task Location" />-->
 
         <CheckBox
             android:id="@+id/todo_item_done"
@@ -50,8 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:checked="false"
-            android:text="Done"
-            />
+            android:text="Done" />
 
 
     </RelativeLayout>
