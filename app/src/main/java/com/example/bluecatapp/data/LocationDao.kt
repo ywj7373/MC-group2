@@ -53,7 +53,7 @@ interface TravelTimeDao {
     fun insert(travelTime: TravelTimeData)
 
     @Query("SELECT * FROM travel_time")
-    fun getTravelTime(): TravelTimeData
+    fun getTravelTime(): LiveData<TravelTimeData>
 }
 
 @Dao

@@ -88,7 +88,7 @@ abstract class CurrentLocationDatabase : RoomDatabase() {
     }
 }
 
-@Database(entities = [TravelTimeData::class], version = 1)
+@Database(entities = [TravelTimeData::class], version = 2)
 abstract class TravelTimeDatabase : RoomDatabase() {
 
     abstract fun travelTimeDao(): TravelTimeDao

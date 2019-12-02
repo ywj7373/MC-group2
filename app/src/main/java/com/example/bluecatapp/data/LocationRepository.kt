@@ -86,7 +86,7 @@ class LocationRepository(application: Application) {
         InsertTravelTimeAsyncTask(travelTimeDao).execute(travelTime)
     }
 
-    fun getTravelTime(): TravelTimeData {
+    fun getTravelTime(): LiveData<TravelTimeData> {
         return travelTimeDao.getTravelTime()
     }
 
@@ -112,7 +112,7 @@ class LocationRepository(application: Application) {
         return dateDao.getCurrentDate()
     }
     fun updateCurrentDate() {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd").format(Date())
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd", Locale.KOREA).format(Date())
         val dateData = DateData(timeStamp)
         dateDao.insert(dateData)
     }

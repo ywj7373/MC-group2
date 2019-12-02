@@ -5,10 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.bluecatapp.data.CurrentLocationData
-import com.example.bluecatapp.data.LocationRepository
-import com.example.bluecatapp.data.LocationItemData
-import com.example.bluecatapp.data.StatsData
+import com.example.bluecatapp.data.*
 import java.util.*
 
 class LocationViewModel(application: Application) : AndroidViewModel(application) {
@@ -29,6 +26,7 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     private var currentLocation: LiveData<CurrentLocationData> = repository.getCurrentLocation()
     private var nextSchedule: LiveData<LocationItemData> = repository.getPriorityDestination(dayOfToday)
     private var statsData: LiveData<StatsData> = repository.getStats()
+    private var travelTime: LiveData<TravelTimeData> = repository.getTravelTime()
 
     fun getNextSchedule(): LiveData<LocationItemData> {
         return nextSchedule
@@ -38,16 +36,16 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
         repository.insertLocationItem(locationItem)
     }
 
-    fun deleteAllLocationItems() {
-        repository.deleteAllLocationItems()
-    }
-
     fun getAllLocationItems(): LiveData<List<LocationItemData>> {
         return allLocationItems
     }
 
     fun getCurrentLocation(): LiveData<CurrentLocationData> {
         return currentLocation
+    }
+
+    fun getTravelTime(): LiveData<TravelTimeData> {
+        return travelTime
     }
 
     fun deleteLocationItem(id: Int) {

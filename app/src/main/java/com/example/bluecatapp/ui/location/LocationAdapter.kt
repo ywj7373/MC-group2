@@ -1,6 +1,7 @@
 package com.example.bluecatapp.ui.location
 
 import android.content.Intent
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,7 @@ class LocationAdapter internal constructor(locationViewModel: LocationViewModel)
 
     private var locationItems: List<LocationItemData> = ArrayList()
     private val locationViewModel = locationViewModel
+    private val TIME: Long = 1000
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationItemHolder {
         val itemView = LayoutInflater.from(parent.context)
@@ -45,8 +47,13 @@ class LocationAdapter internal constructor(locationViewModel: LocationViewModel)
             locationViewModel.deleteLocationItem(locationItem.id)
             (locationItems as ArrayList).removeAt(position)
             notifyItemRemoved(position)
-            //prevents fast double click
             holder.delete_button.isEnabled = false
+            //prevents fast double click
+            val handler = Handler()
+            val runnable = Runnable {
+                holder.delete_button.isEnabled = true
+            }
+            handler.postDelayed(runnable, TIME)
         }
 
         holder.edit_button.setOnClickListener {
