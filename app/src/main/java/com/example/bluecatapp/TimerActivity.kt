@@ -135,9 +135,9 @@ class TimerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_timer)
 
-        var shouldCheckPerm = checkPermissions()
+        var shouldCheckPerm = !checkPermissions()
         Log.d("TimerActivity:onCreate:checkPermissions","shouldCheckPerm : $shouldCheckPerm")
-        if(!shouldCheckPerm){
+        if(shouldCheckPerm){
             requestPermissions()
         }
 
@@ -610,9 +610,10 @@ class TimerActivity : AppCompatActivity() {
     }
 
     private fun checkPermissions(): Boolean {
-        val permissionState = checkSelfPermission(Manifest.permission.SYSTEM_ALERT_WINDOW)
+//        val permissionState = checkSelfPermission(Manifest.permission.SYSTEM_ALERT_WINDOW)
         val permissionState2 = checkSelfPermission(Manifest.permission.VIBRATE)
-        return (permissionState == PackageManager.PERMISSION_GRANTED &&
+        return (
+//                permissionState == PackageManager.PERMISSION_GRANTED &&
                 permissionState2 == PackageManager.PERMISSION_GRANTED)
     }
 
