@@ -45,6 +45,8 @@ class LocationAdapter internal constructor(locationViewModel: LocationViewModel)
             locationViewModel.deleteLocationItem(locationItem.id)
             (locationItems as ArrayList).removeAt(position)
             notifyItemRemoved(position)
+            //prevents fast double click
+            holder.delete_button.isEnabled = false
         }
 
         holder.edit_button.setOnClickListener {
@@ -58,7 +60,6 @@ class LocationAdapter internal constructor(locationViewModel: LocationViewModel)
             intent.putExtra("time", locationItem.time)
             intent.putExtra("daysMode", locationItem.daysMode)
             intent.putExtra("days", locationItem.days)
-
             it.context.startActivity(intent)
         }
     }

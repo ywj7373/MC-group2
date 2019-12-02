@@ -14,7 +14,7 @@ import androidx.preference.*
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.LocationRepository
-import com.example.bluecatapp.ui.location.RoutineService
+import com.example.bluecatapp.ui.location.LocationReminderForegroundService
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -69,7 +69,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                         editor.putBoolean("Location Based Reminder", locationReminderPreference.isChecked)
                         editor.commit()
-                        RoutineService.startService(requireContext())
+                        LocationReminderForegroundService.startService(requireContext())
                         Toast.makeText(
                             activity!!.applicationContext,
                             "Location Based Reminder enabled",
@@ -95,7 +95,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     ).show()
                 }
 
-                val serviceIntent = Intent(context, RoutineService::class.java)
+                val serviceIntent = Intent(context, LocationReminderForegroundService::class.java)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     requireContext().startForegroundService(serviceIntent)
                 } else requireContext().startService(serviceIntent)
@@ -247,7 +247,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 editor.putBoolean("Location Based Reminder", true)
                 editor.apply()
-                RoutineService.startService(requireContext())
+                LocationReminderForegroundService.startService(requireContext())
                 Toast.makeText(
                     activity!!.applicationContext,
                     "Location Based Reminder enabled",

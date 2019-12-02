@@ -28,7 +28,7 @@ import com.odsay.odsayandroidsdk.ODsayService
 import com.odsay.odsayandroidsdk.OnResultCallbackListener
 import org.json.JSONException
 import org.json.JSONObject
-import java.lang.Math.*
+import kotlin.math.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
@@ -38,8 +38,10 @@ const val LOCATION_TRACKER_INTERVAL: Long = 60000 //60s
 const val LOCATION_TRACKER_FASTEST_INTERVAL: Long = 55000 //55s
 const val NOTIF_ID = 1
 const val NOTIF_ID2 = 2
+const val NOTIF_ID3 = 3
 const val ROUTINE_INTERVAL: Long = 60000
-class RoutineService : Service() {
+
+class LocationReminderForegroundService : Service() {
     private val TAG = "Routine Service"
     private lateinit var runnable: Runnable
     private lateinit var locationViewModel: LocationViewModel
@@ -55,12 +57,12 @@ class RoutineService : Service() {
 
     companion object {
         fun startService(context: Context) {
-            val startIntent = Intent(context, RoutineService::class.java)
+            val startIntent = Intent(context, LocationReminderForegroundService::class.java)
             ContextCompat.startForegroundService(context, startIntent)
         }
 
         fun stopService(context:Context) {
-            val stopIntent = Intent(context, RoutineService::class.java)
+            val stopIntent = Intent(context, LocationReminderForegroundService::class.java)
             context.stopService(stopIntent)
         }
     }
@@ -129,18 +131,6 @@ class RoutineService : Service() {
         return START_NOT_STICKY
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            stopForeground(true)
-        }
-    }
-
-    override fun onBind(p0: Intent?): IBinder? {
-        return null
-    }
-
     private fun startNotification() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             //Initialize notification manager
@@ -178,6 +168,7 @@ class RoutineService : Service() {
             .build()
     }
 
+    //update text in foreground notification
     private fun updateNotification(text: String) {
         val notification: Notification = callMainNotification(text)
         notificationManager.notify(NOTIF_ID, notification)
@@ -198,11 +189,6 @@ class RoutineService : Service() {
         thread(start = true) {
             if (destination != null) {
                 val travelTime = LocationRepository(application).getTravelTime().time
-                Log.d(TAG, travelTime)
-                Log.d(TAG, destination!!.name)
-                Log.d(TAG, destination!!.time)
-
-                //when destination time is 12 -> the time is measured as 24
                 val time = timeToSeconds(destination!!.time)
                 val timeToDest = minToSeconds(travelTime)
                 val currentTime = System.currentTimeMillis()
@@ -210,18 +196,11 @@ class RoutineService : Service() {
                 val daysMode = destination!!.daysMode
                 val preparationTime = sharedPreferences.getString("Preparation_time", "20")!!.toInt()
                 val alarmTime = time - timeToDest - (preparationTime * 60 * 1000)
+                val alarmText = "Alarm rings at: " + SimpleDateFormat("yyyy MMM d, EEE, h:mm a", Locale.KOREA).format(Date(alarmTime))
 
-                val alarmText = "Alarm rings at: " + Date(alarmTime).toString()
                 updateNotification(alarmText)
 
-                Log.d(TAG, "preparation time: " + preparationTime.toString())
-                Log.d(TAG, "alarm rings at: " + Date(alarmTime).toString())
-                Log.d(TAG, "current time: " + Date(currentTime).toString())
-
                 val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
-
-                Log.d("Debug12 ", "currentTime : " +currentTime)
-                Log.d("Debug12 ", "destinationtime : " +time)
 
                 //check if current time passed arrival time
                 if ((!daysMode && currentTime >= time) || (daysMode && (simpleTimeFormat.format(Date(currentTime))>=(simpleTimeFormat.format(Date(time)))) )) {
@@ -230,7 +209,7 @@ class RoutineService : Service() {
                     Log.d(TAG, "schedule time passed! " + destination!!.x)
 
                     //check if the user is around schedule's location
-                    if (getDistanceFromLatLonInKm(srcLat, srcLong, destination!!.y.toDouble(), destination!!.x.toDouble()) <= 0.1 ) {
+                    if (getDistanceFromLatLonInKm(srcLat, srcLong, destination!!.y.toDouble(), destination!!.x.toDouble()) <= 0.3 ) {
                         Log.d(TAG, "Made on time")
                         LocationRepository(application).increaseOntime()
                     }
@@ -245,12 +224,19 @@ class RoutineService : Service() {
                 else if (currentTime >= alarmTime && !isAlarmed) {
                     Log.d(TAG, "entered")
                     //send notification
+                    val destinationTime = simpleTimeFormat.format(Date(time))
                     val h = (travelTime.toInt())/60
                     val m = (travelTime.toInt())%60
-                    val text = "You need to prepare to go to " + destination!!.name +
-                            ".\n It takes about " + h + "hours and " + m + " minutes to go there!"
+                    val firstText = "Reminder: " + destination!!.name + " at " + destinationTime.substring(0, 5) + "\n"
+                    var secondText = "Travel Time: " + h + "hours and " + m + " minutes"
+                    if (h == 0) {
+                        secondText = "Travel Time: $m minutes"
+                    }
+                    if (travelTime.toInt() == 10) {
+                        secondText = "Travel Time: less than 10 minutes"
+                    }
 
-                    callAlarmNotification(text, 101)
+                    callAlarmNotification(firstText + secondText, NOTIF_ID3)
 
                     //set alarm to true to stop calling alarm
                     LocationRepository(application).updateIsAlarmed(true, destination!!.id)
@@ -261,24 +247,24 @@ class RoutineService : Service() {
 
     //check if date has changed or not and if changed reset repeated schedule
     private fun checkDate() {
-        val dateData:DateData = LocationRepository(application).getCurrentDate()
-        val current_date: String = SimpleDateFormat("yyyyMMdd").format(Date())
-        if(dateData==null) {
+        val dateData:DateData? = LocationRepository(application).getCurrentDate()
+        val currentDate: String = SimpleDateFormat("yyyyMMdd", Locale.KOREA).format(Date())
+        if(dateData == null) {
             LocationRepository(application).updateCurrentDate()
             return
         }
 
-        if(dateData.mcurrent_date!=current_date) {              // if date has changed
-            var calendar = Calendar.getInstance()
+        if(dateData.mcurrent_date!=currentDate) {              // if date has changed
+            val calendar = Calendar.getInstance()
             calendar.add(Calendar.DATE, 6)
-            var future_date = SimpleDateFormat("yyyy-MM-dd").format(calendar.time)
-            val dayOfToday_encoded = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
-            var iterating_day = (dayOfToday_encoded + 6) % 7
-            var dayOfToday:String = ""
+            var futureDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(calendar.time)
+            val dayOfTodayEncoded = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            var iteratingDay = (dayOfTodayEncoded + 6) % 7
+            var dayOfToday = ""
 
             // Iteration for sorting
-            while(iterating_day != dayOfToday_encoded) {
-                dayOfToday   = when(iterating_day) {
+            while(iteratingDay != dayOfTodayEncoded) {
+                dayOfToday   = when(iteratingDay) {
                     1 -> "%SUN%"
                     2 -> "%MON%"
                     3 -> "%TUE%"
@@ -289,16 +275,16 @@ class RoutineService : Service() {
                     else -> ""
                 }
 
-                LocationRepository(application).updateToTodayDateDays(future_date, dayOfToday)
+                LocationRepository(application).updateToTodayDateDays(futureDate, dayOfToday)
 
-                iterating_day = iterating_day - 1
-                if(iterating_day == -1)
-                    iterating_day = 7
+                iteratingDay--
+                if(iteratingDay == -1)
+                    iteratingDay = 7
                 calendar.add(Calendar.DATE, -1)
-                future_date = SimpleDateFormat("yyyy-MM-dd").format(calendar.time)
+                futureDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(calendar.time)
             }
             run {           // one more for today
-                dayOfToday   = when(iterating_day) {
+                dayOfToday = when(iteratingDay) {
                     1 -> "%SUN%"
                     2 -> "%MON%"
                     3 -> "%TUE%"
@@ -309,22 +295,22 @@ class RoutineService : Service() {
                     else -> ""
                 }
 
-                LocationRepository(application).updateToTodayDateDays(future_date, dayOfToday)
+                LocationRepository(application).updateToTodayDateDays(futureDate, dayOfToday)
 
-                iterating_day = iterating_day - 1
-                if(iterating_day == -1)
-                    iterating_day = 7
+                iteratingDay--
+                if(iteratingDay == -1)
+                    iteratingDay = 7
                 calendar.add(Calendar.DATE, -1)
-                future_date = SimpleDateFormat("yyyy-MM-dd").format(calendar.time)
+                futureDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(calendar.time)
             }
 
-            LocationRepository(application).updateToTodayDateDays(current_date, dayOfToday)
+            LocationRepository(application).updateToTodayDateDays(currentDate, dayOfToday)
             LocationRepository(application).updateAllNotDoneDays()
             LocationRepository(application).updateCurrentDate()
-            Log.d("checkDate", "Date has changed : " + dateData.mcurrent_date + ", " + current_date)
+            Log.d("checkDate", "Date has changed : " + dateData.mcurrent_date + ", " + currentDate)
         }
         else {
-            Log.d("checkDate", "Date not changed : " + dateData.mcurrent_date + ", " + current_date)
+            Log.d("checkDate", "Date not changed : " + dateData.mcurrent_date + ", " + currentDate)
         }
 
     }
@@ -446,5 +432,17 @@ class RoutineService : Service() {
     private fun minToSeconds(time: String): Long {
         val t: Long = time.toLong()
         return t * 60 * 1000
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            stopForeground(true)
+        }
+    }
+
+    override fun onBind(p0: Intent?): IBinder? {
+        return null
     }
 }

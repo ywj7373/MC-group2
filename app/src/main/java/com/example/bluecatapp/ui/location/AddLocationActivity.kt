@@ -184,9 +184,9 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onSearchConfirmed(text: CharSequence?) {
+    override fun onSearchConfirmed(text: CharSequence) {
         clearAll()
-        requestSearch(text.toString())
+        requestSearch(text.trim().toString())
     }
 
     override fun onOptionsItemSelected(item: MenuItem) =
@@ -196,7 +196,11 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                 true
             }
             R.id.saveLocation -> {
-                if (picked or editmode) addNewSchedule()
+                if (picked or editmode) {
+                    addNewSchedule()
+                    //prevents fast double click
+                    item.isEnabled = false
+                }
                 else Toast.makeText(this@AddLocationActivity, "Please select a valid location!", Toast.LENGTH_SHORT).show()
                 true
             }
@@ -217,7 +221,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         }
     }
 
-    //search for place name using naver api
+    //search for place name using Naver api
     private fun requestSearch(query: String) {
         NaverRetrofit.getService().requestSearchPlace(query, location).enqueue(object: Callback<SearchPlaceData> {
             override fun onFailure(call: Call<SearchPlaceData>, t: Throwable) {
@@ -230,6 +234,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                     var len = response.body()!!.meta.totalCount - 1
                     if (len == -1) Toast.makeText(this@AddLocationActivity, "No result!", Toast.LENGTH_SHORT).show()
                     else {
+                        //convert len to array index length; max is 4
                         if (len > 4) len = 4
 
                         results = response.body()!!.places
@@ -251,6 +256,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                 }
                 else if (response.body()!!.status == "INVALID_REQUEST")
                     Toast.makeText(this@AddLocationActivity, "Bad request!", Toast.LENGTH_SHORT).show()
+                else if (response.body()!!.status == "SYSTEM_ERROR")
+                    Toast.makeText(this@AddLocationActivity, "System Error", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -433,6 +440,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         else {
             locationViewModel.insert(newLocationItem)
         }
+
         finish()
     }
 
