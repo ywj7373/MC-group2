@@ -139,7 +139,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
                 Toast.makeText(
                     activity!!.applicationContext,
-                    "HW mode time changed to ${newValue.toString().toLong()/1000/60} minutes " +
+                    "HW mode time changed to ${newValue.toString()} minutes " +
 //                            "${getString(R.string.hw_time_value).toInt()/1000/60}" +
                             "",
                     Toast.LENGTH_SHORT
@@ -172,9 +172,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         hwModePedometerBoolPreference?.setOnPreferenceChangeListener( object : Preference.OnPreferenceChangeListener {
             override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
 
-                editor.putBoolean(getString(R.string.hw_pedometer_bool),hwModePedometerBoolPreference.isChecked)
+                // why is it backward...??
+                editor.putBoolean(getString(R.string.hw_pedometer_bool),!hwModePedometerBoolPreference.isChecked)
                 editor.commit()
 
+                Log.d("SettingsFragment:hwModePedometerBoolPreference", "isEnabled : ${!hwModePedometerBoolPreference.isChecked}")
                 if(!hwModePedometerBoolPreference.isChecked){
 
                     Toast.makeText(

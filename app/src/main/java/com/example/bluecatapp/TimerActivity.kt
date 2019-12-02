@@ -1,11 +1,14 @@
 package com.example.bluecatapp
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -15,6 +18,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,9 +33,11 @@ import kotlinx.android.synthetic.main.content_timer.*
 import kotlinx.android.synthetic.main.fragment_todo.*
 import java.util.*
 
+
 class TimerActivity : AppCompatActivity() {
 
     companion object {
+
         // * final alarm
         fun setAlarm(context: Context, nowSeconds: Long, secondsRemaining: Long): Long {
 
@@ -101,6 +107,7 @@ class TimerActivity : AppCompatActivity() {
         var notiAlarmSeconds: Long = 0
 
         var isShaking = false
+        var isWalking = false
 
     }
 
@@ -108,6 +115,8 @@ class TimerActivity : AppCompatActivity() {
         Stopped, Paused, Running
     }
 
+    //    private lateinit var preference : SharedPreferences
+//    private var shakeLimit = 0
     //================================== Homework mode general ==================================//
     val hwDoneDisplayText = "I have done my homework."
     val hwDoneConfirmText = hwDoneDisplayText.replace("\\s".toRegex(), "").toLowerCase()
@@ -116,36 +125,88 @@ class TimerActivity : AppCompatActivity() {
     private lateinit var todoViewModel: TodoViewModel
     private val todoAdapter = TodoAdapter()
 
-
     private lateinit var timer: CountDownTimer
     private var timerLengthSeconds: Long = 0
     private var timerState = TimerState.Stopped
-
     private var secondsRemaining: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_timer)
 
-        Log.d("TimerActivity:onCreate", "isShaking : $isShaking")
-        if (intent.getStringExtra("id") == getString(R.string.SHAKE)) {
-//
-//            Toast.makeText(this,
-//                "Wake UP !!!!!!!!!! Shake your Phone",
-//                Toast.LENGTH_SHORT).show()
-
-            tv_wakeUp.visibility = View.VISIBLE
-            isShaking = true
-
-        }else if (intent.getStringExtra("id") == getString(R.string.SHAKE_COMPLETE)) {
-            Toast.makeText(
-                this,
-                "Mission Complete. Hope you are Awake!",
-                Toast.LENGTH_SHORT
-            ).show()
-            tv_wakeUp.visibility = View.GONE
-            isShaking = false
+        var shouldCheckPerm = !checkPermissions()
+        Log.d("TimerActivity:onCreate:checkPermissions","shouldCheckPerm : $shouldCheckPerm")
+        if(shouldCheckPerm){
+            requestPermissions()
         }
+
+        when(intent.getStringExtra("id")){
+            getString(R.string.SHAKE)->{
+                Log.d("TimerActivity:onCreate", "flag SHAKE intent")
+                Toast.makeText(
+                    this,
+                    "Wake UP !!!!!!!!!! Shake your Phone!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                include_time_counter.visibility = View.GONE
+//            include_sensor_counter.visibility = View.VISIBLE
+
+                tv_wakeUp_shake.visibility = View.VISIBLE
+                isShaking = true
+            }
+            getString(R.string.SHAKE_COMPLETE)->{
+                Log.d("TimerActivity:onCreate", "flag SHAKE Complete")
+
+                Toast.makeText(
+                    this,
+                    "Mission Complete. Hope you are Awake!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                include_time_counter.visibility = View.VISIBLE
+//            include_sensor_counter.visibility = View.GONE
+
+                tv_wakeUp_shake.visibility = View.GONE
+                isShaking = false
+            }
+            getString(R.string.WALK)->{
+                Log.d("TimerActivity:onCreate", "flag WALK intent")
+                Toast.makeText(
+                    this,
+                    "Wake UP !!!!!!!!!! Walk Around!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                include_time_counter.visibility = View.GONE
+//            include_sensor_counter.visibility = View.VISIBLE
+
+                tv_wakeUp_walk.visibility = View.VISIBLE
+                isWalking = true
+            }
+            getString(R.string.WALK_COMPLETE)->{
+                Log.d("TimerActivity:onCreate", "flag WALK Complete")
+
+                Toast.makeText(
+                    this,
+                    "Mission Complete. Hope you are Awake!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                include_time_counter.visibility = View.VISIBLE
+//            include_sensor_counter.visibility = View.GONE
+
+                tv_wakeUp_walk.visibility = View.GONE
+                isWalking = false
+            }
+        }
+
+
+//        preference = PreferenceManager.getDefaultSharedPreferences(this)
+//        shakeLimit = preference.getInt(getString(R.string.hw_shake_value),30)
+
+        Log.d("TimerActivity:onCreate", "isShaking : $isShaking")
+        Log.d("TimerActivity:onCreate", "isWalking : $isWalking")
 
         todoViewModel =
             ViewModelProviders.of(this).get(TodoViewModel::class.java)
@@ -175,11 +236,11 @@ class TimerActivity : AppCompatActivity() {
             updateButtons()
         }
 
-        fab_pause.setOnClickListener { v ->
-            timer.cancel()
-            timerState = TimerState.Paused
-            updateButtons()
-        }
+//        fab_pause.setOnClickListener { v ->
+//            timer.cancel()
+//            timerState = TimerState.Paused
+//            updateButtons()
+//        }
 
         fab_stop.setOnClickListener { v ->
             turnHWModeOff()
@@ -191,10 +252,75 @@ class TimerActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        initTimer()
+        Log.d("TimerActivity:onResume", "isShaking : $isShaking")
+        Log.d("TimerActivity:onResume", "isWalking : $isWalking")
 
+        when(intent.getStringExtra("id")){
+            getString(R.string.SHAKE)->{
+                Log.d("TimerActivity:onCreate", "flag SHAKE intent")
+                Toast.makeText(
+                    this,
+                    "Wake UP !!!!!!!!!! Shake your Phone!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+//                include_time_counter.visibility = View.GONE
+////            include_sensor_counter.visibility = View.VISIBLE
+//
+//                tv_wakeUp_shake.visibility = View.VISIBLE
+                isShaking = true
+            }
+            getString(R.string.SHAKE_COMPLETE)->{
+                Log.d("TimerActivity:onCreate", "flag SHAKE Complete")
+
+                Toast.makeText(
+                    this,
+                    "Mission Complete. Hope you are Awake!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+//                include_time_counter.visibility = View.VISIBLE
+////            include_sensor_counter.visibility = View.GONE
+//
+//                tv_wakeUp_shake.visibility = View.GONE
+                isShaking = false
+            }
+            getString(R.string.WALK)->{
+                Log.d("TimerActivity:onCreate", "flag WALK intent")
+                Toast.makeText(
+                    this,
+                    "Wake UP !!!!!!!!!! Walk Around!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+//                include_time_counter.visibility = View.GONE
+////            include_sensor_counter.visibility = View.VISIBLE
+//
+//                tv_wakeUp_shake.visibility = View.VISIBLE
+                isWalking = true
+            }
+            getString(R.string.WALK_COMPLETE)->{
+                Log.d("TimerActivity:onCreate", "flag WALK Complete")
+
+                Toast.makeText(
+                    this,
+                    "Mission Complete. Hope you are Awake!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+//                include_time_counter.visibility = View.VISIBLE
+////            include_sensor_counter.visibility = View.GONE
+//
+//                tv_wakeUp_walk.visibility = View.GONE
+                isWalking = false
+            }
+        }
+        initTimer()
         removeAlarm(this)
+        removeNotificationAlarm(this)
         NotificationUtil.hideTimerNotification(this)
+//        }
+
     }
 
     override fun onPause() {
@@ -206,17 +332,20 @@ class TimerActivity : AppCompatActivity() {
                 "TimerActivity:onPause",
                 "nowSeconds : $nowSeconds, secondsRemaining : $secondsRemaining , notiAlarmSeconds : $notiAlarmSeconds"
             )
-            //* final alarm
-            val wakeUpTime = setAlarm(this, nowSeconds, secondsRemaining)
-            //* notification alarm
-            val wakeUpTime2 = setNotificationAlarm(this, nowSeconds, notiAlarmSeconds)
 
-            Log.d(
-                "TimerActivity:onPause",
-                "wakeUpTime : $wakeUpTime, wakeUpTime2 : $wakeUpTime2"
-            )
+            if (secondsRemaining > notiAlarmSeconds) {
+                //* final alarm
+                val wakeUpTime = setAlarm(this, nowSeconds, secondsRemaining)
+                //* notification alarm
+                val wakeUpTime2 = setNotificationAlarm(this, nowSeconds, notiAlarmSeconds)
 
-            NotificationUtil.showTimerRunning(this, wakeUpTime)
+                Log.d(
+                    "TimerActivity:onPause",
+                    "wakeUpTime : $wakeUpTime, wakeUpTime2 : $wakeUpTime2"
+                )
+                NotificationUtil.showTimerRunning(this, wakeUpTime)
+            }
+
         } else if (timerState == TimerState.Paused) {
             NotificationUtil.showTimerPaused(this)
         }
@@ -231,17 +360,22 @@ class TimerActivity : AppCompatActivity() {
         // * if the timer is stopped ( not started yet or stopped after the full cycle. )
         Log.d("TimerActivity:onBackPressed", "timerState : $timerState")
         if (timerState == TimerState.Stopped) {
-            val editor = PreferenceManager.getDefaultSharedPreferences(this).edit()
-            editor.putBoolean(getString(R.string.hw_mode_bool), false)
-            editor.apply()
+
+            if (isShaking || isWalking) {
+                Toast.makeText(this, "You Still need to WAKE UP!", Toast.LENGTH_SHORT).show()
+            } else {
+                val editor = PreferenceManager.getDefaultSharedPreferences(this).edit()
+                editor.putBoolean(getString(R.string.hw_mode_bool), false)
+                editor.apply()
 
 //            super.onBackPressed()
-            val data = Intent().apply {
-                action = "NORMAL_BACKBUTTON"
-            }
+                val data = Intent().apply {
+                    action = "NORMAL_BACKBUTTON"
+                }
 
-            setResult(Activity.RESULT_OK, data)
-            finish()
+                setResult(Activity.RESULT_OK, data)
+                finish()
+            }
             // * if the timer is not stopped turning off the hw mode logic
         } else {
             turnHWModeOff()
@@ -267,8 +401,9 @@ class TimerActivity : AppCompatActivity() {
 
         Log.d(
             "TimerActivity:initTimer",
-            "isShaking : $isShaking, "+
-            "secondsRemaining : $secondsRemaining , notiAlarmSeconds : $notiAlarmSeconds"
+            "isShaking : $isShaking, " +
+                    "isWalking : $isWalking, " +
+                    "secondsRemaining : $secondsRemaining , notiAlarmSeconds : $notiAlarmSeconds"
         )
 
         val alarmSetTime = PrefUtil.getAlarmSetTime(this)
@@ -333,6 +468,7 @@ class TimerActivity : AppCompatActivity() {
     private fun startTimer() {
         timerState = TimerState.Running
 
+        Toast.makeText(this, "Homework mode Start.", Toast.LENGTH_SHORT).show()
         setAlarm(this, nowSeconds, secondsRemaining)
         setNotificationAlarm(this, nowSeconds, notiAlarmSeconds)
 
@@ -355,7 +491,13 @@ class TimerActivity : AppCompatActivity() {
     private fun setNewTimerLength() {
         val lengthInMinutes = PrefUtil.getTimerLength(this)
         timerLengthSeconds = (lengthInMinutes * 60L)
-        notiAlarmSeconds = timerLengthSeconds - threeMinutes
+
+        if(nowSeconds> notiAlarmSeconds){
+            notiAlarmSeconds = timerLengthSeconds - threeMinutes
+        }else{
+            notiAlarmSeconds = 0
+        }
+
         progress_countdown.max = timerLengthSeconds.toInt()
     }
 
@@ -374,25 +516,25 @@ class TimerActivity : AppCompatActivity() {
     }
 
     private fun updateButtons() {
-        if (isShaking) { // block all the buttons
+        if (isShaking || isWalking) { // block all the buttons
             fab_start.isEnabled = false
-            fab_pause.isEnabled = false
+//            fab_pause.isEnabled = false
             fab_stop.isEnabled = false
         } else {
             when (timerState) {
                 TimerState.Running -> {
                     fab_start.isEnabled = false
-                    fab_pause.isEnabled = true
+//                    fab_pause.isEnabled = true
                     fab_stop.isEnabled = true
                 }
                 TimerState.Stopped -> {
                     fab_start.isEnabled = true
-                    fab_pause.isEnabled = false
+//                    fab_pause.isEnabled = false
                     fab_stop.isEnabled = false
                 }
                 TimerState.Paused -> {
                     fab_start.isEnabled = true
-                    fab_pause.isEnabled = false
+//                    fab_pause.isEnabled = false
                     fab_stop.isEnabled = true
                 }
             }
@@ -466,12 +608,50 @@ class TimerActivity : AppCompatActivity() {
         alertDialog.show()
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        return super.onKeyDown(keyCode, event)
-
-        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            Log.d("TimerActivity", "back button pressed");
-        }
-        return super.onKeyDown(keyCode, event);
+    private fun checkPermissions(): Boolean {
+//        val permissionState = checkSelfPermission(Manifest.permission.SYSTEM_ALERT_WINDOW)
+        val permissionState2 = checkSelfPermission(Manifest.permission.VIBRATE)
+        return (
+//                permissionState == PackageManager.PERMISSION_GRANTED &&
+                permissionState2 == PackageManager.PERMISSION_GRANTED)
     }
+
+    private fun requestPermissions() {
+//        val shouldProvideRationale = shouldShowRequestPermissionRationale(Manifest.permission.SYSTEM_ALERT_WINDOW)
+        val shouldProvideRationale2 = shouldShowRequestPermissionRationale(Manifest.permission.VIBRATE)
+        if (
+//            shouldProvideRationale ||
+            shouldProvideRationale2) {
+            Log.d("TimerActivity:requestPermissions", "Displaying permission")
+            //-----------------------permission rationale not yet implemented -------------------------------
+
+        }
+        else {
+            Log.d("TimerActivity:requestPermissions", "Requesting Permission")
+            requestPermissions( arrayOf(
+//                Manifest.permission.SYSTEM_ALERT_WINDOW,
+                        Manifest.permission.VIBRATE), 800)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if(requestCode == 800){
+
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                Log.d("TimerActivity:onRequestPermissionsResult:permission_granted", "grantResults : $${grantResults[0]}")
+            }
+            else {
+                //-----------------------not yet implemented -------------------------------
+                Log.d("TimerActivity:onRequestPermissionsResult:permission_not_granted", "grantResults : ${grantResults[0]}")
+            }
+        }
+
+    }
+
 }
