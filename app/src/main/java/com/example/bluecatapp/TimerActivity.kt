@@ -23,7 +23,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.data.TodoItem
-import com.example.bluecatapp.ui.location.RoutineReceiver
 import com.example.bluecatapp.ui.todo.TodoAdapter
 import com.example.bluecatapp.ui.todo.TodoFragment
 import com.example.bluecatapp.ui.todo.TodoViewModel
