@@ -409,7 +409,6 @@ class LocationReminderForegroundService : Service() {
                         val msg = response.getJSONObject("error").getString("msg")
                         Log.d(TAG, msg)
                         thread(start = true) {
-                            Log.d(TAG, "Estimated Time of " + destination!!.name + " changed to 10")
                             LocationRepository(application).insertTravelTime(TravelTimeData("10"))
                         }
                     }
@@ -420,7 +419,6 @@ class LocationReminderForegroundService : Service() {
                             .getInt("totalTime").toString()
 
                         thread(start = true) {
-                            Log.d(TAG, "Estimated Time of " + destination!!.name + " changed to " + inquiryResult)
                             LocationRepository(application).insertTravelTime(TravelTimeData(inquiryResult))
                         }
                     }
