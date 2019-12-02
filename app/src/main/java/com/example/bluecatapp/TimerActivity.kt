@@ -136,6 +136,11 @@ class TimerActivity : AppCompatActivity() {
             requestPermissions()
         }
 
+//        if(intent.getStringExtra("id") != null){
+//
+//        }else{
+//
+//        }
         when(intent.getStringExtra("id")){
             getString(R.string.SHAKE)->{
                 Log.d("TimerActivity:onCreate", "flag SHAKE intent")
@@ -263,78 +268,85 @@ class TimerActivity : AppCompatActivity() {
         Log.d("TimerActivity:onResume", "isShaking : $isShaking")
         Log.d("TimerActivity:onResume", "isWalking : $isWalking")
 
-        when(intent.getStringExtra("id")){
-            getString(R.string.SHAKE)->{
-                Log.d("TimerActivity:onCreate", "flag SHAKE intent")
-                Toast.makeText(
-                    this,
-                    "Wake UP !!!!!!!!!! Shake your Phone!",
-                    Toast.LENGTH_SHORT
-                ).show()
+
+
+        if(intent.getStringExtra("id") != null){
+            when(intent.getStringExtra("id")){
+                getString(R.string.SHAKE)->{
+                    Log.d("TimerActivity:onCreate", "flag SHAKE intent")
+                    Toast.makeText(
+                        this,
+                        "Wake UP !!!!!!!!!! Shake your Phone!",
+                        Toast.LENGTH_SHORT
+                    ).show()
 
 //                include_time_counter.visibility = View.GONE
 ////            include_sensor_counter.visibility = View.VISIBLE
 //
 //                tv_wakeUp_shake.visibility = View.VISIBLE
-                isShaking = true
-                resumeTimerFuntions()
-            }
-            getString(R.string.SHAKE_COMPLETE)->{
-                Log.d("TimerActivity:onCreate", "flag SHAKE Complete")
+                    isShaking = true
+                    resumeTimerFuntions()
+                }
+                getString(R.string.SHAKE_COMPLETE)->{
+                    Log.d("TimerActivity:onCreate", "flag SHAKE Complete")
 
-                Toast.makeText(
-                    this,
-                    "Mission Complete. Hope you are Awake!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                    Toast.makeText(
+                        this,
+                        "Mission Complete. Hope you are Awake!",
+                        Toast.LENGTH_SHORT
+                    ).show()
 
 //                include_time_counter.visibility = View.VISIBLE
 ////            include_sensor_counter.visibility = View.GONE
 //
 //                tv_wakeUp_shake.visibility = View.GONE
-                isShaking = false
-                resumeTimerFuntions()
-            }
-            getString(R.string.WALK)->{
-                Log.d("TimerActivity:onCreate", "flag WALK intent")
-                Toast.makeText(
-                    this,
-                    "Wake UP !!!!!!!!!! Walk Around!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                    isShaking = false
+                    resumeTimerFuntions()
+                }
+                getString(R.string.WALK)->{
+                    Log.d("TimerActivity:onCreate", "flag WALK intent")
+                    Toast.makeText(
+                        this,
+                        "Wake UP !!!!!!!!!! Walk Around!",
+                        Toast.LENGTH_SHORT
+                    ).show()
 
 //                include_time_counter.visibility = View.GONE
 ////            include_sensor_counter.visibility = View.VISIBLE
 //
 //                tv_wakeUp_shake.visibility = View.VISIBLE
-                isWalking = true
-                resumeTimerFuntions()
-            }
-            getString(R.string.WALK_COMPLETE)->{
-                Log.d("TimerActivity:onCreate", "flag WALK Complete")
+                    isWalking = true
+                    resumeTimerFuntions()
+                }
+                getString(R.string.WALK_COMPLETE)->{
+                    Log.d("TimerActivity:onCreate", "flag WALK Complete")
 
-                Toast.makeText(
-                    this,
-                    "Mission Complete. Hope you are Awake!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                    Toast.makeText(
+                        this,
+                        "Mission Complete. Hope you are Awake!",
+                        Toast.LENGTH_SHORT
+                    ).show()
 
 //                include_time_counter.visibility = View.VISIBLE
 ////            include_sensor_counter.visibility = View.GONE
 //
 //                tv_wakeUp_walk.visibility = View.GONE
-                isWalking = false
-                resumeTimerFuntions()
+                    isWalking = false
+                    resumeTimerFuntions()
+                }
+                getString(R.string.FROMBLOCK) ->{
+                    Toast.makeText(
+                        this,
+                        "Don't use the blocked apps!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    NotificationUtil.hideTimerNotification(this)
+                }
             }
-            getString(R.string.FROMBLOCK) ->{
-                Toast.makeText(
-                    this,
-                    "Don't use the blocked apps!",
-                    Toast.LENGTH_LONG
-                ).show()
-                NotificationUtil.hideTimerNotification(this)
-            }
+        }else{
+            resumeTimerFuntions()
         }
+
     }
 
     private fun resumeTimerFuntions(){

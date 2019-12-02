@@ -21,7 +21,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="@string/TIMER_EXPIRED_TXT" />
+        tools:text="@string/TIMER_EXPIRED_TXT_SHAKE" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
