@@ -199,6 +199,9 @@ class TimerActivity : AppCompatActivity() {
                 tv_wakeUp_walk.visibility = View.GONE
                 isWalking = false
             }
+            getString(R.string.FROMBLOCK) ->{
+
+            }
         }
 
 
