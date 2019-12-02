@@ -12,25 +12,20 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.bluecatapp.data.TodoItem
 import com.example.bluecatapp.ui.todo.TodoAdapter
-import com.example.bluecatapp.ui.todo.TodoFragment
 import com.example.bluecatapp.ui.todo.TodoViewModel
 import com.example.bluecatapp.util.PrefUtil
 import com.example.bluecatapp.util.NotificationUtil
 import kotlinx.android.synthetic.main.activity_timer.*
 import kotlinx.android.synthetic.main.content_timer.*
-import kotlinx.android.synthetic.main.fragment_todo.*
 import java.util.*
 
 
@@ -123,7 +118,7 @@ class TimerActivity : AppCompatActivity() {
 
     //================================== todos Left ==================================//
     private lateinit var todoViewModel: TodoViewModel
-    private val todoAdapter = TodoAdapter()
+    private lateinit var todoAdapter : TodoAdapter
 
     //================================== timer ==================================//
     private lateinit var timer: CountDownTimer
@@ -219,6 +214,7 @@ class TimerActivity : AppCompatActivity() {
         todoViewModel =
             ViewModelProviders.of(this).get(TodoViewModel::class.java)
 
+        todoAdapter = TodoAdapter(todoViewModel)
         todoViewModel.getTodoItemsNotDone()
             .observe(this,
                 androidx.lifecycle.Observer { t -> todoAdapter.setTodoItems(t!!) })

@@ -44,7 +44,7 @@
         android:layout_marginBottom="@dimen/activity_vertical_margin">
 
         <Button
-            android:id="@+id/text_homework"
+            android:id="@+id/btn_homework"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/color_todo_hw_on"
@@ -60,7 +60,7 @@
             android:id="@+id/clock_todo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/text_homework"
+            android:layout_below="@+id/btn_homework"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_gravity="bottom"
             android:format12Hour="hh:mm:ss a"
