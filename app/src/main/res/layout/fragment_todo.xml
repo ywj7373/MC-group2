@@ -36,25 +36,25 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <androidx.cardview.widget.CardView
+    <RelativeLayout
         android:id="@+id/container_hwmode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginBottom="@dimen/activity_vertical_margin">
 
-        <TextView
+        <Button
             android:id="@+id/text_homework"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/color_todo_hw_on"
-            android:text="Turn Homework Mode ON"
+            android:text="ENABLE Homework Mode"
             android:textAlignment="center"
             android:textColor="@color/color_todo_hw_off"
             android:textSize="16dp"
             android:textStyle="bold">
 
-        </TextView>
+        </Button>
 
         <TextClock
             android:id="@+id/clock_todo"
@@ -62,6 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/text_homework"
             android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_gravity="bottom"
             android:format12Hour="hh:mm:ss a"
             android:textAlignment="center"
             android:textColor="#80CC28"
@@ -70,7 +71,7 @@
             android:visibility="visible"></TextClock>
 
 
-    </androidx.cardview.widget.CardView>
+    </RelativeLayout>
 
 
     <androidx.recyclerview.widget.RecyclerView

@@ -125,6 +125,7 @@ class TimerActivity : AppCompatActivity() {
     private lateinit var todoViewModel: TodoViewModel
     private val todoAdapter = TodoAdapter()
 
+    //================================== timer ==================================//
     private lateinit var timer: CountDownTimer
     private var timerLengthSeconds: Long = 0
     private var timerState = TimerState.Stopped
@@ -200,7 +201,11 @@ class TimerActivity : AppCompatActivity() {
                 isWalking = false
             }
             getString(R.string.FROMBLOCK) ->{
-
+                Toast.makeText(
+                    this,
+                    "Don't use the blocked apps!",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
 
@@ -249,7 +254,11 @@ class TimerActivity : AppCompatActivity() {
             turnHWModeOff()
         }
 
-        notiAlarmSeconds = PrefUtil.getTimerLength(this) * 60L - threeMinutes
+        if(secondsRemaining == PrefUtil.getTimerLength(this) * 60L  || secondsRemaining == 0L){ //
+            notiAlarmSeconds = PrefUtil.getTimerLength(this) * 60L - threeMinutes
+        }else{
+            notiAlarmSeconds = 0
+        }
     }
 
     override fun onResume() {
@@ -272,6 +281,7 @@ class TimerActivity : AppCompatActivity() {
 //
 //                tv_wakeUp_shake.visibility = View.VISIBLE
                 isShaking = true
+                resumeTimerFuntions()
             }
             getString(R.string.SHAKE_COMPLETE)->{
                 Log.d("TimerActivity:onCreate", "flag SHAKE Complete")
@@ -287,6 +297,7 @@ class TimerActivity : AppCompatActivity() {
 //
 //                tv_wakeUp_shake.visibility = View.GONE
                 isShaking = false
+                resumeTimerFuntions()
             }
             getString(R.string.WALK)->{
                 Log.d("TimerActivity:onCreate", "flag WALK intent")
@@ -301,6 +312,7 @@ class TimerActivity : AppCompatActivity() {
 //
 //                tv_wakeUp_shake.visibility = View.VISIBLE
                 isWalking = true
+                resumeTimerFuntions()
             }
             getString(R.string.WALK_COMPLETE)->{
                 Log.d("TimerActivity:onCreate", "flag WALK Complete")
@@ -316,13 +328,24 @@ class TimerActivity : AppCompatActivity() {
 //
 //                tv_wakeUp_walk.visibility = View.GONE
                 isWalking = false
+                resumeTimerFuntions()
+            }
+            getString(R.string.FROMBLOCK) ->{
+                Toast.makeText(
+                    this,
+                    "Don't use the blocked apps!",
+                    Toast.LENGTH_LONG
+                ).show()
+                NotificationUtil.hideTimerNotification(this)
             }
         }
+    }
+
+    private fun resumeTimerFuntions(){
         initTimer()
         removeAlarm(this)
         removeNotificationAlarm(this)
         NotificationUtil.hideTimerNotification(this)
-//        }
 
     }
 
@@ -340,7 +363,10 @@ class TimerActivity : AppCompatActivity() {
                 //* final alarm
                 val wakeUpTime = setAlarm(this, nowSeconds, secondsRemaining)
                 //* notification alarm
-                val wakeUpTime2 = setNotificationAlarm(this, nowSeconds, notiAlarmSeconds)
+                var wakeUpTime2 = 0L
+                if(notiAlarmSeconds != 0L){
+                    wakeUpTime2 = setNotificationAlarm(this, nowSeconds, notiAlarmSeconds)
+                }
 
                 Log.d(
                     "TimerActivity:onPause",

@@ -32,6 +32,10 @@ class TodoItemRepository(application: Application) {
         val deleteAllTodosAsyncTask = DeleteAllTodosAsyncTask(todoItemDao).execute()
     }
 
+    fun deleteTodoItem(id: Int) {
+        DeleteTodoAsyncTask(todoItemDao, id).execute()
+    }
+
     fun getAllTodoItems(): LiveData<List<TodoItem>> {
         return allTodoItems
     }
@@ -61,6 +65,14 @@ class TodoItemRepository(application: Application) {
 
         override fun doInBackground(vararg p0: Unit?) {
             todoItemDao.deleteAllTodoItems()
+        }
+    }
+
+    private class DeleteTodoAsyncTask(todoItemDao: TodoItemDao, var id: Int) : AsyncTask<Unit, Unit, Unit>() {
+        val todoItemDao = todoItemDao
+
+        override fun doInBackground(vararg p0: Unit?) {
+            todoItemDao.deleteTodoItem(id)
         }
     }
 

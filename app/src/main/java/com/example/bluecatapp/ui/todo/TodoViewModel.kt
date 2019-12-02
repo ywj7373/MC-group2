@@ -36,6 +36,9 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteAllTodoItems() {
         repository.deleteAllTodoItems()
     }
+    fun deleteTodoItem(id: Int) {
+        repository.deleteTodoItem(id)
+    }
 
     fun getAllTodoItems(): LiveData<List<TodoItem>> {
         return allTodoItems

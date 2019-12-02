@@ -7,10 +7,8 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.bluecatapp.AddTodoActivity
 import com.example.bluecatapp.R
 import com.example.bluecatapp.data.TodoItem
-import com.example.bluecatapp.data.TodoItemRepository
 
 class TodoAdapter : RecyclerView.Adapter<TodoAdapter.TodoItemHolder>() {
 

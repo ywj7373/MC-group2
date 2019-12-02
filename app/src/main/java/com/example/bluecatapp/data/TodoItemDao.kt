@@ -20,6 +20,9 @@ interface TodoItemDao {
     @Query("DELETE FROM todo_items")
     fun deleteAllTodoItems()
 
+    @Query("DELETE FROM todo_items WHERE id = :value1")
+    fun deleteTodoItem(value1: Int)
+
     @Query("SELECT * FROM todo_items")
     fun getAllTodoItems(): LiveData<List<TodoItem>>
 
