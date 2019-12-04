@@ -1,62 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="10dp"
-        android:paddingTop="10dp"
-        android:paddingRight="10dp"
-        android:paddingBottom="10dp">
+        android:background="@color/colorLightBackground"
+        android:paddingLeft="15dp"
+        android:paddingTop="8dp"
+        android:paddingRight="15dp"
+        android:paddingBottom="8dp">
 
         <ImageView
             android:id="@+id/appItemIcon"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_alignParentStart="true"
-            android:layout_marginRight="10dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@android:drawable/sym_def_app_icon" />
 
         <TextView
             android:id="@+id/appItemName"
-            android:layout_toRightOf="@id/appItemIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView"/>
+            android:layout_marginLeft="8dp"
+            android:text="TextView"
+            android:textColor="#000000"
+            app:layout_constraintBottom_toTopOf="@+id/appItemProgress"
+            app:layout_constraintLeft_toRightOf="@id/appItemIcon"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Chronometer
             android:id="@+id/appItemTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
             android:countDown="true"
-            android:layout_toRightOf="@id/appItemName"
-            android:textAlignment="viewEnd" />
+            android:textAlignment="viewEnd"
+            android:textColor="#E53935"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/appItemStepCount"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="gone" />
 
         <ProgressBar
             android:id="@+id/appItemProgress"
             style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="218dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/appItemTime"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/appItemIcon"
+            android:layout_width="0dp"
+            android:layout_height="11dp"
+            android:layout_marginEnd="8dp"
             android:max="100"
-            android:progress="0" />
+            android:progress="60"
+            android:progressTint="#92000000"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/appItemStepCount"
+            app:layout_constraintStart_toStartOf="@+id/appItemName"
+            tools:visibility="gone" />
 
         <TextView
             android:id="@+id/appItemStepCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@id/appItemTime"
-            android:text="Pedometer"
-            />
+            android:text="0/10 steps"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="gone" />
 
-    </RelativeLayout>
+        <TextView
+            android:id="@+id/appItemBlockedText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BLOCKED"
+            android:textColor="#E53935"
+            android:textSize="13sp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@+id/appItemProgress"
+            app:layout_constraintEnd_toEndOf="@+id/appItemProgress"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="gone" />
+
+        <TextView
+            android:id="@+id/appItemTotalUsageTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0.0 hours"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/appItemRemainingUsage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="30 min left"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/appItemTotalUsageTime"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.482" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_gravity="bottom"
+        android:background="#11000000" />
 
 </androidx.cardview.widget.CardView>
