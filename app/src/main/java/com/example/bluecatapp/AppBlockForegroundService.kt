@@ -13,6 +13,7 @@ import android.os.IBinder
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
@@ -205,18 +206,21 @@ class AppBlockForegroundService : Service() {
             "Attempting to block app $packageName"
         )
 
-        var fragmentToLoad: Int = FragmentToLoad.APPBLOCK
         if (hwModeOn) {
             // If HW mode enabled redirect to HW mode screen
-            fragmentToLoad = FragmentToLoad.TODO
+            application.startActivity(
+                Intent(this, TimerActivity::class.java)
+                    .putExtra("blockedAppName", packageName)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )  }
+        else {
+            application.startActivity(
+                Intent(this, MainActivity::class.java).putExtra(
+                    "frgToLoad",
+                    FragmentToLoad.APPBLOCK
+                ).putExtra("blockedAppName", packageName).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
         }
-
-        application.startActivity(
-            Intent(this, MainActivity::class.java).putExtra(
-                "frgToLoad",
-                fragmentToLoad
-            ).putExtra("blockedAppName", packageName).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        )
     }
 
     private fun checkIfShouldBlockForegroundApp() {
