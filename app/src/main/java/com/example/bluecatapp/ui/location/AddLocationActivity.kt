@@ -357,6 +357,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private fun clearDays() {
         for (tb in dayButtons) {
             tb.setChecked(false)
+            tb.setBackgroundResource(R.drawable.button_bg_round)
+            tb.setTextColor(ContextCompat.getColor(this, R.color.darker_gray))
         }
         days_mode_set = false
     }
@@ -452,6 +454,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                 newLocationItem.x, newLocationItem.y, newLocationItem.time,
                 newLocationItem.isAlarmed, newLocationItem.done,
                 newLocationItem.daysMode, newLocationItem.days, id)
+            finish()
         }
         else {
             //don't allow adding schedule with passed date
