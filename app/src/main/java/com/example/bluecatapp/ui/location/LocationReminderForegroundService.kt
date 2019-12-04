@@ -4,12 +4,9 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.IBinder
-import android.os.Build
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.LocationServices
@@ -41,6 +38,7 @@ const val NOTIF_ID2 = 2
 const val NOTIF_ID3 = 3
 const val ROUTINE_INTERVAL: Long = 60000
 const val DEFAULT_TRAVEL_TIME = "20"
+const val VIBRATION_TIME: Long = 1000
 
 class LocationReminderForegroundService : Service() {
     private val TAG = "Routine Service"
@@ -242,6 +240,16 @@ class LocationReminderForegroundService : Service() {
                 //check if current time passed alarm time
                 else if (currentTime >= alarmTime && !isAlarmed) {
                     Log.d(TAG, "passed alarm time")
+                    //vibrate
+                    val v: Vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                        v.vibrate(VibrationEffect.createOneShot(VIBRATION_TIME, VibrationEffect.DEFAULT_AMPLITUDE));
+                    } else {
+                        //deprecated in API 26
+                        v.vibrate(VIBRATION_TIME)
+                    }
+
                     //send notification
                     callAlarmNotification(msg, NOTIF_ID3)
                     updateNotification("Next Schedule: " + destination!!.name + " at " + destinationTime.substring(0, 5))
