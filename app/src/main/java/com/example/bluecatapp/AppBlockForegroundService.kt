@@ -158,6 +158,7 @@ class AppBlockForegroundService : Service() {
         val usage = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val endTime = System.currentTimeMillis()
         val beginTime = endTime - (1 * 60 * 1000)
+        // Usage stats for all apps over the past 24 hours
         myUsageStatsMap = usage.queryAndAggregateUsageStats(
             System.currentTimeMillis() - (24 * 60 * 60 * 1000),
             endTime
@@ -391,8 +392,8 @@ class AppBlockForegroundService : Service() {
         }
     }
 
-    // Queries all device's app usage stats in a given time interval
     private fun getUsageStatsForApp(targetPackageName: String): UsageStats? {
+        // Return the usage stats object for a spesific app. Queried over the past 24 hours.
         myUsageStatsMap.forEach { (_, usageStats) ->
             if (usageStats.packageName == targetPackageName) {
                 return usageStats
@@ -446,7 +447,7 @@ class AppBlockForegroundService : Service() {
             }
             Toast.makeText(
                 this.applicationContext,
-                "Block lifted: $unblockListPrettyNames",
+                "Block on $unblockListPrettyNames has been lifted.",
                 Toast.LENGTH_LONG
             )
                 .show()
