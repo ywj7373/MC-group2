@@ -12,7 +12,7 @@
         app:mt_hint="Search"
         app:mt_maxSuggestionsCount="10"
         app:mt_speechMode="false"
-        app:mt_placeholder="Search"
+        app:mt_placeholder="Search Location"
         app:mt_searchBarColor="#EFEFEF"
         app:mt_placeholderColor="@color/darker_gray"
         app:mt_textColor="#000000"/>
