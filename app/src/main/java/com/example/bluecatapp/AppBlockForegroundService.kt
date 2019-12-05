@@ -25,7 +25,7 @@ class AppBlockForegroundService : Service() {
     // Constants
     private val CHANNEL_ID = "AppBlockForegroundService"
     private val UPDATE_INTERVAL: Long = 1000
-
+    private var isHandlerRunning: Boolean = false
     // Mutable maps for blocked app list
     private lateinit var myUsageStatsMap: MutableMap<String, UsageStats>
     private lateinit var currentlyBlockedApps: MutableMap<String, Long>
@@ -62,21 +62,16 @@ class AppBlockForegroundService : Service() {
     }
 
     override fun onCreate() {
+        Log.d("bcat", "Started app blocking service.")
         super.onCreate()
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         appUsageTimers = mutableMapOf()
+        pedometerEnabled = sharedPrefs.getBoolean("pedometer", false)
+        maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("bcat", "Started app blocking service.")
-
-        // Load preferences
-//        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-        pedometerEnabled = sharedPrefs.getBoolean("pedometer", false)
-        maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
-
         val input = intent?.getStringExtra("inputExtra")
         createNotificationChannel()
         val notificationIntent = Intent(this, MainActivity::class.java).putExtra(
@@ -99,23 +94,28 @@ class AppBlockForegroundService : Service() {
 
         startForeground(1, notification)
 
-        currentAppUsageTimerHandler = Handler()
-        // Keep checking if we should block the current app
-        handler = Handler()
-        runnable = Runnable {
-            checkIfShouldBlockForegroundApp()
-            checkForAppsToUnblock()
-            checkForAppUsagesToReset()
-            /**
-             * TODO: improve algorithm for more efficient update interval
-             * Suggestion: calculate appropriate check in interval based on
-             * block duration current totaltimeinforground
-             */
-            handler.postDelayed(runnable, UPDATE_INTERVAL)
-            getForegroundApp()?.let { retryBlockIfFailed(it) }
-        }
-        handler.postDelayed(runnable, UPDATE_INTERVAL)
+        if (!isHandlerRunning) {
+            // Ensure that then runnable does not duplicate.
+            Log.d("bcat", "Handler is running")
+            isHandlerRunning = true
 
+            currentAppUsageTimerHandler = Handler()
+            // Keep checking if we should block the current app
+            handler = Handler()
+            runnable = Runnable {
+                checkIfShouldBlockForegroundApp()
+                checkForAppsToUnblock()
+                checkForAppUsagesToReset()
+                /**
+                 * TODO: improve algorithm for more efficient update interval
+                 * Suggestion: calculate appropriate check in interval based on
+                 * block duration current totaltimeinforground
+                 */
+                handler.postDelayed(runnable, UPDATE_INTERVAL)
+                getForegroundApp()?.let { retryBlockIfFailed(it) }
+            }
+            handler.postDelayed(runnable, UPDATE_INTERVAL)
+        }
         return START_NOT_STICKY
     }
 
@@ -475,7 +475,6 @@ class AppBlockForegroundService : Service() {
     }
 
     private fun onCloseRestrictedApp() {
-
         currentAppUsageTimerHandler.removeCallbacks(currentAppUsageTimerRunnable)
     }
 
