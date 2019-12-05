@@ -125,6 +125,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             intenttime = intent.getStringExtra("time")
             intentdays = intent.getStringExtra("days")
             intentdaysMode = intent.getBooleanExtra("daysMode", false)
+            title = "Edit Schedule"
 
             year = intenttime.substring(0,4).toInt()
             monthOfYear = intenttime.substring(5,7).toInt() - 1
