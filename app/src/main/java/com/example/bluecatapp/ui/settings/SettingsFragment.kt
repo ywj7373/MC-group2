@@ -80,12 +80,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                             Manifest.permission.ACCESS_COARSE_LOCATION
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
-                        editor.putBoolean(
-                            "Location Based Reminder",
-                            locationReminderPreference.isChecked
-                        )
-                        editor.commit()
-                        LocationReminderForegroundService.startService(requireContext())
+                        LocationReminderForegroundService.startService(context!!)
                         Toast.makeText(
                             activity!!.applicationContext,
                             "Location Based Reminder enabled",
@@ -100,23 +95,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         requestLocationPermission()
                     }
                 } else {
-                    editor.putBoolean(
-                        "Location Based Reminder",
-                        locationReminderPreference.isChecked
-                    )
-                    editor.commit()
+                    LocationReminderForegroundService.stopService(context!!)
                     Toast.makeText(
                         activity!!.applicationContext,
                         "Location Based Reminder disabled",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-
-                val serviceIntent = Intent(context, LocationReminderForegroundService::class.java)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    requireContext().startForegroundService(serviceIntent)
-                } else requireContext().startService(serviceIntent)
-
 
                 return true
             }
