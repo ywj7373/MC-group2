@@ -44,8 +44,28 @@ class LocationFragment : Fragment() {
         locationViewModel.getNextSchedule().observe(this,
             Observer {
                 if (it != null) {
-                    next_loc.text = it.name
+
+
                     time_loc.text = it.time.split(" ")[1].substring(0, 5)
+
+                    // Logic for limit number of characters
+                    val nextLocationName = it.name
+                    val numHangul = getNumberOfNonASCII(nextLocationName)
+                    val numASCII = getNumberOfASCII(nextLocationName)
+                    val displayLength = 2 * numHangul + numASCII            // maximum 14 letters are appropriate
+
+                    if(displayLength < 12) {                                // add space to display aligned result
+                        val space = repeat((13 - displayLength)*3/4 + 1 , " ")
+                        next_loc.text = space + it.name
+                    }
+                    else if(displayLength > 14) {
+                        val slicePosition = getSlicePosition(nextLocationName, 14)
+                        next_loc.text = nextLocationName.substring(0, slicePosition) + "..."
+                    }
+                    else {
+                        next_loc.text = it.name
+                    }
+
                 }
                 else {
                     next_loc.text = resources.getString(R.string.next_loc)
