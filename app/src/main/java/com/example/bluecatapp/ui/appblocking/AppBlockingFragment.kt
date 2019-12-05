@@ -1,5 +1,6 @@
 package com.example.bluecatapp.ui.appblocking
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.AppOpsManager
 import android.app.usage.UsageStatsManager
@@ -36,6 +37,9 @@ import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.Pedometer
 import com.example.bluecatapp.R
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.fitness.FitnessOptions
+import com.google.android.gms.fitness.data.DataType
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.fragment_appblocking.*
 
@@ -78,6 +82,8 @@ class AppBlockingFragment : Fragment() {
     private lateinit var pedometerMaxValue: TextView
     private lateinit var motivationalText: TextView
     private var maxStepCount: Int = 10
+
+    private val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 150
 
 
     override fun onAttach(context: Context) {
@@ -202,6 +208,42 @@ class AppBlockingFragment : Fragment() {
         } else {
             // Permission is not granted, show alert dialog to request for permission
             showAlertDialog()
+        }
+
+        // Declare FitAPI data types
+        val fitnessOptions: FitnessOptions = FitnessOptions.builder()
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .build()
+
+        // Check permissions
+        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(context), fitnessOptions)) {
+            GoogleSignIn.requestPermissions(
+                this, // your activity
+                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                GoogleSignIn.getLastSignedInAccount(context),
+                fitnessOptions);
+        } else {
+//            accessGoogleFit();
+            Toast.makeText(
+                activity!!.applicationContext,
+                "Google fit api permission already exists",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
+//                accessGoogleFit();
+                Toast.makeText(
+                    activity!!.applicationContext,
+                    "Google Fit api premission granted",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
