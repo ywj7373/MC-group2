@@ -51,3 +51,18 @@ fun getSlicePosition(str:String, num:Int) : Int {
 fun repeat(count: Int, with: String): String {
     return String(CharArray(count)).replace("\u0000", with)
 }
+
+fun repeatingDaysToPrettyFormat(str: String): String {
+    if(str == "SUN,MON,TUE,WED,THU,FRI,SAT") {
+        return "EVERYDAY"
+    }
+    else if(str == "SUN,SAT") {
+        return "WEEKEND"
+    }
+    else if(str == "MON,TUE,WED,THU,FRI") {
+        return "WEEKDAY"
+    }
+    else {
+        return str
+    }
+}
