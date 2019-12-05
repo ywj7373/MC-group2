@@ -24,6 +24,10 @@ fun getNumberOfNonASCII(str:String) : Int {
     return count
 }
 
+fun getWeightedLength(str:String) : Int {
+    return getNumberOfASCII(str) + 2 * getNumberOfNonASCII(str)
+}
+
 fun getSlicePosition(str:String, num:Int) : Int {
     // Input : original string & length(Hangul is computed 2) of substring you want to get
     // Output : index of position to cut
