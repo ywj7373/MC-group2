@@ -35,26 +35,6 @@ class TimerExpiredReceiver : BroadcastReceiver() {
             return 0
         }
 
-//        fun unRegisterSensors(type:String) : Int{
-//            var status : Boolean
-//            try{
-//                status = ::mSensors.isInitialized
-//            }catch (e:Exception){
-//                Log.d("TimerExpiredReceiver:initiateSensor", "[ERROR] ${e.message}")
-//                return 0
-//            }
-//
-//            if(status){
-//                mSensors.unRegister(type)
-//                Log.d("TimerExpiredReceiver:initiateSensor", "unregistered $type.")
-//                return 1
-//            }else{
-//                Log.d("TimerExpiredReceiver:initiateSensor", "[ERROR] Sensor not activated.")
-//                return 0
-//            }
-//
-//            return 0
-//        }
 
         lateinit var mSensors: Sensors
     }
@@ -88,12 +68,7 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                         } else {
                             modeArr = arrayOf("SHAKE")
                         }
-                        if (pickRandomMode(modeArr, context, false) == 1) {
-                            Log.d(
-                                "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
-                                "Picked one mode"
-                            )
-                        } else {
+                        if (pickRandomMode(modeArr, context, false) != 1) {
                             Log.d(
                                 "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
                                 "[ERROR] PickingRandomMode"
@@ -108,19 +83,12 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                             modeArr = arrayOf("SHAKE")
                         }
 
-                        if (pickRandomMode(modeArr, context, true) == 1) {
-                            Log.d(
-                                "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
-                                "Picked one mode"
-                            )
-                        } else {
+                        if (pickRandomMode(modeArr, context, true) != 1) {
                             Log.d(
                                 "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
                                 "[ERROR] PickingRandomMode"
                             )
                         }
-
-
                     } else {
                         Log.d(
                             "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
@@ -138,6 +106,7 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                 } else {
                     Log.d(
                         "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
+
                         "[ERROR] Initializing"
                     )
                     Toast.makeText(context!!.applicationContext, "Sensor Error", Toast.LENGTH_LONG)
@@ -157,7 +126,6 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                     Toast.LENGTH_LONG
                 ).show()
 
-                TimerActivity.notiAlarmSeconds = 0
                 PrefUtil.setAlarmSetTime2(0, context)
 
             }
@@ -182,8 +150,12 @@ class TimerExpiredReceiver : BroadcastReceiver() {
             var i = Intent(context, TimerActivity::class.java)
             i.putExtra("id", context.getString(R.string.SHAKE))
             i.flags =
-                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(i)
+            Log.d(
+                "TimerExpiredReceiver:pickRandomMode",
+                "Picked one mode : SHAKE"
+            )
             return 1
         } else if (arr[index] == "WALK") {
             mSensors.isWalkOn = true
@@ -198,8 +170,12 @@ class TimerExpiredReceiver : BroadcastReceiver() {
             var i = Intent(context, TimerActivity::class.java)
             i.putExtra("id", context.getString(R.string.WALK))
             i.flags =
-                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(i)
+            Log.d(
+                "TimerExpiredReceiver:pickRandomMode",
+                "Picked one mode : SHAKE"
+            )
             return 1
         } else {
             return 0

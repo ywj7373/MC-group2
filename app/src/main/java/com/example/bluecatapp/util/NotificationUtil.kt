@@ -18,22 +18,36 @@ import androidx.navigation.NavDeepLinkBuilder
 import com.example.bluecatapp.*
 import java.text.SimpleDateFormat
 import java.util.*
+import android.os.PowerManager
+import android.os.PowerManager.WakeLock
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+
+
 
 
 class NotificationUtil {
     companion object {
-        private const val CHANNEL_ID_TIMER = "menu_timer"
-        private const val CHANNEL_NAME_TIMER = "Timer App Timer"
+        private const val CHANNEL_ID_TIMER = "HW_TIMER_ID"
+        private const val CHANNEL_NAME_TIMER = "HW_TIMER"
         private const val TIMER_ID = 0
 
         fun showTimerExpired(context: Context) {
 
-//            val pendingIntent = NavDeepLinkBuilder(context)
-//                .setComponentName(TimerActivity::class.java)
-//                .setGraph(R.navigation.mobile_navigation)
-//                .setDestination(R.id.navigation_todo)
-//                .setArguments(Bundle())
-//                .createPendingIntent()
+            Log.d("NotificationUtil:showTimerExpired", "showTimerExpired")
+            val stopIntent = Intent(context, TimerNotificationActionReceiver::class.java)
+            stopIntent.action = HWConstants.ACTION_STOP // Make the Timer Stop
+            stopIntent.flags =
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+//            or Intent.FLAG_ACTIVITY_FORWARD_RESULT
+            stopIntent.putExtra(
+                "id",
+                context.getString(R.string.FROM_PRENOTI)
+            ) // notifying the activity that this is from the pre alarm
+            val stopPendingIntent = PendingIntent.getBroadcast(
+                context,
+                0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            )
 
             val nBuilder = getBasicNotificationBuilder(context, CHANNEL_ID_TIMER, true)
             nBuilder.setContentTitle("Timer Expired!")
@@ -42,25 +56,35 @@ class NotificationUtil {
                     getPendingIntentWithStack(
                         context,
                         MainActivity::class.java,
-                        true
+//                        true,
+                    context.getString(R.string.FROM_FINALNOTI)
                     )
-//                    pendingIntent
                 )
+                .addAction(R.drawable.ic_stop, "Stop", stopPendingIntent)
 
             val nManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             nManager.createNotificationChannel(CHANNEL_ID_TIMER, CHANNEL_NAME_TIMER, true)
-
             nManager.notify(TIMER_ID, nBuilder.build())
+            val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK,"NotificationUtil:showTimerExpired")
+            wl.acquire(15000)
         }
 
         fun showTimerSoonBeExpired(context: Context) {
             Log.d("NotificationUtil:showTimerSoonBeExpired", "showTimerSoonBeExpired")
-            val startIntent = Intent(context, TimerNotificationActionReceiver::class.java)
-            startIntent.action = HWConstants.ACTION_START
-            val startPendingIntent = PendingIntent.getBroadcast(
+            val stopIntent = Intent(context, TimerNotificationActionReceiver::class.java)
+            stopIntent.action = HWConstants.ACTION_STOP // Make the Timer Stop
+            stopIntent.flags =
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+//            or Intent.FLAG_ACTIVITY_FORWARD_RESULT
+            stopIntent.putExtra(
+                "id",
+                context.getString(R.string.FROM_PRENOTI)
+            ) // notifying the activity that this is from the pre alarm
+            val stopPendingIntent = PendingIntent.getBroadcast(
                 context,
-                0, startIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT
             )
 
             val nBuilder = getBasicNotificationBuilder(context, CHANNEL_ID_TIMER, true)
@@ -69,16 +93,21 @@ class NotificationUtil {
                 .setContentIntent(
                     getPendingIntentWithStack(
                         context,
-                        MainActivity::class.java,
-                        false)
+                        TimerActivity::class.java,
+//                        false
+                        context.getString(R.string.FROM_PRENOTI)
+                    )
                 )
-                .addAction(R.drawable.ic_start, "Start", startPendingIntent)
+                .addAction(R.drawable.ic_stop, "Stop", stopPendingIntent)
 
             val nManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             nManager.createNotificationChannel(CHANNEL_ID_TIMER, CHANNEL_NAME_TIMER, true)
 
             nManager.notify(TIMER_ID, nBuilder.build())
+            val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            val wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK,"NotificationUtil:showTimerSoonBeExpired")
+            wl.acquire(15000)
         }
 
         fun showTimerRunning(context: Context, wakeUpTime: Long) {
@@ -105,8 +134,10 @@ class NotificationUtil {
                 .setContentIntent(
                     getPendingIntentWithStack(
                         context,
-                        MainActivity::class.java,
-                        false)
+                        TimerActivity::class.java,
+//                        false,
+                    "null"
+                    )
                 )
                 .setOngoing(true)
                 .addAction(R.drawable.ic_pause, "Pause", pausePendingIntent)
@@ -118,6 +149,7 @@ class NotificationUtil {
             nManager.notify(TIMER_ID, nBuilder.build())
         }
 
+        //obsolete
         fun showTimerPaused(context: Context) {
             val resumeIntent = Intent(context, TimerNotificationActionReceiver::class.java)
             resumeIntent.action = HWConstants.ACTION_RESUME
@@ -132,8 +164,10 @@ class NotificationUtil {
                 .setContentIntent(
                     getPendingIntentWithStack(
                         context,
-                        MainActivity::class.java,
-                        false)
+                        TimerActivity::class.java,
+//                        false,
+                    "null"
+                    )
                 )
                 .setOngoing(true)
                 .addAction(R.drawable.ic_start, "Resume", resumePendingIntent)
@@ -170,21 +204,25 @@ class NotificationUtil {
         private fun <T> getPendingIntentWithStack(
             context: Context,
             javaClass: Class<T>,
-            isFinal: Boolean
+            id: String
         ): PendingIntent {
 
             val stackBuilder = TaskStackBuilder.create(context)
             stackBuilder.addParentStack(javaClass)
 
+            // set the intent id to notify the timerActivity
             val resultIntent = Intent(context, javaClass)
-            if (isFinal) {
-                resultIntent.flags =
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-                resultIntent.addCategory(Intent.CATEGORY_LAUNCHER)
-            } else {
-                resultIntent.flags =
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            }
+            resultIntent.flags =
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            resultIntent.putExtra("id",id)
+//            if (isFinal) {
+//                resultIntent.flags =
+//                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+//                resultIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+//            } else {
+//                resultIntent.flags =
+//                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+//            }
             stackBuilder.addNextIntent(resultIntent)
             return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
 

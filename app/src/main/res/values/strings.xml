@@ -98,6 +98,8 @@
     <string name="SHAKE">SHAKE</string>
     <string name="WALK">WALK</string>
     <string name="FROMBLOCK">FROMBLOCK</string>
+    <string name="FROM_PRENOTI">FROM_PRENOTI</string>
+    <string name="FROM_FINALNOTI">FROM_FINALNOTI</string>
 
     <string name="SECONDS_REMAINING_ID">
         com.example.bluecatapp.seconds_remaining

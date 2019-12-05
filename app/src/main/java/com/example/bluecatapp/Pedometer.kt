@@ -7,10 +7,13 @@
 
 package com.example.bluecatapp
 
+import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.util.Log
+import android.widget.Toast
+import androidx.preference.PreferenceManager
 
 open class Pedometer : SensorEventListener,
     StepListener {
@@ -64,5 +67,6 @@ open class Pedometer : SensorEventListener,
     override fun step(timeNs: Long) {
         numSteps++
         Log.d("Pedometer", "Step count: $numSteps")
+
     }
 }

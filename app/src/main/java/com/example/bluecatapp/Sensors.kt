@@ -201,12 +201,6 @@ class Sensors private constructor(context: Context) {
                 }
                 if (hwStepCounter < walkLimit) {
                     super.onSensorChanged(event)
-                    val toast = Toast.makeText(
-                        context,
-                        "You have walked $hwStepCounter steps.\n${walkLimit-hwStepCounter} steps left.",
-                        Toast.LENGTH_SHORT
-                    )
-                    toast.show()
                 } else {
 
                     isWalkOn = false
@@ -216,7 +210,8 @@ class Sensors private constructor(context: Context) {
 
                     i.putExtra("id", context.getString(R.string.WALK_COMPLETE))
                     i.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+//                    or Intent.FLAG_ACTIVITY_FORWARD_RESULT
                     context.startActivity(i)
                 }
             }
@@ -232,6 +227,12 @@ class Sensors private constructor(context: Context) {
                     )
                     commit()
                 }
+                val toast = Toast.makeText(
+                    context,
+                    "You have walked $numSteps steps.\n${walkLimit-numSteps} steps left.",
+                    Toast.LENGTH_SHORT
+                )
+                toast.show()
             }
         }
 

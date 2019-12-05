@@ -212,7 +212,7 @@ class AppBlockForegroundService : Service() {
                 Intent(this, TimerActivity::class.java)
                     .putExtra("blockedAppName", packageName)
                     .putExtra("id", getString(R.string.FROMBLOCK))
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or  Intent.FLAG_ACTIVITY_CLEAR_TOP)
             )  }
         else {
             application.startActivity(
