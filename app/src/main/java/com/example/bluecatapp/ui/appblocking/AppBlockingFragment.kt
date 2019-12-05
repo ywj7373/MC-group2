@@ -46,7 +46,8 @@ class AppDisplayListItem(
     val blockTimeStamp: Long?,
     var blockSteps: Int?,
     var icon: Drawable?,
-    var todayUsageString: String
+    var todayUsageString: String,
+    var remainingUsage: String
 )
 
 class AppBlockingFragment : Fragment() {
@@ -55,6 +56,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var usage: UsageStatsManager
     private lateinit var packageManager: PackageManager
     private lateinit var currentlyBlockedApps: MutableMap<String, Long>
+    private lateinit var appUsageTimers: MutableMap<String, Long>
     private lateinit var appStepCounters: MutableMap<String, Int>
     private lateinit var sharedPrefs: SharedPreferences
     private lateinit var usageStatsMap: MutableMap<String, UsageStats>
@@ -87,18 +89,14 @@ class AppBlockingFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        sharedPrefs = getDefaultSharedPreferences(context)
         appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         usage = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         packageManager = context.packageManager
         currentlyBlockedApps = getCurrentlyBlockedApps()
         appStepCounters = getAppStepCounters()
         usageStatsMap = getUsageStatsMap()
-
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        sharedPrefs = getDefaultSharedPreferences(this.context)
+        appUsageTimers = getAppUsageTimers()
         restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
     }
 
@@ -110,10 +108,6 @@ class AppBlockingFragment : Fragment() {
         appBlockingViewModel =
             ViewModelProviders.of(this).get(AppBlockingViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_appblocking, container, false)
-//        val textView: TextView = root.findViewById(R.id.text_appblocking)
-//        appBlockingViewModel.text.observe(this, Observer {
-//            textView.text = it
-//        })
 
         // Initialize app block views
         blockTitle = root.findViewById(R.id.block_title)
@@ -283,7 +277,6 @@ class AppBlockingFragment : Fragment() {
     }
 
     private fun getCurrentlyBlockedApps(): MutableMap<String, Long> {
-        val sharedPrefs = getDefaultSharedPreferences(context)
         val type = object : TypeToken<MutableMap<String, Long>>() {}.type
         val blockedAppsJson = sharedPrefs.getString("currentlyBlockedApps", null)
 
@@ -296,7 +289,6 @@ class AppBlockingFragment : Fragment() {
     }
 
     private fun getAppStepCounters(): MutableMap<String, Int> {
-        val sharedPrefs = getDefaultSharedPreferences(context)
         val type = object : TypeToken<MutableMap<String, Int>>() {}.type
         val appStepCountersJson = sharedPrefs.getString("appStepCounters", null)
 
@@ -320,7 +312,8 @@ class AppBlockingFragment : Fragment() {
                     blockFinishTimeStamp,
                     appStepCounters[appPackageName],
                     getAppIcon(appPackageName),
-                    getAppTotalUsageTimeDay(appPackageName)
+                    getAppTotalUsageTimeDay(appPackageName),
+                    getRemainingAppUsageToString(appPackageName)
                 )
             )
         }
@@ -488,6 +481,28 @@ class AppBlockingFragment : Fragment() {
             }
         }
         return "0.0 hours"
+    }
+
+    private fun getAppUsageTimers(): MutableMap<String, Long> {
+        val type = object : TypeToken<MutableMap<String, Long>>() {}.type
+        val appUsageTimersJson = sharedPrefs.getString("appUsageTimers", null)
+
+        appUsageTimers =
+            if (appUsageTimersJson !== null) MainActivity.gson.fromJson(
+                appUsageTimersJson,
+                type
+            ) else mutableMapOf()
+        return appUsageTimers
+    }
+
+    private fun getRemainingAppUsageToString(targetPackageName: String): String {
+        val maxTimeLimit: Long =
+            sharedPrefs.getString("time_limit", "${30 * 60 * 1000}")!!.toLong() // ms
+        val appUsage = appUsageTimers.getOrDefault(targetPackageName, 0) // ms
+        val millisRemaining = maxTimeLimit - appUsage
+        val minutesRemaining = TimeUnit.MILLISECONDS.toMinutes(millisRemaining)
+
+        return String.format("%d min left", minutesRemaining)
     }
 }
 
