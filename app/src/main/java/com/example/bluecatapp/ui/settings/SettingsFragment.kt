@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -316,7 +315,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val appBlockingPedometerSetting =
             findPreference<SwitchPreference>("pedometer")
 
-        val blockedAppsJson = preference.getString("currentlyBlockedApps", null)
+        val blockedAppsJson = preference.getString("currentlyBlockedApps", "{}")
         if (blockedAppsJson!! != "{}") {
             appBlockingSetting!!.isEnabled = false
             appBlockingSetting.summaryOn =
