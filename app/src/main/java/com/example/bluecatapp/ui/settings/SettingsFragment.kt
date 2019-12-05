@@ -1,7 +1,9 @@
 package com.example.bluecatapp.ui.settings
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -130,7 +132,28 @@ class SettingsFragment : PreferenceFragmentCompat() {
         resetStatisticsPreference?.setOnPreferenceClickListener(object :
             Preference.OnPreferenceClickListener {
             override fun onPreferenceClick(preference: Preference?): Boolean {
-                LocationRepository(activity!!.application).resetStats()
+
+                // Dialogue to confirm
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Reset Statistics")
+                    .setMessage("Do you really want to reset?")
+                    .setPositiveButton(android.R.string.yes) { dialogInterface, i ->
+                        LocationRepository(activity!!.application).resetStats()
+                        Toast.makeText(
+                            activity!!.applicationContext,
+                            "Statistics reset completed",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    .setNegativeButton(android.R.string.no) { dialogInterface, i ->
+                        Toast.makeText(
+                            activity!!.applicationContext,
+                            "Statistics reset cancelled",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    .show()
+
                 return true
             }
         })
