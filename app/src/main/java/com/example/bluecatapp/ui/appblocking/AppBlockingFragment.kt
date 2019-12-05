@@ -39,6 +39,7 @@ import com.example.bluecatapp.Pedometer
 import com.example.bluecatapp.R
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.fragment_appblocking.*
+import java.util.concurrent.TimeUnit
 
 class AppDisplayListItem(
     val displayName: String?,
@@ -155,6 +156,8 @@ class AppBlockingFragment : Fragment() {
 
             currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
                 blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
+                appUsageTime.text =
+                    "Total usage today: " + getAppTotalUsageTimeDay(appPackageName, true)
                 pedometerValue.setText("${appStepCounters[appPackageName]} / $maxStepCount")
                 motivationalText.visibility = View.VISIBLE
                 appIcon.setImageDrawable(getAppIcon(appPackageName))
@@ -455,9 +458,14 @@ class AppBlockingFragment : Fragment() {
         return usage.queryAndAggregateUsageStats(beginTime, endTime)
     }
 
-    private fun convertMsToHoursToString(millis: Long): String {
-        val hours: Double = millis.toDouble() / (1000 * 60 * 60)
-        return String.format("%.1f hours", hours)
+    private fun convertMsToHoursToString(millis: Long, usePretty: Boolean = false): String {
+        val hours = TimeUnit.MILLISECONDS.toHours(millis)
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(hours)
+
+        return String.format(
+            if (usePretty) "%dh %dmin" else "%02d:%02d",
+            hours, minutes
+        )
     }
 
     private fun getTotalUsageTimeDayAllRestrictedApps(): String {
@@ -467,13 +475,16 @@ class AppBlockingFragment : Fragment() {
         }.forEach { (_, usageStats) ->
             result += usageStats.totalTimeInForeground
         }
-        return convertMsToHoursToString(result)
+        return convertMsToHoursToString(result, true)
     }
 
-    private fun getAppTotalUsageTimeDay(targetPackageName: String): String {
+    private fun getAppTotalUsageTimeDay(
+        targetPackageName: String,
+        usePretty: Boolean = false
+    ): String {
         usageStatsMap.forEach { (_, usageStats) ->
             if (usageStats.packageName == targetPackageName) {
-                return convertMsToHoursToString(usageStats.totalTimeInForeground)
+                return convertMsToHoursToString(usageStats.totalTimeInForeground, usePretty)
             }
         }
         return "0.0 hours"
