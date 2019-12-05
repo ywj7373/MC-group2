@@ -74,7 +74,6 @@ class LocationReminderForegroundService : Service() {
         startNotification()
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val on = sharedPreferences.getBoolean("Location Based Reminder", true)
 
         //observe change in current location
         locationViewModel = LocationViewModel(application)
@@ -95,8 +94,6 @@ class LocationReminderForegroundService : Service() {
                     destination = t
                     if (srcLat != 0.0 && srcLong != 0.0)
                         updateEstimatedTime(srcLat, srcLong)
-                    if (on) checkTime()
-                    else updateNotification("Alarm Disabled")
                 }
                 else {
                     destination = null
@@ -121,23 +118,18 @@ class LocationReminderForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val on = sharedPreferences.getBoolean("Location Based Reminder", true)
+        updateNotification("No Alarm")
 
-        if (on) {
-            updateNotification("No Alarm")
-            val handler = Handler()
-            runnable = Runnable {
-                Log.d(TAG, "new routine!")
-                checkDate()
-                checkCurrentLocation()
-                checkTime()
-                handler.postDelayed(runnable, ROUTINE_INTERVAL)
-            }
-            handler.post(runnable)
+        val handler = Handler()
+        runnable = Runnable {
+            Log.d(TAG, "new routine!")
+            checkDate()
+            checkCurrentLocation()
+            checkTime()
+            handler.postDelayed(runnable, ROUTINE_INTERVAL)
         }
-        else {
-            updateNotification("Alarm Disabled")
-        }
+        handler.post(runnable)
+
         return START_NOT_STICKY
     }
 
