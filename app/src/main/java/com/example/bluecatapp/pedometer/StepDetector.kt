@@ -1,4 +1,7 @@
-package com.example.bluecatapp
+package com.example.bluecatapp.pedometer
+
+import com.example.bluecatapp.pedometer.SensorFilter
+import com.example.bluecatapp.pedometer.StepListener
 
 class StepDetector {
 
@@ -43,7 +46,8 @@ class StepDetector {
         worldZ[1] = SensorFilter().sum(accelRingY) / Math.min(accelRingCounter, ACCEL_RING_SIZE)
         worldZ[2] = SensorFilter().sum(accelRingZ) / Math.min(accelRingCounter, ACCEL_RING_SIZE)
 
-        val normalization_factor = SensorFilter().norm(worldZ)
+        val normalization_factor = SensorFilter()
+            .norm(worldZ)
 
         worldZ[0] = worldZ[0] / normalization_factor
         worldZ[1] = worldZ[1] / normalization_factor

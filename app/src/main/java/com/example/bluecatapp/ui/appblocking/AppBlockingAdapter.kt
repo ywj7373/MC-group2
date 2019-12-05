@@ -107,9 +107,4 @@ class AppBlockingAdapter(
             }
         }
     }
-
-    private fun hideViews(appProgress: ProgressBar, appStepCount: TextView) {
-        appProgress.visibility = View.INVISIBLE
-        appStepCount.visibility = View.INVISIBLE
-    }
 }

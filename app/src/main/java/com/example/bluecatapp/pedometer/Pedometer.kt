@@ -5,7 +5,7 @@
  * Availability: https://github.com/AndroidCodility/Pedometer
  * */
 
-package com.example.bluecatapp
+package com.example.bluecatapp.pedometer
 
 import android.hardware.Sensor
 import android.hardware.SensorEvent
