@@ -2,6 +2,7 @@ package com.example.bluecatapp.ui.appblocking
 
 import android.app.AlertDialog
 import android.app.AppOpsManager
+import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -38,13 +39,15 @@ import com.example.bluecatapp.Pedometer
 import com.example.bluecatapp.R
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.fragment_appblocking.*
+import java.util.concurrent.TimeUnit
 
 class AppDisplayListItem(
     val displayName: String?,
     val blockTimeStamp: Long?,
     var blockSteps: Int?,
     var icon: Drawable?,
-    var todayUsageString: String
+    var todayUsageString: String,
+    var remainingUsage: String
 )
 
 class AppBlockingFragment : Fragment() {
@@ -53,8 +56,11 @@ class AppBlockingFragment : Fragment() {
     private lateinit var usage: UsageStatsManager
     private lateinit var packageManager: PackageManager
     private lateinit var currentlyBlockedApps: MutableMap<String, Long>
+    private lateinit var appUsageTimers: MutableMap<String, Long>
     private lateinit var appStepCounters: MutableMap<String, Int>
     private lateinit var sharedPrefs: SharedPreferences
+    private lateinit var usageStatsMap: MutableMap<String, UsageStats>
+    private lateinit var restrictedApps: Set<String>
 
     //Appblock variables
     private lateinit var blockTitle: TextView
@@ -64,6 +70,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var appIcon: ImageView
     private lateinit var appUsageTime: TextView
     private lateinit var appBlockListTitle: TextView
+    private lateinit var totalUsageTime: TextView
     private lateinit var divider: View
     private lateinit var divider2: View
 
@@ -82,31 +89,16 @@ class AppBlockingFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        sharedPrefs = getDefaultSharedPreferences(context)
         appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         usage = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         packageManager = context.packageManager
         currentlyBlockedApps = getCurrentlyBlockedApps()
         appStepCounters = getAppStepCounters()
+        usageStatsMap = getUsageStatsMap()
+        appUsageTimers = getAppUsageTimers()
+        restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
     }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        sharedPrefs = getDefaultSharedPreferences(this.context)
-    }
-
-//    override fun onResume() {
-//        super.onResume()
-//        Toast.makeText(
-//            activity!!.applicationContext,
-//            "PEDOMETER RESUMED",
-//            Toast.LENGTH_SHORT
-//        ).show()
-//    }
-
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        sensorManager.unregisterListener(pedometer)
-//    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -116,10 +108,6 @@ class AppBlockingFragment : Fragment() {
         appBlockingViewModel =
             ViewModelProviders.of(this).get(AppBlockingViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_appblocking, container, false)
-//        val textView: TextView = root.findViewById(R.id.text_appblocking)
-//        appBlockingViewModel.text.observe(this, Observer {
-//            textView.text = it
-//        })
 
         // Initialize app block views
         blockTitle = root.findViewById(R.id.block_title)
@@ -130,6 +118,7 @@ class AppBlockingFragment : Fragment() {
         blockTimeLabel = root.findViewById(R.id.block_explanation)
         appBlockListTitle = root.findViewById(R.id.app_list_title)
         divider = root.findViewById(R.id.app_divider)
+        totalUsageTime = root.findViewById(R.id.total_usage_time)
 
         // Initialize pedometer views
         pedometerTitle = root.findViewById(R.id.step_title)
@@ -151,6 +140,9 @@ class AppBlockingFragment : Fragment() {
             AppBlockForegroundService.stopService(context!!)
         }
 
+        totalUsageTime.text =
+            "Total usage of restricted apps today: ${getTotalUsageTimeDayAllRestrictedApps()}"
+
         if (currentlyBlockedApps.entries.count() == 0) {
             hideViews()
         } else {
@@ -158,6 +150,8 @@ class AppBlockingFragment : Fragment() {
 
             currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
                 blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
+                appUsageTime.text =
+                    "Total usage today: " + getAppTotalUsageTimeDay(appPackageName, true)
                 pedometerValue.setText("${appStepCounters[appPackageName]} / $maxStepCount")
                 motivationalText.visibility = View.VISIBLE
                 appIcon.setImageDrawable(getAppIcon(appPackageName))
@@ -283,7 +277,6 @@ class AppBlockingFragment : Fragment() {
     }
 
     private fun getCurrentlyBlockedApps(): MutableMap<String, Long> {
-        val sharedPrefs = getDefaultSharedPreferences(context)
         val type = object : TypeToken<MutableMap<String, Long>>() {}.type
         val blockedAppsJson = sharedPrefs.getString("currentlyBlockedApps", null)
 
@@ -296,7 +289,6 @@ class AppBlockingFragment : Fragment() {
     }
 
     private fun getAppStepCounters(): MutableMap<String, Int> {
-        val sharedPrefs = getDefaultSharedPreferences(context)
         val type = object : TypeToken<MutableMap<String, Int>>() {}.type
         val appStepCountersJson = sharedPrefs.getString("appStepCounters", null)
 
@@ -310,7 +302,6 @@ class AppBlockingFragment : Fragment() {
 
     // TODO: Use proper function to get the string for today's usage of an app!!
     private fun getAdapterList(): List<AppDisplayListItem> {
-        val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
         var blockedAppList: MutableList<AppDisplayListItem> = arrayListOf()
         restrictedApps.forEach { appPackageName ->
             val blockFinishTimeStamp =
@@ -320,7 +311,9 @@ class AppBlockingFragment : Fragment() {
                     getAppNameFromPackage(appPackageName, context!!),
                     blockFinishTimeStamp,
                     appStepCounters[appPackageName],
-                    getAppIcon(appPackageName), "0.0 hours"
+                    getAppIcon(appPackageName),
+                    getAppTotalUsageTimeDay(appPackageName),
+                    getRemainingAppUsageToString(appPackageName)
                 )
             )
         }
@@ -450,7 +443,70 @@ class AppBlockingFragment : Fragment() {
         pedometerValue.visibility = View.GONE
         pedometerMaxValue.visibility = View.GONE
     }
+
+    private fun getUsageStatsMap(): MutableMap<String, UsageStats> {
+        val endTime = System.currentTimeMillis()
+        val beginTime = endTime - (24 * 60 * 60 * 1000)
+        // Usage stats for all apps over the past 24 hours
+        return usage.queryAndAggregateUsageStats(beginTime, endTime)
+    }
+
+    private fun convertMsToHoursToString(millis: Long, usePretty: Boolean = false): String {
+        val hours = TimeUnit.MILLISECONDS.toHours(millis)
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(hours)
+
+        return String.format(
+            if (usePretty) "%dh %dmin" else "%02d:%02d",
+            hours, minutes
+        )
+    }
+
+    private fun getTotalUsageTimeDayAllRestrictedApps(): String {
+        var result: Long = 0
+        usageStatsMap.filter { (packageName: String, _) ->
+            restrictedApps.contains(packageName)
+        }.forEach { (_, usageStats) ->
+            result += usageStats.totalTimeInForeground
+        }
+        return convertMsToHoursToString(result, true)
+    }
+
+    private fun getAppTotalUsageTimeDay(
+        targetPackageName: String,
+        usePretty: Boolean = false
+    ): String {
+        usageStatsMap.forEach { (_, usageStats) ->
+            if (usageStats.packageName == targetPackageName) {
+                return convertMsToHoursToString(usageStats.totalTimeInForeground, usePretty)
+            }
+        }
+        return "0.0 hours"
+    }
+
+    private fun getAppUsageTimers(): MutableMap<String, Long> {
+        val type = object : TypeToken<MutableMap<String, Long>>() {}.type
+        val appUsageTimersJson = sharedPrefs.getString("appUsageTimers", null)
+
+        appUsageTimers =
+            if (appUsageTimersJson !== null) MainActivity.gson.fromJson(
+                appUsageTimersJson,
+                type
+            ) else mutableMapOf()
+        return appUsageTimers
+    }
+
+    private fun getRemainingAppUsageToString(targetPackageName: String): String {
+        val maxTimeLimit: Long =
+            sharedPrefs.getString("time_limit", "${30 * 60 * 1000}")!!.toLong() // ms
+        val appUsage = appUsageTimers.getOrDefault(targetPackageName, 0) // ms
+        val millisRemaining = maxTimeLimit - appUsage
+        val minutesRemaining = TimeUnit.MILLISECONDS.toMinutes(millisRemaining)
+
+        return String.format("%d min left", minutesRemaining)
+    }
 }
+
+
 
 
 

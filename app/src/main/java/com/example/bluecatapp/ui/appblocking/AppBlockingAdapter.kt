@@ -47,6 +47,8 @@ class AppBlockingAdapter(
         holder.appName.text = appList[position].displayName
         val finishTimeStamp = appList[position].blockTimeStamp
         holder.appIcon.setImageDrawable(appList[position].icon)
+        holder.totalUsage.text = appList[position].todayUsageString
+        holder.remainingUsage.text = appList[position].remainingUsage
 
         val isAppBlocked = finishTimeStamp != null
         if (isAppBlocked) {
