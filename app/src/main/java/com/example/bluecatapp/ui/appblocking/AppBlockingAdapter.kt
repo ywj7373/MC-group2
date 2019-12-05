@@ -1,8 +1,9 @@
 package com.example.bluecatapp.ui.appblocking
 
-import android.graphics.drawable.Drawable
+import android.graphics.Color
 import android.os.CountDownTimer
 import android.os.SystemClock
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,12 +14,14 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bluecatapp.R
 
-class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>,
-                         private val maxStepCount: Int,
-                         private val pedometerEnabled: Boolean) :
+class AppBlockingAdapter(
+    private val appList: List<AppDisplayListItem>,
+    private val maxStepCount: Int,
+    private val pedometerEnabled: Boolean
+) :
     RecyclerView.Adapter<AppBlockingAdapter.AppViewHolder>() {
 
-//    private var BlockedAppList = blockedAppList
+//    private var appList = blockedAppList
 
     class AppViewHolder(appListItem: View) : RecyclerView.ViewHolder(appListItem) {
         var appName: TextView = appListItem.findViewById(R.id.appItemName)
@@ -26,7 +29,10 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>,
         var appIcon: ImageView = appListItem.findViewById(R.id.appItemIcon)
         var appProgress: ProgressBar = appListItem.findViewById(R.id.appItemProgress)
         var appStepCount: TextView = appListItem.findViewById(R.id.appItemStepCount)
-     }
+        var blockedText: TextView = appListItem.findViewById(R.id.appItemBlockedText)
+        var totalUsage: TextView = appListItem.findViewById(R.id.appItemTotalUsageTime)
+        var remainingUsage: TextView = appListItem.findViewById(R.id.appItemRemainingUsage)
+    }
 
     // Create new app blocking views invoked by layout manager
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppViewHolder {
@@ -39,34 +45,53 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>,
 
     // Replace contents of view invoked by layout manager
     override fun onBindViewHolder(holder: AppViewHolder, position: Int) {
-        holder.appName.text = BlockedAppList[position][0].toString()
-        val finishTimeStamp = BlockedAppList[position][1] as Long
-        holder.appIcon.setImageDrawable(BlockedAppList[position][3] as Drawable?)
+        holder.appName.text = appList[position].displayName
+        val finishTimeStamp = appList[position].blockTimeStamp
+        holder.appIcon.setImageDrawable(appList[position].icon)
 
-        if(System.currentTimeMillis() < finishTimeStamp) {
-            getBlockCountdown(finishTimeStamp, holder.appTime).start()
+        val isAppBlocked = finishTimeStamp != null
+        Log.d("bcat", appList[position].displayName + isAppBlocked)
+        if (isAppBlocked) {
+            holder.blockedText.visibility = View.VISIBLE
+            holder.appTime.visibility = View.VISIBLE
+            holder.totalUsage.visibility = View.GONE
+            holder.remainingUsage.visibility = View.GONE
         }
-        if(pedometerEnabled) {
+        if (finishTimeStamp != null && System.currentTimeMillis() < finishTimeStamp) {
+            getBlockCountdown(finishTimeStamp, holder.appTime, holder).start()
+        } else if (finishTimeStamp != null && finishTimeStamp <= System.currentTimeMillis()) {
+            holder.appTime.setText("00:00")
+            holder.appTime.setTextColor(Color.parseColor("#8bc34a"))
+        }
+        if (isAppBlocked && pedometerEnabled) {
+            holder.appProgress.visibility = View.VISIBLE
+            holder.appStepCount.visibility = View.VISIBLE
             holder.appProgress.max = maxStepCount //initialize max progress value
-            val stepCount = BlockedAppList[position][2] as Int
+            val stepCount = appList[position].blockSteps as Int
             holder.appProgress.max = maxStepCount
             holder.appProgress.progress = stepCount
-            holder.appStepCount.setText("$stepCount / $maxStepCount")
-        } else {
-            hideViews(holder.appProgress, holder.appStepCount)
+            holder.appStepCount.setText("$stepCount / $maxStepCount steps")
+
+            if (stepCount >= maxStepCount) {
+                holder.appStepCount.setTextColor(Color.parseColor("#8bc34a"))
+            }
         }
     }
 
-    override fun getItemCount(): Int = BlockedAppList.size
+    override fun getItemCount(): Int = appList.size
 
 
 //    fun setAppBlockItems(newItemList: List<List<Any?>>) {
-//        this.BlockedAppList = newItemList
+//        this.appList = newItemList
 //        notifyDataSetChanged()
 //    }
 
     // Get countdown timer for each app in adapter list
-    private fun getBlockCountdown(countDownFromTime: Long, chrono: Chronometer): CountDownTimer {
+    private fun getBlockCountdown(
+        countDownFromTime: Long,
+        chrono: Chronometer,
+        holder: AppViewHolder
+    ): CountDownTimer {
         val msToFinish = countDownFromTime - System.currentTimeMillis()
         chrono.base = SystemClock.elapsedRealtime() + msToFinish
         chrono.start()
@@ -76,34 +101,15 @@ class AppBlockingAdapter(private val BlockedAppList: List<List<Any?>>,
             }
 
             override fun onFinish() {
+                holder.appTime.setText("00:00")
+                holder.appTime.setTextColor(Color.parseColor("#8bc34a"))
                 chrono.stop()
             }
         }
     }
 
-    private fun hideViews(appProgress: ProgressBar, appStepCount: TextView){
+    private fun hideViews(appProgress: ProgressBar, appStepCount: TextView) {
         appProgress.visibility = View.INVISIBLE
         appStepCount.visibility = View.INVISIBLE
     }
-
-    /**Function to simulate pedometer
-     * Increments step count every 2s
-
-    private fun simulatePedometer(initialStepCount: Int, appStepCount: TextView,
-                                  appProgress: ProgressBar, totalNumberOfSteps: Int) {
-        val countDownFromTime = ((totalNumberOfSteps - initialStepCount) * 2000).toLong()
-        var currentStepCount = initialStepCount
-        appProgress.max = totalNumberOfSteps
-        appProgress.progress = initialStepCount
-        appStepCount.setText("$initialStepCount / $totalNumberOfSteps")
-
-        object: CountDownTimer(countDownFromTime, 2000) {
-            override fun onTick(millisUntilFinished: Long) {
-                currentStepCount++
-                appStepCount.setText("$currentStepCount / $totalNumberOfSteps")
-                appProgress.progress = currentStepCount
-            }
-            override fun onFinish() {}
-        }.start()
-    }*/
 }

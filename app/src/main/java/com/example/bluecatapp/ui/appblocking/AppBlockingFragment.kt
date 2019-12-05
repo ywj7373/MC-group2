@@ -1,6 +1,5 @@
 package com.example.bluecatapp.ui.appblocking
 
-import android.Manifest.permission.ACTIVITY_RECOGNITION
 import android.app.AlertDialog
 import android.app.AppOpsManager
 import android.app.usage.UsageStatsManager
@@ -8,12 +7,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.SystemClock
@@ -27,8 +26,8 @@ import android.widget.Chronometer
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.text.bold
+import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager.getDefaultSharedPreferences
@@ -40,6 +39,13 @@ import com.example.bluecatapp.R
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.fragment_appblocking.*
 
+class AppDisplayListItem(
+    val displayName: String?,
+    val blockTimeStamp: Long?,
+    var blockSteps: Int?,
+    var icon: Drawable?,
+    var todayUsageString: String
+)
 
 class AppBlockingFragment : Fragment() {
     private lateinit var appOps: AppOpsManager
@@ -59,6 +65,8 @@ class AppBlockingFragment : Fragment() {
     private lateinit var appUsageTime: TextView
     private lateinit var appBlockListTitle: TextView
     private lateinit var divider: View
+    private lateinit var divider2: View
+
 
     //Pedometer variables
     private lateinit var pedometer: Pedometer
@@ -68,6 +76,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var pedometerLabel: TextView
     private lateinit var pedometerValue: TextView
     private lateinit var pedometerMaxValue: TextView
+    private lateinit var motivationalText: TextView
     private var maxStepCount: Int = 10
 
 
@@ -127,9 +136,11 @@ class AppBlockingFragment : Fragment() {
         pedometerLabel = root.findViewById(R.id.step_explanation)
         pedometerValue = root.findViewById(R.id.step_count)
         pedometerMaxValue = root.findViewById(R.id.max_step_count)
+        motivationalText = root.findViewById(R.id.motivational_text)
+        divider2 = root.findViewById(R.id.app_divider2)
 
         // Check if pedometer enabled in preferences
-        pedometerEnabled = sharedPrefs.getBoolean ("pedometer",false)
+        pedometerEnabled = sharedPrefs.getBoolean("pedometer", false)
         maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
 
         // Check if app blocking enabled in Settings
@@ -148,17 +159,24 @@ class AppBlockingFragment : Fragment() {
             currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
                 blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
                 pedometerValue.setText("${appStepCounters[appPackageName]} / $maxStepCount")
+                motivationalText.visibility = View.VISIBLE
                 appIcon.setImageDrawable(getAppIcon(appPackageName))
                 if (System.currentTimeMillis() < finishTimeStamp) {
                     getBlockCountdown(
                         finishTimeStamp,
                         chrono
                     ).start()
+                } else if (finishTimeStamp <= System.currentTimeMillis()) {
+                    chrono.setText("00:00")
+                    chrono.setTextColor(Color.parseColor("#8bc34a"))
                 }
-                if (!pedometerEnabled){
+                if (!pedometerEnabled) {
                     hidePedometerViews()
-                } else if( appStepCounters[appPackageName]!=null
-                    && appStepCounters[appPackageName]!! < maxStepCount) {
+                } else if (appStepCounters[appPackageName] != null && appStepCounters[appPackageName]!! >= maxStepCount) {
+                    pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
+                } else if (appStepCounters[appPackageName] != null
+                    && appStepCounters[appPackageName]!! < maxStepCount
+                ) {
                     // Activate pedometer sensor
                     startPedometer(appPackageName, maxStepCount)
                 }
@@ -232,6 +250,8 @@ class AppBlockingFragment : Fragment() {
             }
 
             override fun onFinish() {
+                chrono.setText("00:00")
+                chrono.setTextColor(Color.parseColor("#8bc34a"))
                 chrono.stop()
             }
         }
@@ -288,28 +308,34 @@ class AppBlockingFragment : Fragment() {
         return appStepCounters
     }
 
-    // FIXME: Return list of blocked app names with respective finish time stamps
-    private fun getAdapterList(): List<List<Any?>> {
-        var blockedAppList: MutableList<List<Any?>> = arrayListOf()
-        currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
+    // TODO: Use proper function to get the string for today's usage of an app!!
+    private fun getAdapterList(): List<AppDisplayListItem> {
+        val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
+        var blockedAppList: MutableList<AppDisplayListItem> = arrayListOf()
+        restrictedApps.forEach { appPackageName ->
+            val blockFinishTimeStamp =
+                if (currentlyBlockedApps.contains(appPackageName)) currentlyBlockedApps[appPackageName] else null
             blockedAppList.add(
-                listOf(
+                AppDisplayListItem(
                     getAppNameFromPackage(appPackageName, context!!),
-                    finishTimeStamp, appStepCounters[appPackageName], getAppIcon(appPackageName)
+                    blockFinishTimeStamp,
+                    appStepCounters[appPackageName],
+                    getAppIcon(appPackageName), "0.0 hours"
                 )
             )
         }
+        blockedAppList.sortWith(compareBy { it.displayName })
         return blockedAppList
     }
 
-    private fun startPedometer(appName: String, numberOfSteps: Int){
+    private fun startPedometer(appName: String, numberOfSteps: Int) {
         // initialize step counter views
         pedometerValue.setText("${appStepCounters[appName]}")
         pedometerMaxValue.setText(" of $numberOfSteps")
 
-        pedometer = object: Pedometer() {
+        pedometer = object : Pedometer() {
             override fun onSensorChanged(event: SensorEvent?) {
-                if(appStepCounters[appName]!! < maxStepCount) {
+                if (appStepCounters[appName]!! < maxStepCount) {
                     super.onSensorChanged(event)
                 }
             }
@@ -323,11 +349,18 @@ class AppBlockingFragment : Fragment() {
                     commit()
                 }
                 pedometerValue.setText("${appStepCounters[appName]}")
+
+                if (appStepCounters[appName]!! >= numberOfSteps) {
+                    pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
+                    pedometerMaxValue.setTextColor(Color.parseColor("#8bc34a"))
+                }
             }
         }
         sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensorManager!!.registerListener(pedometer, sensorManager!!
-            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME)
+        sensorManager!!.registerListener(
+            pedometer, sensorManager!!
+                .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME
+        )
     }
 
     /**
@@ -345,7 +378,11 @@ class AppBlockingFragment : Fragment() {
                     putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
                     commit()
                 }
-                pedometerValue.setText("${appStepCounters[appName]} / $numberOfSteps")
+                pedometerValue.setText("${appStepCounters[appName]} / $numberOfSteps steps")
+                if (appStepCounters[appName]!! >= numberOfSteps) {
+                    pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
+                    pedometerMaxValue.setTextColor(Color.parseColor("#8bc34a"))
+                }
             }
 
             override fun onFinish() {}
@@ -382,7 +419,7 @@ class AppBlockingFragment : Fragment() {
                     "YOU MOVED $currentStepCount STEPS",
                     Toast.LENGTH_SHORT
                 ).show()
-                pedometerValue.setText("$currentStepCount / $maxStepCount")
+                pedometerValue.setText("$currentStepCount / $maxStepCount steps")
             }
         }
     }
@@ -390,13 +427,19 @@ class AppBlockingFragment : Fragment() {
     private fun hideViews() {
         //Hide app blocking countdown and pedometer views if no currently blocked apps
         blockTitle.text = "NO ACTIVE APP BLOCK"
-        divider.visibility = View.INVISIBLE
-        blockedAppName.visibility = View.INVISIBLE
-        appIcon.visibility = View.INVISIBLE
-        chrono.visibility = View.INVISIBLE
-        blockTimeLabel.visibility = View.INVISIBLE
-        appUsageTime.visibility = View.INVISIBLE
-        appBlockListTitle.visibility = View.INVISIBLE
+        blockTitle.marginTop
+        val blockTitleParams = blockTitle.layoutParams as ViewGroup.MarginLayoutParams
+        blockTitleParams.topMargin = 150
+        val dividerParams = divider.layoutParams as ViewGroup.MarginLayoutParams
+        dividerParams.topMargin = 200
+
+        blockedAppName.visibility = View.GONE
+        appIcon.visibility = View.GONE
+        chrono.visibility = View.GONE
+        blockTimeLabel.visibility = View.GONE
+        appUsageTime.visibility = View.GONE
+        divider2.visibility = View.GONE
+        motivationalText.visibility = View.GONE
         hidePedometerViews()
     }
 

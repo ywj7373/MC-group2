@@ -335,7 +335,7 @@ class AppBlockForegroundService : Service() {
                     foregroundApp?.let { blockApp(it) }
                     Toast.makeText(
                         this.applicationContext,
-                        "Try again it's been unblocked!",
+                        "Try again when it's been unblocked!",
                         Toast.LENGTH_LONG
                     ).show()
                 }
