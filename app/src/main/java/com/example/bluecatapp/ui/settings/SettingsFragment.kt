@@ -328,14 +328,23 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun checkIfActiveAppBlock() {
         val appBlockingSetting =
             findPreference<SwitchPreference>(getString(R.string.appblock))
+        val appBlockingPedometerSetting =
+            findPreference<SwitchPreference>("pedometer")
 
         val blockedAppsJson = preference.getString("currentlyBlockedApps", null)
-        if (blockedAppsJson!! == "{}") {
-            appBlockingSetting!!.isEnabled = true
-        } else {
+        if (blockedAppsJson!! != "{}") {
             appBlockingSetting!!.isEnabled = false
             appBlockingSetting.summaryOn =
                 "App blocking enabled. Cannot disable when there is an active app block."
+
+            if (appBlockingPedometerSetting!!.isChecked) {
+                appBlockingPedometerSetting.isEnabled = false
+                appBlockingPedometerSetting.summaryOn =
+                    "Step count feature enabled during app blocking. Cannot disable when there is an active app block."
+                val appBlockingPedometerStepCountSetting =
+                    findPreference<ListPreference>("pedometer_count")
+                appBlockingPedometerStepCountSetting!!.isEnabled = false
+            }
         }
     }
 }
