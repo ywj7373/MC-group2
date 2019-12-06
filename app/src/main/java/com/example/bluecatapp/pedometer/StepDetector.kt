@@ -9,7 +9,7 @@ class StepDetector {
     private val VEL_RING_SIZE = 10
 
     // change this threshold according to your sensitivity preferences
-    private val STEP_THRESHOLD = 50f
+    private val STEP_THRESHOLD = 80f
 
     private val STEP_DELAY_NS = 250000000
 

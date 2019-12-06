@@ -16,6 +16,7 @@ open class Pedometer : SensorEventListener,
     StepListener {
     private var stepDetector: StepDetector =
         StepDetector()
+
     var numSteps: Int = 0
 
     init {
@@ -53,10 +54,13 @@ open class Pedometer : SensorEventListener,
         })
     }
 */
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        Log.d("Pedometer", "Accuracy changed")
+    }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if (event!!.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+//        Log.d("Pedometer", "A change was detected")
+        if (event!!.sensor.type == Sensor.TYPE_LINEAR_ACCELERATION) {
             stepDetector!!.updateAccelerometer(event.timestamp, event.values[0], event.values[1], event.values[2])
         }
     }
