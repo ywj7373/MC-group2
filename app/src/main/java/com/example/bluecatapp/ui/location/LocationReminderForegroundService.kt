@@ -29,6 +29,12 @@ import kotlin.math.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
+import android.media.AudioAttributes
+import android.media.AudioAttributes.CONTENT_TYPE_MUSIC
+import android.media.AudioAttributes.USAGE_ALARM
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
 
 const val ODsayTimeout = 5000
 const val LOCATION_TRACKER_INTERVAL: Long = 60000 //60s
@@ -241,6 +247,23 @@ class LocationReminderForegroundService : Service() {
                         //deprecated in API 26
                         v.vibrate(VIBRATION_TIME)
                     }
+
+                    /*
+                    // Alarm Sound
+                    try {
+                        // For morning alarm sound
+                        val alarmSound: Uri =
+                            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                        val r: Ringtone = RingtoneManager.getRingtone(this, alarmSound)
+                        r.audioAttributes = AudioAttributes.Builder()
+                            .setUsage(USAGE_ALARM)
+                            .setContentType(CONTENT_TYPE_MUSIC).build()
+                        r.play()
+                    }
+                    catch (e: Exception) {
+                        Log.d("ALARM SOUND GENERATION failed : ", e.toString())
+                    }
+                    */
 
                     //send notification
                     callAlarmNotification(msg, NOTIF_ID3)
