@@ -4,12 +4,9 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.IBinder
-import android.os.Build
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.LocationServices
@@ -32,6 +29,12 @@ import kotlin.math.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
+import android.media.AudioAttributes
+import android.media.AudioAttributes.CONTENT_TYPE_MUSIC
+import android.media.AudioAttributes.USAGE_ALARM
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
 
 const val ODsayTimeout = 5000
 const val LOCATION_TRACKER_INTERVAL: Long = 60000 //60s
@@ -41,6 +44,7 @@ const val NOTIF_ID2 = 2
 const val NOTIF_ID3 = 3
 const val ROUTINE_INTERVAL: Long = 60000
 const val DEFAULT_TRAVEL_TIME = "20"
+const val VIBRATION_TIME: Long = 1000
 
 class LocationReminderForegroundService : Service() {
     private val TAG = "Routine Service"
@@ -56,6 +60,7 @@ class LocationReminderForegroundService : Service() {
     private val notificationTitle = "BLUECAT_APP"
     private var destination: LocationItemData? = null
     private var travelTime: String = DEFAULT_TRAVEL_TIME
+    private val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
 
     companion object {
         fun startService(context: Context) {
@@ -75,7 +80,6 @@ class LocationReminderForegroundService : Service() {
         startNotification()
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val on = sharedPreferences.getBoolean("Location Based Reminder", true)
 
         //observe change in current location
         locationViewModel = LocationViewModel(application)
@@ -96,8 +100,6 @@ class LocationReminderForegroundService : Service() {
                     destination = t
                     if (srcLat != 0.0 && srcLong != 0.0)
                         updateEstimatedTime(srcLat, srcLong)
-                    if (on) checkTime()
-                    else updateNotification("Alarm Disabled")
                 }
                 else {
                     destination = null
@@ -122,23 +124,18 @@ class LocationReminderForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val on = sharedPreferences.getBoolean("Location Based Reminder", true)
+        updateNotification("No Alarm")
 
-        if (on) {
-            updateNotification("No Alarm")
-            val handler = Handler()
-            runnable = Runnable {
-                Log.d(TAG, "new routine!")
-                checkDate()
-                checkCurrentLocation()
-                checkTime()
-                handler.postDelayed(runnable, ROUTINE_INTERVAL)
-            }
-            handler.post(runnable)
+        val handler = Handler()
+        runnable = Runnable {
+            Log.d(TAG, "new routine!")
+            checkDate()
+            checkCurrentLocation()
+            checkTime()
+            handler.postDelayed(runnable, ROUTINE_INTERVAL)
         }
-        else {
-            updateNotification("Alarm Disabled")
-        }
+        handler.post(runnable)
+
         return START_NOT_STICKY
     }
 
@@ -174,7 +171,7 @@ class LocationReminderForegroundService : Service() {
             .setContentText(text)
             .setOnlyAlertOnce(true) // so when data is updated don't make sound and alert in android 8.0+
             .setOngoing(true)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_location_on_black_24dp)
             .setContentIntent(contentIntent)
             .build()
     }
@@ -187,8 +184,8 @@ class LocationReminderForegroundService : Service() {
 
     private fun callAlarmNotification(text: String, id: Int) {
         val builder = NotificationCompat.Builder(this, locationNotificationId)
-            .setContentTitle("BlueCat Alarm")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Reminder!")
+            .setSmallIcon(R.drawable.ic_location_on_black_24dp)
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .build()
         notificationManager.notify(id, builder)
@@ -208,20 +205,16 @@ class LocationReminderForegroundService : Service() {
                 val preparationTime =
                     sharedPreferences.getString("Preparation_time", "20")!!.toInt()
                 val alarmTime = time - timeToDest - (preparationTime * 60 * 1000)
+                val destinationTime = simpleTimeFormat.format(Date(time))
+                val msg = getTravelTimeMsg(time)
                 val alarmText = "Alarm rings at: " + SimpleDateFormat(
-                    "yyyy MMM d, EEE, h:mm a",
-                    Locale.KOREA
-                ).format(Date(alarmTime))
+                    "yyyy MMM dd, EEE, h:mm a\n", Locale.KOREA).format(Date(alarmTime))
 
-                updateNotification(alarmText)
-
-                val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
+                if (!isAlarmed) updateNotification(alarmText)
 
                 //check if current time passed arrival time
-                if ((!daysMode && currentTime >= time) || (daysMode && (simpleTimeFormat.format(
-                        Date(currentTime)
-                    ) >= (simpleTimeFormat.format(Date(time)))))
-                ) {
+                if ((!daysMode && currentTime >= time)
+                    || (daysMode && (simpleTimeFormat.format(Date(currentTime)) >= (simpleTimeFormat.format(Date(time)))))) {
                     //set the schedule to done
                     LocationRepository(application).updateDone(true, destination!!.id)
                     Log.d(TAG, "schedule time passed! " + destination!!.x)
@@ -232,8 +225,7 @@ class LocationReminderForegroundService : Service() {
                             srcLong,
                             destination!!.y.toDouble(),
                             destination!!.x.toDouble()
-                        ) <= 0.3
-                    ) {
+                        ) <= 0.3) {
                         Log.d(TAG, "Made on time")
                         LocationRepository(application).increaseOntime()
                     } else {
@@ -245,31 +237,58 @@ class LocationReminderForegroundService : Service() {
                 }
                 //check if current time passed alarm time
                 else if (currentTime >= alarmTime && !isAlarmed) {
-                    Log.d(TAG, "entered")
-                    //send notification
-                    val destinationTime = simpleTimeFormat.format(Date(time))
-                    val h = (travelTime.toInt()) / 60
-                    val m = (travelTime.toInt()) % 60
-                    val firstText =
-                        "Reminder: " + destination!!.name + " at " + destinationTime.substring(
-                            0,
-                            5
-                        ) + "\n"
-                    var secondText = "Travel Time: " + h + "hours and " + m + " minutes"
-                    if (h == 0) {
-                        secondText = "Travel Time: $m minutes"
-                    }
-                    if (travelTime.toInt() == 10) {
-                        secondText = "Travel Time: less than 10 minutes"
+                    Log.d(TAG, "passed alarm time")
+                    //vibrate
+                    val v: Vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                        v.vibrate(VibrationEffect.createOneShot(VIBRATION_TIME, VibrationEffect.DEFAULT_AMPLITUDE));
+                    } else {
+                        //deprecated in API 26
+                        v.vibrate(VIBRATION_TIME)
                     }
 
-                    callAlarmNotification(firstText + secondText, NOTIF_ID3)
+                    /*
+                    // Alarm Sound
+                    try {
+                        // For morning alarm sound
+                        val alarmSound: Uri =
+                            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                        val r: Ringtone = RingtoneManager.getRingtone(this, alarmSound)
+                        r.audioAttributes = AudioAttributes.Builder()
+                            .setUsage(USAGE_ALARM)
+                            .setContentType(CONTENT_TYPE_MUSIC).build()
+                        r.play()
+                    }
+                    catch (e: Exception) {
+                        Log.d("ALARM SOUND GENERATION failed : ", e.toString())
+                    }
+                    */
+
+                    //send notification
+                    callAlarmNotification(msg, NOTIF_ID3)
+                    updateNotification("Next Schedule: " + destination!!.name + " at " + destinationTime.substring(0, 5))
 
                     //set alarm to true to stop calling alarm
                     LocationRepository(application).updateIsAlarmed(true, destination!!.id)
                 }
             }
         }
+    }
+
+    private fun getTravelTimeMsg(time: Long): String {
+        val destinationTime = simpleTimeFormat.format(Date(time))
+        val h = (travelTime.toInt()) / 60
+        val m = (travelTime.toInt()) % 60
+        val firstText = "Schedule: " + destination!!.name + " at " + destinationTime.substring(0, 5) + "\n"
+        var secondText = "Travel Time: " + h + "hours and " + m + " minutes"
+        if (h == 0) {
+            secondText = "Travel Time: $m minutes"
+        }
+        if (travelTime.toInt() == 10) {
+            secondText = "Travel Time: less than 10 minutes"
+        }
+        return firstText + secondText
     }
 
     //check if date has changed or not and if changed reset repeated schedule

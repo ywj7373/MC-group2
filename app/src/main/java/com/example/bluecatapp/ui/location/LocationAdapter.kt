@@ -29,8 +29,15 @@ class LocationAdapter internal constructor(locationViewModel: LocationViewModel)
         holder.textViewName.text = locationItem.name
         var time = locationItem.time.substring(0, 16)
         if(locationItem.daysMode)
-            time = locationItem.days + " " + locationItem.time.split(" ")[1].substring(0, 5)
+            time = repeatingDaysToPrettyFormat(locationItem.days) + " " + locationItem.time.split(" ")[1].substring(0, 5)
         holder.textViewTime.text = time
+
+        // When space is not enough to display all the text slice text and append ...
+        if(getWeightedLength(locationItem.name) + getWeightedLength(time) > 40 ) {
+            val lengthAfterSlice = (38 - getWeightedLength(time))
+            val slicePosition = getSlicePosition(locationItem.name, lengthAfterSlice)
+            holder.textViewName.text = locationItem.name.substring(0, slicePosition) + "..."
+        }
 
         holder.loc_img.setOnClickListener {
             val intent = Intent(it.context, MapActivity::class.java)

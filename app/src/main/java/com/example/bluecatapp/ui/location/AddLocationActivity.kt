@@ -2,15 +2,15 @@ package com.example.bluecatapp.ui.location
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
+import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -55,6 +55,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private var days_mode_set: Boolean = false
     private var picked = false
     private var editmode = false
+    private val TIME: Long = 1000
 
     private var intentx: String = ""
     private var intenty: String = ""
@@ -62,6 +63,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private var intenttime: String = ""
     private var intentdays: String = ""
     private var intentdaysMode: Boolean = false
+    private val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,6 +125,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             intenttime = intent.getStringExtra("time")
             intentdays = intent.getStringExtra("days")
             intentdaysMode = intent.getBooleanExtra("daysMode", false)
+            title = "Edit Schedule"
 
             year = intenttime.substring(0,4).toInt()
             monthOfYear = intenttime.substring(5,7).toInt() - 1
@@ -187,6 +190,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     override fun onSearchConfirmed(text: CharSequence) {
         clearAll()
         requestSearch(text.trim().toString())
+        val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(searchBar.windowToken, 0)
     }
 
     override fun onOptionsItemSelected(item: MenuItem) =
@@ -200,6 +205,12 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                     addNewSchedule()
                     //prevents fast double click
                     item.isEnabled = false
+                    //prevents fast double click
+                    val handler = Handler()
+                    val runnable = Runnable {
+                       item.isEnabled = true
+                    }
+                    handler.postDelayed(runnable, TIME)
                 }
                 else Toast.makeText(this@AddLocationActivity, "Please select a valid location!", Toast.LENGTH_SHORT).show()
                 true
@@ -348,6 +359,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private fun clearDays() {
         for (tb in dayButtons) {
             tb.setChecked(false)
+            tb.setBackgroundResource(R.drawable.button_bg_round)
+            tb.setTextColor(ContextCompat.getColor(this, R.color.darker_gray))
         }
         days_mode_set = false
     }
@@ -415,10 +428,17 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     // Save data to database
     private fun addNewSchedule() {
         val isAlarmed = false
-        val done = false
+        var done = false
 
         //add data to the database
         val time = String.format("%04d-%02d-%02d %02d:%02d:00", year, monthOfYear+1, dayOfMonth, hour, min)
+        val currentTime = System.currentTimeMillis()
+        val timeInMilli = timeToSeconds(time)
+
+        //check for date validity
+        if (days_mode_set && (simpleTimeFormat.format(Date(currentTime)) >= (simpleTimeFormat.format(Date(timeInMilli))))) {
+            done = true
+        }
 
         val newLocationItem =
             if (!picked and editmode)
@@ -436,12 +456,25 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                 newLocationItem.x, newLocationItem.y, newLocationItem.time,
                 newLocationItem.isAlarmed, newLocationItem.done,
                 newLocationItem.daysMode, newLocationItem.days, id)
+            finish()
         }
         else {
-            locationViewModel.insert(newLocationItem)
+            //don't allow adding schedule with passed date
+            if (!days_mode_set && currentTime >= timeInMilli) {
+                Toast.makeText(this@AddLocationActivity, "Enter a valid date", Toast.LENGTH_LONG).show()
+            }
+            else  {
+                locationViewModel.insert(newLocationItem)
+                finish()
+            }
         }
+    }
 
-        finish()
+    //convert date to seconds
+    private fun timeToSeconds(time: String): Long {
+        val sf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+        val date: Date? = sf.parse(time)
+        return date!!.time
     }
 
     override fun onButtonClicked(buttonCode: Int) {}
