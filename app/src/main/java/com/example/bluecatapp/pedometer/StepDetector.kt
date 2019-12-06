@@ -1,7 +1,14 @@
 package com.example.bluecatapp.pedometer
 
+import android.util.Log
+import android.widget.Toast
 import com.example.bluecatapp.pedometer.SensorFilter
 import com.example.bluecatapp.pedometer.StepListener
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension
+import com.google.android.gms.fitness.FitnessOptions
+import com.google.android.gms.fitness.data.DataType
+import com.google.android.gms.fitness.data.Value
 
 class StepDetector {
 
@@ -9,9 +16,10 @@ class StepDetector {
     private val VEL_RING_SIZE = 10
 
     // change this threshold according to your sensitivity preferences
-    private val STEP_THRESHOLD = 80f
+    private val STEP_THRESHOLD = 40f
 
-    private val STEP_DELAY_NS = 250000000
+    // Longer step delay to make it less susceptible to large increments by shaking
+    private val STEP_DELAY_NS = 400000000
 
     private var accelRingCounter = 0
     private val accelRingX = FloatArray(ACCEL_RING_SIZE)

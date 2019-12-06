@@ -3,7 +3,6 @@ package com.example.bluecatapp.ui.appblocking
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.AppOpsManager
-import android.app.PendingIntent
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -17,7 +16,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.Handler
 import android.os.SystemClock
 import android.provider.Settings
 import android.text.SpannableStringBuilder
@@ -29,6 +27,8 @@ import android.widget.Chronometer
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.NonNull
+import androidx.core.app.ActivityCompat
 import androidx.core.text.bold
 import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
@@ -41,21 +41,29 @@ import com.example.bluecatapp.pedometer.Pedometer
 import com.example.bluecatapp.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension
+import com.google.android.gms.common.api.ResultCallback
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
-import com.google.android.gms.fitness.data.DataPoint
+import com.google.android.gms.fitness.data.Bucket
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.data.Value
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.request.OnDataPointListener
 import com.google.android.gms.fitness.request.SensorRequest
+import com.google.android.gms.fitness.result.DataReadResponse
+import com.google.android.gms.fitness.result.DataReadResult
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.fragment_appblocking.*
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.jar.Manifest
 
 class AppDisplayListItem(
     val displayName: String?,
@@ -74,7 +82,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var appStepCounters: MutableMap<String, Int>
     private lateinit var sharedPrefs: SharedPreferences
 
-    //Appblock variables
+    // Appblock variables
     private lateinit var blockTitle: TextView
     private lateinit var blockedAppName: TextView
     private lateinit var chrono: Chronometer
@@ -86,7 +94,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var divider2: View
 
 
-    //Pedometer variables
+    // Pedometer variables
     private lateinit var pedometer: Pedometer
     private var pedometerEnabled: Boolean = false
     private lateinit var sensorManager: SensorManager
@@ -97,8 +105,12 @@ class AppBlockingFragment : Fragment() {
     private lateinit var motivationalText: TextView
     private var maxStepCount: Int = 10
 
-    private val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 150
-    private val TAG = "GOOGLE_FIT"
+    private lateinit var fitnessOptions: FitnessOptions
+
+    // Constants
+    val MY_PERMISSIONS_REQUEST_ACTIVITY_RECOGNITION = 151
+    val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 150
+    val TAG = "GOOGLE_FIT"
 
 
     override fun onAttach(context: Context) {
@@ -115,14 +127,9 @@ class AppBlockingFragment : Fragment() {
         sharedPrefs = getDefaultSharedPreferences(this.context)
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//        Toast.makeText(
-//            activity!!.applicationContext,
-//            "PEDOMETER RESUMED",
-//            Toast.LENGTH_SHORT
-//        ).show()
-//    }
+    override fun onResume() {
+        super.onResume()
+    }
 
 //    override fun onDestroy() {
 //        super.onDestroy()
@@ -219,26 +226,36 @@ class AppBlockingFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        // Check usage data access permissions
         if (hasUsageDataAccessPermission()) {
             Log.d("bcat", "Permissions all good")
         } else {
             // Permission is not granted, show alert dialog to request for permission
             showAlertDialog()
         }
-
-        if(pedometerEnabled){
-            checkGoogleFitPermissions()
-        }
     }
 
-    private fun checkGoogleFitPermissions(){
+    private fun requestGoogleFitPermissions() {
         // Declare FitAPI data types
-        val fitnessOptions =
+        fitnessOptions =
             FitnessOptions.builder()
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                 .build()
+
+        // From Android 10 (API 29) Activity Recognition permissions required
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q){
+            if (
+                ActivityCompat.checkSelfPermission(requireContext(),
+                    android.Manifest.permission.ACTIVITY_RECOGNITION)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                // Requesting Activity Recognition permissions
+                ActivityCompat.requestPermissions(activity!!,
+                    arrayOf(android.Manifest.permission.ACTIVITY_RECOGNITION),
+                    MY_PERMISSIONS_REQUEST_ACTIVITY_RECOGNITION)
+            }
+        }
 
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(context), fitnessOptions)) {
             GoogleSignIn.requestPermissions(
@@ -253,6 +270,10 @@ class AppBlockingFragment : Fragment() {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+    private fun checkGoogleFitPermissions(fitnessOptions: FitnessOptions): Boolean {
+        return GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(context), fitnessOptions)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -270,25 +291,27 @@ class AppBlockingFragment : Fragment() {
 
     // Access GoogleAPI client
     /** Records step data by requesting a subscription to background step data. */
-    fun subscribe() {
+    fun subscribeGoogleFit() {
         // To create a subscription, invoke the Recording API. As soon as the subscription is
         // active, fitness data will start recording.
-        Fitness.getRecordingClient(context!!, GoogleSignIn.getLastSignedInAccount(context)!!)
-            .subscribe(DataType.TYPE_STEP_COUNT_DELTA)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.i(TAG, "Successfully subscribed!")
-                } else {
-                    Log.w(TAG, "There was a problem subscribing.", task.exception)
+        GoogleSignIn.getLastSignedInAccount(context)?.let {
+            Fitness.getRecordingClient(context!!, it)
+                .subscribe(DataType.TYPE_STEP_COUNT_DELTA)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d(TAG, "Successfully subscribed!")
+                    } else {
+                        Log.d(TAG, "There was a problem subscribing.", task.exception)
+                    }
                 }
-            }
+        }
     }
 
     /**
      * Reads the current daily step total, computed from midnight of the current day on the device's
      * current timezone.
      */
-    private fun readData(initialCount: Int, appName: String): Int {
+    private fun readGoogleFitStepData(appName: String): Int {
         var total = 0
 
         val  fitnessOptions: GoogleSignInOptionsExtension =
@@ -299,21 +322,34 @@ class AppBlockingFragment : Fragment() {
         val googleSignInAccount =
             GoogleSignIn.getAccountForExtension(context!!, fitnessOptions);
 
+        // Listen to live changes in step count
         val stepCountListener = OnDataPointListener { p0 ->
             p0!!.dataType.fields.forEach { field ->
                 val value : Value = p0.getValue(field)
                 //                    Value(TotalSteps);
                 //                     TotalSteps=val+TotalSteps;
-                Log.i(TAG, "Detected DataPoint field: $field.name")
+                Log.i(TAG, "Detected DataPoint field: ${field.name}")
                 Log.i(TAG, "Detected DataPoint value: $value")
 
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "Google fit listen: $value steps",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+                val stepCountOfApp = appStepCounters[appName]
 
+                if (stepCountOfApp!! < maxStepCount) {
+                    // Increment step count
+                    appStepCounters[appName] = stepCountOfApp +
+                            value.asInt() % (maxStepCount - stepCountOfApp + 1) // sum should not exceed maxStepCount
+                }
+                // Update changes in step count
+                with(sharedPrefs.edit()) {
+                    putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
+                    commit()
+                }
+                pedometerValue.text = "${appStepCounters[appName]}"
+
+                if (appStepCounters[appName]!! >= maxStepCount) {
+                    pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
+                    pedometerMaxValue.setTextColor(Color.parseColor("#8bc34a"))
+                }
+            }
         }
 
         var  response: Task<Void> = Fitness.getSensorsClient(context!!, googleSignInAccount)
@@ -325,74 +361,36 @@ class AppBlockingFragment : Fragment() {
                                             stepCountListener)
 
 
-//        Fitness.getHistoryClient(context!!, GoogleSignIn.getLastSignedInAccount(context)!!)
-//            .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
-//            .addOnSuccessListener { dataSet ->
-//                if (!dataSet.isEmpty) {
-//                    total = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt()
-//                    Log.i(TAG, "Total steps: $total")
-//                    // Update views
-//                    val stepsTaken = total - initialCount
-//
-//                    appStepCounters[appName] = stepsTaken
-////                    with(sharedPrefs.edit()) {
-////                        // update changed values
-////                        putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
-////                        commit()
-////                    }
-//                    pedometerValue.setText("${appStepCounters[appName]}")
-//                }
-//                Toast.makeText(
-//                    activity!!.applicationContext,
-//                    "Google fit: $total steps",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
-//            .addOnFailureListener { e -> Log.w(
-//                TAG,
-//                "There was a problem getting the step count."
-//            )}
-        return total
-    }
-
-    // Obtain initial data from Google Fit at current time
-    private fun initializeGoogleFitData(): Int{
-        var total = 0
-        Fitness.getHistoryClient(context!!, GoogleSignIn.getLastSignedInAccount(context)!!)
+        Fitness.getHistoryClient(context!!, GoogleSignIn.getAccountForExtension(context!!, fitnessOptions))
             .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
             .addOnSuccessListener { dataSet ->
                 if (!dataSet.isEmpty) {
-                    val total = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt()
-                    Log.i(TAG, "Initial steps: $total")
+                    total = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt()
+                    Log.d("GOOGLE_FIT", "Total steps today: $total")
                 }
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "Google fit: initial $total steps",
-                    Toast.LENGTH_SHORT
-                ).show()
             }
-            .addOnFailureListener { e -> Log.w(
+            .addOnFailureListener {Log.w(
                 TAG,
                 "There was a problem getting the step count."
             )}
         return total
     }
 
-    private fun accessGoogleFit() {
-        val googleSignInAccount: GoogleSignInAccount = GoogleSignIn.getLastSignedInAccount(context)!!
-
-        val cal: Calendar = Calendar.getInstance()
-        cal.time
-        val endTime: Long  = cal.timeInMillis
-        cal.add(Calendar.YEAR, -1)
-        val startTime: Long = cal.timeInMillis
-
-        val readRequest = DataReadRequest.Builder()
-                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                .bucketByTime(1, TimeUnit.DAYS)
-                .build()
-
+//    private fun accessGoogleFit() {
+//        val googleSignInAccount: GoogleSignInAccount = GoogleSignIn.getAccountForExtension(context!!, fitnessOptions)
+//
+//        val cal: Calendar = Calendar.getInstance()
+//        cal.time
+//        val endTime: Long  = cal.timeInMillis
+//        cal.add(Calendar.YEAR, -1)
+//        val startTime: Long = cal.timeInMillis
+//
+//        val readRequest = DataReadRequest.Builder()
+//                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+//                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+//                .bucketByTime(1, TimeUnit.DAYS)
+//                .build()
+//
 //        val pendingResult = Fitness.HistoryApi.readData(client, readRequest)
 //pendingResult.setResultCallback(ResultCallback<DataReadResult>() {
 //
@@ -401,8 +399,8 @@ class AppBlockingFragment : Fragment() {
 //
 //        for (bucket in allBuckets) {
 //            val startAtSeconds = bucket.getStartTime(TimeUnit.SECONDS);
-
-//            val stepsValue: Value = getValue(bucket, DataType.TYPE_STEP_COUNT_DELTA, Field.FIELD_STEPS);
+//
+//            val stepsValue: Value = DataType.getValue(bucket, DataType.TYPE_STEP_COUNT_DELTA, Field.FIELD_STEPS);
 //            val steps: Int = stepsValue.asInt()
 //
 //            Log.d("GOOGLE_FIT", String.format("startAtSeconds %s, steps %s", startAtSeconds, steps));
@@ -411,33 +409,28 @@ class AppBlockingFragment : Fragment() {
 //})
 //        var result = Fitness.getHistoryClient(activity!!, googleSignInAccount)
 //                .readData(readRequest)
-//                .addOnSuccessListener(object: OnSuccessListener<DataReadResponse> {
-//                    override fun onSuccess(dataReadResponse: DataReadResponse ) {
-//                        Toast.makeText(
-//                            activity!!.applicationContext,
-//                            "Google Fit OnSuccess",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                    }
-//                })
-//                .addOnFailureListener(object: OnFailureListener {
-//                    override fun onFailure(p0: Exception) {
-//                        Toast.makeText(
-//                            activity!!.applicationContext,
-//                            "Google Fit OnFailure",
-//                            Toast.LENGTH_SHORT
-//                        ).show()                    }
-//                })
-//                .addOnCompleteListener(object: OnCompleteListener<DataReadResponse>{
-//                    override fun onComplete(p0: Task<DataReadResponse>) {
-//                        Toast.makeText(
-//                            activity!!.applicationContext,
-//                            "Google Fit OnComplete",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                    }
-//                })
-    }
+//                .addOnSuccessListener {
+//                    Toast.makeText(
+//                        activity!!.applicationContext,
+//                        "Google Fit OnSuccess",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//                }
+//            .addOnFailureListener {
+//                Toast.makeText(
+//                    activity!!.applicationContext,
+//                    "Google Fit OnFailure",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//            .addOnCompleteListener {
+//                Toast.makeText(
+//                    activity!!.applicationContext,
+//                    "Google Fit OnComplete",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//    }
 
     private fun hasUsageDataAccessPermission(): Boolean {
         val mode = appOps.checkOpNoThrow(
@@ -563,81 +556,67 @@ class AppBlockingFragment : Fragment() {
     }
 
     private fun startPedometer(appName: String, numberOfSteps: Int) {
-        Log.i(TAG, "Pedometer started")
+        Log.d(TAG, "Pedometer started")
         // initialize step counter views
         pedometerValue.text = "${appStepCounters[appName]}"
         pedometerMaxValue.text = " of $numberOfSteps"
 
-        val initialCount = appStepCounters[appName]!!
+        /**
+         * Check permissions for GoogleFit API
+         */
+        requestGoogleFitPermissions()
+        val hasGoogleFitPermissions = checkGoogleFitPermissions(fitnessOptions)
+        var initialGoogleFitData = 0
+        val initialStepCount = appStepCounters[appName]?:0
 
-        // Declare pedometer implementation
-        pedometer = object : Pedometer() {
-            override fun onSensorChanged(event: SensorEvent?) {
-                if (appStepCounters[appName]!! < maxStepCount) {
-                    super.onSensorChanged(event)
-                }
-            }
-            // When step detected
-            override fun step(timeNs: Long) {
-                super.step(timeNs)
-                // Step count should not go over upper bound
-                if(appStepCounters[appName]!! < maxStepCount) {
-                    // Increment step count
-                    appStepCounters[appName] = appStepCounters[appName]!! + 1
-                }
-                // Update changes in step count
-                with(sharedPrefs.edit()) {
-                    putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
-                    commit()
-                }
-                pedometerValue.text ="${appStepCounters[appName]}"
-
-                if (appStepCounters[appName]!! >= numberOfSteps) {
-                    pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
-                    pedometerMaxValue.setTextColor(Color.parseColor("#8bc34a"))
-                }
-            }
-        }
-        sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensorManager!!.registerListener(
-            pedometer,
-            sensorManager!!.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
-            SensorManager.SENSOR_DELAY_FASTEST
-        )
-    }
-
-    // Check if device has built-in system feature
-    private fun checkSensorFeatures(feature: String) {
-        if (packageManager.hasSystemFeature(feature)) {
-            Toast.makeText(
-                activity!!.applicationContext,
-                "$feature feature found",
-                Toast.LENGTH_SHORT
-            ).show()
+        if(hasGoogleFitPermissions) {
+            subscribeGoogleFit()
+            // start recording GoogleFit step count
+           readGoogleFitStepData(appName)
         } else {
+            // Use accelerometer-based pedometer as fallback option
             Toast.makeText(
                 activity!!.applicationContext,
-                "$feature feature not found",
+                "Using regular pedometer",
                 Toast.LENGTH_SHORT
             ).show()
-        }
-    }
 
-    // Pedometer feature using built in pedometer hardware
-    private fun stepCounter(): SensorEventListener {
-        return object : SensorEventListener {
+            // Declare pedometer implementation
+            pedometer = object : Pedometer() {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    // Only detect steps if under max step count
+                        if (appStepCounters[appName]!! < maxStepCount) {
+                            super.onSensorChanged(event)
+                        }
+                    }
 
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+                // Behavior when a step is detected
+                override fun step(timeNs: Long) {
+                    super.step(timeNs)
+                    // Step count should not go over upper bound
+                    if (appStepCounters[appName]!! < maxStepCount) {
+                        // Increment step count
+                        appStepCounters[appName] = appStepCounters[appName]!!.plus(1)
+                    }
+                    // Update changes in step count
+                    with(sharedPrefs.edit()) {
+                        putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
+                        commit()
+                    }
+                    pedometerValue.text = "${appStepCounters[appName]}"
 
-            override fun onSensorChanged(event: SensorEvent?) {
-                val currentStepCount = event!!.values[0].toInt()
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "YOU MOVED $currentStepCount STEPS",
-                    Toast.LENGTH_SHORT
-                ).show()
-                pedometerValue.setText("$currentStepCount / $maxStepCount steps")
+                    if (appStepCounters[appName]!! >= numberOfSteps) {
+                        pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
+                        pedometerMaxValue.setTextColor(Color.parseColor("#8bc34a"))
+                    }
+                }
             }
+            sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            sensorManager!!.registerListener(
+                pedometer,
+                sensorManager!!.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
+                SensorManager.SENSOR_DELAY_FASTEST
+            )
         }
     }
 
@@ -668,6 +647,7 @@ class AppBlockingFragment : Fragment() {
         pedometerMaxValue.visibility = View.GONE
     }
 }
+
 
 
 
