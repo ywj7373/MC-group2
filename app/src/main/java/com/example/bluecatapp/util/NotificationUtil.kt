@@ -60,7 +60,8 @@ class NotificationUtil {
                     context.getString(R.string.FROM_FINALNOTI)
                     )
                 )
-                .addAction(R.drawable.ic_stop, "Stop", stopPendingIntent)
+                .setOngoing(true)
+                .setContentIntent(stopPendingIntent)
 
             val nManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -98,7 +99,8 @@ class NotificationUtil {
                         context.getString(R.string.FROM_PRENOTI)
                     )
                 )
-                .addAction(R.drawable.ic_stop, "Stop", stopPendingIntent)
+                .setOngoing(true)
+                .setContentIntent(stopPendingIntent)
 
             val nManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -117,17 +119,29 @@ class NotificationUtil {
 //
 //            val stopPendingIntent = PendingIntent.getBroadcast(context,
 //                0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+//
+//            val pauseIntent = Intent(context, TimerNotificationActionReceiver::class.java)
+//            pauseIntent.action = HWConstants.ACTION_PAUSE
+//            val pausePendingIntent = PendingIntent.getBroadcast(
+//                context,
+//                0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT
+//            )
 
-            val pauseIntent = Intent(context, TimerNotificationActionReceiver::class.java)
-            pauseIntent.action = HWConstants.ACTION_PAUSE
-            val pausePendingIntent = PendingIntent.getBroadcast(
+            val i = Intent(context, TimerNotificationActionReceiver::class.java)
+            i.flags =
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+//            or Intent.FLAG_ACTIVITY_FORWARD_RESULT
+            i.putExtra(
+                "id",
+                context.getString(R.string.FROM_RUNNINGNOTI)
+            ) // notifying the activity that this is from the pre alarm
+            val pi = PendingIntent.getBroadcast(
                 context,
-                0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                0, i, PendingIntent.FLAG_UPDATE_CURRENT
             )
 
             val df = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT)
 
-            // can only pause at the notification
             val nBuilder = getBasicNotificationBuilder(context, CHANNEL_ID_TIMER, true)
             nBuilder.setContentTitle("Timer is Running.")
                 .setContentText("Ends at : ${df.format(Date(wakeUpTime))}")
@@ -140,7 +154,7 @@ class NotificationUtil {
                     )
                 )
                 .setOngoing(true)
-                .addAction(R.drawable.ic_pause, "Pause", pausePendingIntent)
+                .setContentIntent(pi)
 
             val nManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

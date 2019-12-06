@@ -68,6 +68,7 @@ class TimerActivity : AppCompatActivity() {
 
                 "notiAlarmSeconds : ${notiAlarmSeconds}, wakeUpTime : $wakeUpTime"
             )
+
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val intent = Intent(context, TimerExpiredReceiver::class.java)
                 .apply { action = HWConstants.ACTION_ALARM_NOTIFICATION }
@@ -232,6 +233,19 @@ class TimerActivity : AppCompatActivity() {
                     ).show()
                     resetTimerFuntions()
                 }
+                getString(R.string.FROM_RUNNINGNOTI) ->{
+                    Log.d("TimerActivity:onCreate", "flag FROM_FINALNOTI")
+                    Toast.makeText(
+                        this,
+                        "Welcome Back!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    include_time_counter.visibility = View.VISIBLE
+//            include_sensor_counter.visibility = View.GONE
+
+                    resumeTimerFuntions()
+                }
+
             }
         } else {
             resumeTimerFuntions()
@@ -398,6 +412,15 @@ class TimerActivity : AppCompatActivity() {
                     ).show()
                     resetTimerFuntions()
                 }
+                getString(R.string.FROM_RUNNINGNOTI) ->{
+                    Log.d("TimerActivity:onCreate", "flag FROM_FINALNOTI")
+                    Toast.makeText(
+                        this,
+                        "Welcome Back!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    resumeTimerFuntions()
+                }
             }
         } else {
             resumeTimerFuntions() // in normal cases, just resume the timer with the pre-saved timer state
@@ -527,7 +550,6 @@ class TimerActivity : AppCompatActivity() {
 
         val alarmSetTime = PrefUtil.getAlarmSetTime(this)
 //        val alarmSetTime2 = PrefUtil.getAlarmSetTime2(this) => in startTimer
-
         if (alarmSetTime > 0)
             secondsRemaining -= nowSeconds - alarmSetTime
 //        if(alarmSetTime2>0){
