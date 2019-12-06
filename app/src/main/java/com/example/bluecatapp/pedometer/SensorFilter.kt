@@ -1,4 +1,4 @@
-package com.example.bluecatapp
+package com.example.bluecatapp.pedometer
 
 
 class SensorFilter {

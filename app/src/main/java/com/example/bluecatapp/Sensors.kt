@@ -1,8 +1,5 @@
 package com.example.bluecatapp
 
-import android.app.Activity
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -16,8 +13,7 @@ import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
 import androidx.preference.PreferenceManager
-import android.widget.TextView
-import com.google.gson.reflect.TypeToken
+import com.example.bluecatapp.pedometer.Pedometer
 
 open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
 
