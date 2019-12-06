@@ -31,7 +31,6 @@
             android:name="com.naver.maps.map.CLIENT_ID"
             android:value="@string/naver_api_key_id" />
         <service android:name=".AppBlockForegroundService" />
-        <service android:name=".ui.appblocking.StepCounter"/>
 
         <activity
             android:name=".MainActivity"

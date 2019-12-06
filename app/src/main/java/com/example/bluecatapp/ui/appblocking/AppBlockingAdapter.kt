@@ -68,7 +68,6 @@ class AppBlockingAdapter(
             holder.appStepCount.visibility = View.VISIBLE
             holder.appProgress.max = maxStepCount //initialize max progress value
             val stepCount = appList[position].blockSteps as Int
-            holder.appProgress.max = maxStepCount
             holder.appProgress.progress = stepCount
             holder.appStepCount.setText("$stepCount / $maxStepCount steps")
 
