@@ -32,7 +32,7 @@ class LocationAdapter internal constructor(locationViewModel: LocationViewModel)
         holder.textViewName.text = locationItem.name
         var time = locationItem.time.substring(0, 16)
         if(locationItem.daysMode)
-            time = locationItem.days + " " + locationItem.time.split(" ")[1].substring(0, 5)
+            time = repeatingDaysToPrettyFormat(locationItem.days) + " " + locationItem.time.split(" ")[1].substring(0, 5)
         holder.textViewTime.text = time
 
         // When space is not enough to display all the text slice text and append ...
