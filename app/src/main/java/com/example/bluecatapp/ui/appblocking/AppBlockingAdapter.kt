@@ -3,7 +3,6 @@ package com.example.bluecatapp.ui.appblocking
 import android.graphics.Color
 import android.os.CountDownTimer
 import android.os.SystemClock
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -48,9 +47,10 @@ class AppBlockingAdapter(
         holder.appName.text = appList[position].displayName
         val finishTimeStamp = appList[position].blockTimeStamp
         holder.appIcon.setImageDrawable(appList[position].icon)
+        holder.totalUsage.text = appList[position].todayUsageString
+        holder.remainingUsage.text = appList[position].remainingUsage
 
         val isAppBlocked = finishTimeStamp != null
-        Log.d("bcat", appList[position].displayName + isAppBlocked)
         if (isAppBlocked) {
             holder.blockedText.visibility = View.VISIBLE
             holder.appTime.visibility = View.VISIBLE

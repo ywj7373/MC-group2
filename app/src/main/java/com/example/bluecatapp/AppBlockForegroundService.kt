@@ -25,7 +25,7 @@ class AppBlockForegroundService : Service() {
     // Constants
     private val CHANNEL_ID = "AppBlockForegroundService"
     private val UPDATE_INTERVAL: Long = 1000
-
+    private var isHandlerRunning: Boolean = false
     // Mutable maps for blocked app list
     private lateinit var myUsageStatsMap: MutableMap<String, UsageStats>
     private lateinit var currentlyBlockedApps: MutableMap<String, Long>
@@ -62,21 +62,16 @@ class AppBlockForegroundService : Service() {
     }
 
     override fun onCreate() {
+        Log.d("bcat", "Started app blocking service.")
         super.onCreate()
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         appUsageTimers = mutableMapOf()
+        pedometerEnabled = sharedPrefs.getBoolean("pedometer", false)
+        maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("bcat", "Started app blocking service.")
-
-        // Load preferences
-//        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-        pedometerEnabled = sharedPrefs.getString("pedometer", "false")!!.toBoolean()
-        maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
-
         val input = intent?.getStringExtra("inputExtra")
         createNotificationChannel()
         val notificationIntent = Intent(this, MainActivity::class.java).putExtra(
@@ -99,23 +94,28 @@ class AppBlockForegroundService : Service() {
 
         startForeground(1, notification)
 
-        currentAppUsageTimerHandler = Handler()
-        // Keep checking if we should block the current app
-        handler = Handler()
-        runnable = Runnable {
-            checkIfShouldBlockForegroundApp()
-            checkForAppsToUnblock()
-            checkForAppUsagesToReset()
-            /**
-             * TODO: improve algorithm for more efficient update interval
-             * Suggestion: calculate appropriate check in interval based on
-             * block duration current totaltimeinforground
-             */
-            handler.postDelayed(runnable, UPDATE_INTERVAL)
-            getForegroundApp()?.let { retryBlockIfFailed(it) }
-        }
-        handler.postDelayed(runnable, UPDATE_INTERVAL)
+        if (!isHandlerRunning) {
+            // Ensure that then runnable does not duplicate.
+            Log.d("bcat", "Handler is running")
+            isHandlerRunning = true
 
+            currentAppUsageTimerHandler = Handler()
+            // Keep checking if we should block the current app
+            handler = Handler()
+            runnable = Runnable {
+                checkIfShouldBlockForegroundApp()
+                checkForAppsToUnblock()
+                checkForAppUsagesToReset()
+                /**
+                 * TODO: improve algorithm for more efficient update interval
+                 * Suggestion: calculate appropriate check in interval based on
+                 * block duration current totaltimeinforground
+                 */
+                handler.postDelayed(runnable, UPDATE_INTERVAL)
+                getForegroundApp()?.let { retryBlockIfFailed(it) }
+            }
+            handler.postDelayed(runnable, UPDATE_INTERVAL)
+        }
         return START_NOT_STICKY
     }
 
@@ -158,6 +158,7 @@ class AppBlockForegroundService : Service() {
         val usage = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val endTime = System.currentTimeMillis()
         val beginTime = endTime - (1 * 60 * 1000)
+        // Usage stats for all apps over the past 24 hours
         myUsageStatsMap = usage.queryAndAggregateUsageStats(
             System.currentTimeMillis() - (24 * 60 * 60 * 1000),
             endTime
@@ -392,8 +393,8 @@ class AppBlockForegroundService : Service() {
         }
     }
 
-    // Queries all device's app usage stats in a given time interval
     private fun getUsageStatsForApp(targetPackageName: String): UsageStats? {
+        // Return the usage stats object for a spesific app. Queried over the past 24 hours.
         myUsageStatsMap.forEach { (_, usageStats) ->
             if (usageStats.packageName == targetPackageName) {
                 return usageStats
@@ -451,7 +452,7 @@ class AppBlockForegroundService : Service() {
             }
             Toast.makeText(
                 this.applicationContext,
-                "Block lifted: $unblockListPrettyNames",
+                "Block on $unblockListPrettyNames has been lifted.",
                 Toast.LENGTH_LONG
             )
                 .show()
@@ -480,7 +481,6 @@ class AppBlockForegroundService : Service() {
     }
 
     private fun onCloseRestrictedApp() {
-
         currentAppUsageTimerHandler.removeCallbacks(currentAppUsageTimerRunnable)
     }
 

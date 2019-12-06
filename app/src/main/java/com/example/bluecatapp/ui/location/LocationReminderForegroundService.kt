@@ -29,6 +29,12 @@ import kotlin.math.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
+import android.media.AudioAttributes
+import android.media.AudioAttributes.CONTENT_TYPE_MUSIC
+import android.media.AudioAttributes.USAGE_ALARM
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
 
 const val ODsayTimeout = 5000
 const val LOCATION_TRACKER_INTERVAL: Long = 60000 //60s
@@ -74,7 +80,6 @@ class LocationReminderForegroundService : Service() {
         startNotification()
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val on = sharedPreferences.getBoolean("Location Based Reminder", true)
 
         //observe change in current location
         locationViewModel = LocationViewModel(application)
@@ -95,8 +100,6 @@ class LocationReminderForegroundService : Service() {
                     destination = t
                     if (srcLat != 0.0 && srcLong != 0.0)
                         updateEstimatedTime(srcLat, srcLong)
-                    if (on) checkTime()
-                    else updateNotification("Alarm Disabled")
                 }
                 else {
                     destination = null
@@ -121,23 +124,18 @@ class LocationReminderForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val on = sharedPreferences.getBoolean("Location Based Reminder", true)
+        updateNotification("No Alarm")
 
-        if (on) {
-            updateNotification("No Alarm")
-            val handler = Handler()
-            runnable = Runnable {
-                Log.d(TAG, "new routine!")
-                checkDate()
-                checkCurrentLocation()
-                checkTime()
-                handler.postDelayed(runnable, ROUTINE_INTERVAL)
-            }
-            handler.post(runnable)
+        val handler = Handler()
+        runnable = Runnable {
+            Log.d(TAG, "new routine!")
+            checkDate()
+            checkCurrentLocation()
+            checkTime()
+            handler.postDelayed(runnable, ROUTINE_INTERVAL)
         }
-        else {
-            updateNotification("Alarm Disabled")
-        }
+        handler.post(runnable)
+
         return START_NOT_STICKY
     }
 
@@ -249,6 +247,23 @@ class LocationReminderForegroundService : Service() {
                         //deprecated in API 26
                         v.vibrate(VIBRATION_TIME)
                     }
+
+                    /*
+                    // Alarm Sound
+                    try {
+                        // For morning alarm sound
+                        val alarmSound: Uri =
+                            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                        val r: Ringtone = RingtoneManager.getRingtone(this, alarmSound)
+                        r.audioAttributes = AudioAttributes.Builder()
+                            .setUsage(USAGE_ALARM)
+                            .setContentType(CONTENT_TYPE_MUSIC).build()
+                        r.play()
+                    }
+                    catch (e: Exception) {
+                        Log.d("ALARM SOUND GENERATION failed : ", e.toString())
+                    }
+                    */
 
                     //send notification
                     callAlarmNotification(msg, NOTIF_ID3)

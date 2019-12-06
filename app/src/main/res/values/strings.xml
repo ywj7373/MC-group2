@@ -48,7 +48,7 @@
     <string name="pedometer_title">Pedometer</string>
     <string name="pedometer_summary_on">Step count feature enabled during app blocking</string>
     <string name="pedometer_summary_off">Step count feature disabled during app blocking</string>
-    <string name="pedometer_count_title">Step Count</string>
+    <string name="pedometer_count_title">Pedometer Step Count</string>
     <string name="pedometer_count_summary">Select number of steps to complete</string>
 
     <!-- Location Preferences -->

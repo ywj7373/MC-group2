@@ -2,16 +2,15 @@ package com.example.bluecatapp.ui.location
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
+import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -126,6 +125,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             intenttime = intent.getStringExtra("time")
             intentdays = intent.getStringExtra("days")
             intentdaysMode = intent.getBooleanExtra("daysMode", false)
+            title = "Edit Schedule"
 
             year = intenttime.substring(0,4).toInt()
             monthOfYear = intenttime.substring(5,7).toInt() - 1
@@ -190,6 +190,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     override fun onSearchConfirmed(text: CharSequence) {
         clearAll()
         requestSearch(text.trim().toString())
+        val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(searchBar.windowToken, 0)
     }
 
     override fun onOptionsItemSelected(item: MenuItem) =
@@ -357,6 +359,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private fun clearDays() {
         for (tb in dayButtons) {
             tb.setChecked(false)
+            tb.setBackgroundResource(R.drawable.button_bg_round)
+            tb.setTextColor(ContextCompat.getColor(this, R.color.darker_gray))
         }
         days_mode_set = false
     }
@@ -452,6 +456,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                 newLocationItem.x, newLocationItem.y, newLocationItem.time,
                 newLocationItem.isAlarmed, newLocationItem.done,
                 newLocationItem.daysMode, newLocationItem.days, id)
+            finish()
         }
         else {
             //don't allow adding schedule with passed date
