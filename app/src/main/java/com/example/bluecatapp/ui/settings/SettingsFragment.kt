@@ -76,11 +76,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
             override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
 
                 if (!locationReminderPreference.isChecked) {
+
                     if (ActivityCompat.checkSelfPermission(
                             requireContext(),
                             Manifest.permission.ACCESS_COARSE_LOCATION
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
+                        editor.putBoolean("Location Reminder", true)
+                        editor.commit()
                         LocationReminderForegroundService.startService(context!!)
                         Toast.makeText(
                             activity!!.applicationContext,
@@ -96,6 +99,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         requestLocationPermission()
                     }
                 } else {
+                    editor.putBoolean("Location Reminder", false)
+                    editor.commit()
                     LocationReminderForegroundService.stopService(context!!)
                     Toast.makeText(
                         activity!!.applicationContext,
@@ -321,7 +326,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 Toast.makeText(requireActivity(), "Turn on location", Toast.LENGTH_LONG).show()
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
-            } else LocationReminderForegroundService.startService(requireContext())
+            } else {
+                editor.putBoolean("Location Reminder", true)
+                editor.apply()
+                LocationReminderForegroundService.startService(requireContext())
+            }
         } else {
             //turn off location reminder
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())

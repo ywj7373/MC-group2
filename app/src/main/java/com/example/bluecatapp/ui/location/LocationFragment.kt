@@ -27,6 +27,7 @@ class LocationFragment : Fragment() {
     private lateinit var locationViewModel: LocationViewModel
     private val PERMISSION_ID = 270
     private lateinit var locationAdapter: LocationAdapter
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -106,8 +107,11 @@ class LocationFragment : Fragment() {
                     locationViewModel.resetStats()
                 }
             })
-
-        // startLocationService()
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val isON = sharedPreferences.getBoolean("Location Reminder", true)
+        if (isON) {
+            startLocationService()
+        }
 
         return root
     }
