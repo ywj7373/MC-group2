@@ -1,6 +1,7 @@
 package com.example.bluecatapp.ui.location
 
 import android.app.*
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -45,6 +46,7 @@ const val NOTIF_ID3 = 3
 const val ROUTINE_INTERVAL: Long = 60000
 const val DEFAULT_TRAVEL_TIME = "20"
 const val VIBRATION_TIME: Long = 1000
+var ringtone: Ringtone? = null
 
 class LocationReminderForegroundService : Service() {
     private val TAG = "Routine Service"
@@ -183,11 +185,19 @@ class LocationReminderForegroundService : Service() {
     }
 
     private fun callAlarmNotification(text: String, id: Int) {
+        val intent = Intent(this, AlarmNotificationDeletedReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
         val builder = NotificationCompat.Builder(this, locationNotificationId)
             .setContentTitle("Reminder!")
             .setSmallIcon(R.drawable.ic_location_on_black_24dp)
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setDeleteIntent(pendingIntent)
             .build()
+        //builder.flags = (builder.flags or Notification.FLAG_AUTO_CANCEL)
+        val alarmSoundEnabled = sharedPreferences.getBoolean("Enable Alarm Sound", false)
+        if(alarmSoundEnabled) {          // When alarm sound preference is on
+            soundAlarm()
+        }
         notificationManager.notify(id, builder)
     }
 
@@ -247,23 +257,6 @@ class LocationReminderForegroundService : Service() {
                         //deprecated in API 26
                         v.vibrate(VIBRATION_TIME)
                     }
-
-                    /*
-                    // Alarm Sound
-                    try {
-                        // For morning alarm sound
-                        val alarmSound: Uri =
-                            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                        val r: Ringtone = RingtoneManager.getRingtone(this, alarmSound)
-                        r.audioAttributes = AudioAttributes.Builder()
-                            .setUsage(USAGE_ALARM)
-                            .setContentType(CONTENT_TYPE_MUSIC).build()
-                        r.play()
-                    }
-                    catch (e: Exception) {
-                        Log.d("ALARM SOUND GENERATION failed : ", e.toString())
-                    }
-                    */
 
                     //send notification
                     callAlarmNotification(msg, NOTIF_ID3)
@@ -489,5 +482,29 @@ class LocationReminderForegroundService : Service() {
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
+    }
+
+    private fun soundAlarm() {
+        // Alarm Sound
+        try {
+            // For morning alarm sound
+            val alarmSound: Uri =
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            ringtone = RingtoneManager.getRingtone(this, alarmSound)
+            ringtone!!.audioAttributes = AudioAttributes.Builder()
+                .setUsage(USAGE_ALARM)
+                .setContentType(CONTENT_TYPE_MUSIC).build()
+            ringtone!!.play()
+        }
+        catch (e: Exception) {
+            Log.d("ALARM SOUND GENERATION failed : ", e.toString())
+        }
+    }
+}
+
+class AlarmNotificationDeletedReceiver: BroadcastReceiver() {
+    override fun onReceive(p0: Context?, p1: Intent?) {
+        Log.d("ALARM NOTIFICATION DELETED", "Deleted")
+        ringtone!!.stop()
     }
 }

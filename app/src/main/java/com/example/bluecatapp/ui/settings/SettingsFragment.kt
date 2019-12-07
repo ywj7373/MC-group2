@@ -132,7 +132,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         resetStatisticsPreference?.setOnPreferenceClickListener(object :
             Preference.OnPreferenceClickListener {
             override fun onPreferenceClick(preference: Preference?): Boolean {
-
                 // Dialogue to confirm
                 AlertDialog.Builder(requireContext())
                     .setTitle("Reset Statistics")
