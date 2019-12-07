@@ -278,6 +278,7 @@ class AppBlockForegroundService : Service() {
                      * Use regular app blocking algorithm based on usage time
                      */
                     currentAppUsage = appUsageTimers.getOrPut(foregroundApp) { 0 }
+
                     // Send notification 5 min before block
                     if ((maxTimeLimit - currentAppUsage) == 1000 * 60 * 5.toLong()) {
                         val toast = Toast.makeText(
@@ -426,11 +427,15 @@ class AppBlockForegroundService : Service() {
     }
 
     private fun checkForAppsToUnblock() {
+        pedometerEnabled = sharedPrefs.getBoolean("pedometer", false)
         var didChange = false
         var unblockList: MutableSet<String> = mutableSetOf()
         currentlyBlockedApps.forEach { (appName, unblockTime) ->
             if (unblockTime < System.currentTimeMillis()
-                && !pedometerEnabled || (appStepCounters[appName] == null || appStepCounters[appName]!! >= maxStepCount)
+                && (!pedometerEnabled
+                        || (appStepCounters[appName] == null
+                        || appStepCounters[appName]!! >= maxStepCount)
+                        )
             ) {
                 unblockList.add(appName)
                 didChange = true
