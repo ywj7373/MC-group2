@@ -459,9 +459,9 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             finish()
         }
         else {
-            //don't allow adding schedule with passed date
+            //don't allow adding schedule with passed date or time
             if (!days_mode_set && currentTime >= timeInMilli) {
-                Toast.makeText(this@AddLocationActivity, "Enter a valid date", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@AddLocationActivity, "Enter a valid time", Toast.LENGTH_LONG).show()
             }
             else  {
                 locationViewModel.insert(newLocationItem)
