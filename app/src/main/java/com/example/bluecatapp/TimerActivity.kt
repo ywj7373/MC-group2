@@ -659,9 +659,10 @@ class TimerActivity : AppCompatActivity() {
 
                 if (inputText.equals(hwDoneConfirmText)) { // correct input text.
 
-                    // * cancel the timer
-                    timer.cancel()
-                    onTimerFinished()
+                    resetTimerFuntions()
+//                    // * cancel the timer
+//                    timer.cancel()
+//                    onTimerFinished()
 
                     // * dismiss the dialog
 
