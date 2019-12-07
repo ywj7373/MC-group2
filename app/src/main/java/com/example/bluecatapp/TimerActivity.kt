@@ -87,9 +87,9 @@ class TimerActivity : AppCompatActivity() {
         var notiAlarmOffset: Long = 0L  // one minute - notiAlarmSeconds
 
         // test purpose
-        const val notiAlarmSeconds: Long = 4L // 4 seconds
+//        const val notiAlarmSeconds: Long = 4L // 4 seconds
         // production version @todo should be changed when building production version ( + root_preference )
-        // const val notiAlarmSeconds : Long = 180L // threeMinutes
+         const val notiAlarmSeconds : Long = 180L // threeMinutes
 
         var isShaking = false
         var isWalking = false
