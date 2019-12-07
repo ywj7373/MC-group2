@@ -122,11 +122,6 @@ class AppBlockingFragment : Fragment() {
         sharedPrefs = getDefaultSharedPreferences(this.context)
     }
 
-    override fun onResume() {
-        super.onResume()
-        requestGoogleFitPermissions()
-    }
-
     override fun onStop() {
         super.onStop()
 
