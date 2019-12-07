@@ -144,7 +144,7 @@
 
             android:entryValues="@array/hw_time_values"
 
-            android:defaultValue="@string/hw_time_value"
+            android:defaultValue="10"
             android:selectable="true"
             app:iconSpaceReserved="false" />
 
@@ -159,7 +159,7 @@
 
             android:entries="@array/hw_shake_entries"
             android:entryValues="@array/hw_shake_values"
-            android:defaultValue="@string/hw_shake_value"
+            android:defaultValue="5"
 
             android:selectable="true"
             app:iconSpaceReserved="false" />
@@ -169,7 +169,7 @@
 
             app:title="@string/hw_pedometer_bool_title"
 
-            app:defaultValue="@string/hw_pedometer_bool"
+            app:defaultValue="false"
 
             android:selectable="true"
             app:iconSpaceReserved="false"
@@ -187,7 +187,7 @@
 
             android:entries="@array/hw_pedometer_entries"
             android:entryValues="@array/hw_pedometer_values"
-            android:defaultValue="@string/hw_pedometer_value"
+            android:defaultValue="10"
 
             android:selectable="true"
             app:iconSpaceReserved="false" />
