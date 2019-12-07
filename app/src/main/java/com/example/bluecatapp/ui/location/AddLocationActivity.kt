@@ -351,7 +351,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                 this@AddLocationActivity.min = minute
                 timeEdit.text = String.format("%02d:%02d", hourOfDay, minute)
             }
-        }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true)
+        }, cal.get(Calendar.HOUR_OF_DAY), (cal.get(Calendar.MINUTE)+10), true)          // add 10 minutes for convenience
         dialog.show()
     }
 

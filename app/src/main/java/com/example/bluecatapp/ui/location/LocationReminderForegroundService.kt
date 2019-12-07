@@ -505,6 +505,8 @@ class LocationReminderForegroundService : Service() {
 class AlarmNotificationDeletedReceiver: BroadcastReceiver() {
     override fun onReceive(p0: Context?, p1: Intent?) {
         Log.d("ALARM NOTIFICATION DELETED", "Deleted")
-        ringtone!!.stop()
+        if(ringtone != null) {
+            ringtone!!.stop()
+        }
     }
 }
