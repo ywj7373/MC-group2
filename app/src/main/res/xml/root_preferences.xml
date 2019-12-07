@@ -105,7 +105,7 @@
             app:title="@string/enable_location"
             android:selectable="true"
             app:iconSpaceReserved="false"
-            android:defaultValue="true"/>
+            android:defaultValue="false"/>
 
         <ListPreference
             app:key="@string/preparation_time"

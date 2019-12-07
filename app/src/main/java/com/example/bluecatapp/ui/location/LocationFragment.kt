@@ -107,7 +107,7 @@ class LocationFragment : Fragment() {
                 }
             })
 
-        startLocationService()
+        // startLocationService()
 
         return root
     }
@@ -152,7 +152,9 @@ class LocationFragment : Fragment() {
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
             }
-            else LocationReminderForegroundService.startService(requireContext())
+            else {
+                LocationReminderForegroundService.startService(requireContext())
+            }
         }
         else requestLocationPermission()
     }
