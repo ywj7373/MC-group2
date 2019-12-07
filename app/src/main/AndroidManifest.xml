@@ -49,11 +49,7 @@
         <receiver android:name=".ui.location.LocationReminderForegroundService" />
         <service android:name=".ui.location.LocationReminderForegroundService" />
 
-        <receiver android:name=".ui.location.DateChangeReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.DATE_CHANGED"></action>
-            </intent-filter>
-        </receiver>
+        <receiver android:name=".ui.location.AlarmNotificationDeletedReceiver"></receiver>
         <receiver android:name=".TimerExpiredReceiver"></receiver>
         <receiver android:name=".TimerNotificationActionReceiver"></receiver>
     </application>
