@@ -6,6 +6,7 @@ import android.app.AppOpsManager
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -14,6 +15,7 @@ import android.graphics.drawable.Drawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.SystemClock
@@ -28,6 +30,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.text.bold
 import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
@@ -120,25 +123,13 @@ class AppBlockingFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedPrefs = getDefaultSharedPreferences(this.context)
-    }
 
-    override fun onStop() {
-        super.onStop()
-
-        if(checkGoogleFitPermissions(fitnessOptions)){
-            // Unsubscribe GoogleFit Recording Client
-            GoogleSignIn.getLastSignedInAccount(context)?.let {
-                Fitness.getRecordingClient(context!!, it)
-                    .unsubscribe(DataType.TYPE_STEP_COUNT_DELTA)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Log.d(TAG, "Successfully unsubscribed!")
-                        } else {
-                            Log.d(TAG, "There was a problem unsubscribing.", task.exception)
-                        }
-                    }
-            }
-        }
+        /** Declare FitAPI data types */
+        fitnessOptions =
+            FitnessOptions.builder()
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .build()
     }
 
     override fun onCreateView(
@@ -246,41 +237,56 @@ class AppBlockingFragment : Fragment() {
      ***********************************************/
 
     private fun requestGoogleFitPermissions() {
-        // Declare FitAPI data types
-        fitnessOptions =
-            FitnessOptions.builder()
-                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .build()
 
-        // From Android 10 (API 29) Activity Recognition permissions required
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q){
-            if (
-                ActivityCompat.checkSelfPermission(requireContext(),
-                    android.Manifest.permission.ACTIVITY_RECOGNITION)
-                != PackageManager.PERMISSION_GRANTED
-            ) {
-                // Requesting Activity Recognition permissions
-                ActivityCompat.requestPermissions(activity!!,
-                    arrayOf(android.Manifest.permission.ACTIVITY_RECOGNITION),
-                    MY_PERMISSIONS_REQUEST_ACTIVITY_RECOGNITION)
+        if(isConnectedToNetwork()) {
+            // From Android 10 (API 29) Activity Recognition permissions required
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                if (
+                    ActivityCompat.checkSelfPermission(
+                        requireContext(),
+                        android.Manifest.permission.ACTIVITY_RECOGNITION
+                    )
+                    != PackageManager.PERMISSION_GRANTED
+                ) {
+                    // Requesting Activity Recognition permissions
+                    ActivityCompat.requestPermissions(
+                        activity!!,
+                        arrayOf(android.Manifest.permission.ACTIVITY_RECOGNITION),
+                        MY_PERMISSIONS_REQUEST_ACTIVITY_RECOGNITION
+                    )
+                }
             }
-        }
 
-        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(context), fitnessOptions)) {
-            GoogleSignIn.requestPermissions(
-                this, // your activity
-                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                GoogleSignIn.getLastSignedInAccount(context),
-                fitnessOptions)
-        } else {
-            Log.d(TAG,"Google fit api permission already exists")
+            if (!GoogleSignIn.hasPermissions(
+                    GoogleSignIn.getLastSignedInAccount(context),
+                    fitnessOptions
+                )
+            ) {
+                GoogleSignIn.requestPermissions(
+                    this, // your activity
+                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                    GoogleSignIn.getLastSignedInAccount(context),
+                    fitnessOptions
+                )
+            } else {
+                Log.d(TAG, "Google fit api permission already exists")
+            }
+        } else{
+            Log.d(TAG, "NO AVAILABLE NETWORK CONNECTION")
+            Toast.makeText(
+                activity!!.applicationContext,
+                "No Internet connection",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
     // Check for existing permissions
     private fun checkGoogleFitPermissions(fitnessOptions: FitnessOptions): Boolean {
-        return GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(context), fitnessOptions)
+        return GoogleSignIn.hasPermissions(
+            GoogleSignIn.getLastSignedInAccount(context),
+            fitnessOptions
+        )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -292,6 +298,27 @@ class AppBlockingFragment : Fragment() {
         }
     }
 
+    /**
+     * Enable to stop GoogleFit pedometer tracking in background
+     */
+//    override fun onStop() {
+//        super.onDestroyView()
+//        if(checkGoogleFitPermissions(fitnessOptions)){
+//            // Unsubscribe GoogleFit Recording Client
+//            GoogleSignIn.getLastSignedInAccount(context)?.let {
+//                Fitness.getRecordingClient(context!!, it)
+//                    .unsubscribe(DataType.TYPE_STEP_COUNT_DELTA)
+//                    .addOnCompleteListener { task ->
+//                        if (task.isSuccessful) {
+//                            Log.d(TAG, "Successfully unsubscribed!")
+//                        } else {
+//                            Log.d(TAG, "There was a problem unsubscribing.", task.exception)
+//                        }
+//                    }
+//            }
+//        }
+//    }
+
     /** Start pedometer feature using GoogleFit Api or by overriding Pedometer class */
     private fun startPedometer(appName: String, numberOfSteps: Int) {
         Log.d(TAG, "Pedometer started")
@@ -300,10 +327,16 @@ class AppBlockingFragment : Fragment() {
         pedometerMaxValue.text = " of $numberOfSteps"
 
         /* Check permissions for GoogleFit API */
+        var hasGoogleFitPermissions = false
         requestGoogleFitPermissions()
-        val hasGoogleFitPermissions = checkGoogleFitPermissions(fitnessOptions)
+        hasGoogleFitPermissions = checkGoogleFitPermissions(fitnessOptions)
 
         if(hasGoogleFitPermissions) {
+            Toast.makeText(
+                activity!!.applicationContext,
+                "GoogleFit enabled",
+                Toast.LENGTH_SHORT
+            ).show()
             subscribeGoogleFit()
             // start recording GoogleFit step count
             readGoogleFitStepData(appName)
@@ -442,6 +475,14 @@ class AppBlockingFragment : Fragment() {
                 "There was a problem getting the step count."
             )}
         return total
+    }
+
+    // Check for network connectivity
+    @Suppress("DEPRECATION")
+    private fun isConnectedToNetwork(): Boolean {
+        Log.d(TAG, "CHECKING NETWORK")
+        val connectivityManager = context?.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager?
+        return connectivityManager?.activeNetworkInfo?.isConnectedOrConnecting ?: false
     }
 
     /************************************************/
