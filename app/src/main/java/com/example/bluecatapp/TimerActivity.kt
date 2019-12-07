@@ -500,7 +500,10 @@ class TimerActivity : AppCompatActivity() {
         //if the length was changed in settings while it was backgrounded
         if (timerState == TimerState.Stopped) {
             setNewTimerLength()
-            notiAlarmOffset = timerLengthSeconds - notiAlarmSeconds // set the notiAlarmOffset right after setting the timerLength
+            // test
+//            notiAlarmOffset = timerLengthSeconds - notiAlarmSeconds // set the notiAlarmOffset right after setting the timerLength
+            // @todo should be changed to this when production
+            notiAlarmOffset = notiAlarmSeconds // set the notiAlarmOffset right after setting the timerLength
         } else
             setPreviousTimerLength()
 
