@@ -14,6 +14,7 @@ import android.os.*
 import android.util.Log
 import androidx.preference.PreferenceManager
 import com.example.bluecatapp.*
+import com.example.bluecatapp.ui.location.LocationAdapter
 
 class TodoFragment : Fragment() {
 
@@ -31,8 +32,8 @@ class TodoFragment : Fragment() {
     private val ADD_TODO_REQUEST = 1
     private val HW_DONE = 2
     private lateinit var todoViewModel: TodoViewModel
-    private val todoAdapter = TodoAdapter()
-    private val todoAdapter2 = TodoAdapter()
+    private lateinit var todoAdapter : TodoAdapter
+    private lateinit var todoAdapter2 : TodoAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +44,7 @@ class TodoFragment : Fragment() {
 
         preference = PreferenceManager.getDefaultSharedPreferences(requireContext())
         editor = preference.edit()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -111,10 +113,12 @@ class TodoFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val root = inflater.inflate(R.layout.fragment_todo, container, false)
+
         todoViewModel =
             ViewModelProviders.of(this).get(TodoViewModel::class.java)
-
-        val root = inflater.inflate(R.layout.fragment_todo, container, false)
+        todoAdapter = TodoAdapter(todoViewModel)
+        todoAdapter2 = TodoAdapter(todoViewModel)
 
         todoViewModel.getTodoItemsNotDone().observe(this,
             Observer<List<TodoItem>> { t -> todoAdapter.setTodoItems(t!!) })
@@ -159,7 +163,7 @@ class TodoFragment : Fragment() {
             todoViewModel.updateTodoStatus(todoItem)
         }
 
-        container_hwmode.setOnClickListener(clickListener)
+        btn_homework.setOnClickListener(clickListener)
 
         todo_add_task.setOnClickListener { view ->
             //            getActivity().
@@ -199,7 +203,7 @@ class TodoFragment : Fragment() {
 
     private val clickListener: View.OnClickListener = View.OnClickListener { view ->
         when (view.id) {
-            R.id.container_hwmode -> {
+            R.id.btn_homework -> {
 
                 turnHWModeOn()
 

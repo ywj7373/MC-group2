@@ -1,21 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+<com.daimajia.swipe.SwipeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+
+    android:layout_height="50dp"
     android:layout_marginStart="8dp"
     android:layout_marginTop="8dp"
     android:layout_marginEnd="8dp"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:id="@+id/todo_task_item_wrapper"
+        android:layout_width="80dp"
+        android:layout_height="50dp"
+        android:background="#ffffff"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <Button
+            android:id="@+id/btn_todo_delete"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#EE2121"
+            android:text="DELETE"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+
     <RelativeLayout
-        android:id="@+id/todo_task_item_container"
+        android:id="@+id/todo_item_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/todo_task_item_bg"
-        android:padding="2dp"
-        android:orientation="vertical">
+        android:layout_height="50dp"
+        android:background="#F9F9F9">
+
+        <RelativeLayout
+            android:id="@+id/todo_task_item_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E4E0E0"
+            android:orientation="vertical" />
 
         <TextView
             android:id="@+id/todo_item_task"
@@ -25,11 +50,11 @@
 
         <View
             android:id="@+id/todo_item_line_done"
-            android:visibility="visible"
             android:layout_width="fill_parent"
             android:layout_height="7dp"
             android:layout_below="@id/todo_item_task"
-            android:background="#ff0000"/>
+            android:background="#ff0000"
+            android:visibility="visible" />
 
         <TextView
             android:id="@+id/todo_item_date"
@@ -38,22 +63,30 @@
             android:layout_below="@+id/todo_item_task"
             android:text="Task Date" />
 
-<!--        <TextView-->
-<!--            android:id="@+id/todo_item_location"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_below="@+id/todo_item_date"-->
-<!--            android:text="Task Location" />-->
+        <!--        <TextView-->
+        <!--            android:id="@+id/todo_item_location"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_below="@+id/todo_item_date"-->
+        <!--            android:text="Task Location" />-->
 
         <CheckBox
             android:id="@+id/todo_item_done"
+            android:layout_marginRight="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:checked="false"
-            android:text="Done"
-            />
+            android:text="Done" />
+
+        <RelativeLayout
+            android:id="@+id/todo_task_item_divider2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:background="#E4E0E0" />
 
 
     </RelativeLayout>
-</androidx.cardview.widget.CardView>
+
+</com.daimajia.swipe.SwipeLayout>

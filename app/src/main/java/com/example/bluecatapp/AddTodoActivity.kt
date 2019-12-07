@@ -71,9 +71,9 @@ class AddTodoActivity : AppCompatActivity() {
         }
 
         if(todo_edit_date.dayOfMonth<10){
-            day = "0"+todo_edit_date.dayOfMonth.toString();
+            day = "0"+todo_edit_date.dayOfMonth.toString()
         }else{
-            day = todo_edit_date.dayOfMonth.toString();
+            day = todo_edit_date.dayOfMonth.toString()
         }
 
         val data = Intent().apply {

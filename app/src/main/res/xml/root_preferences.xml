@@ -132,6 +132,8 @@
 
         <!-- HW mode settings -->
 
+        <!--            android:entries="@array/hw_time_entries_production"-->
+<!--        android:entryValues="@array/hw_time_values_production"-->
         <ListPreference
             app:key="@string/hw_time_key"
 
@@ -139,12 +141,16 @@
             app:dialogTitle="@string/hw_time_title"
 
             android:entries="@array/hw_time_entries"
-            android:entryValues="@array/hw_time_values"
-            android:defaultValue="@string/hw_time_value"
 
+            android:entryValues="@array/hw_time_values"
+
+            android:defaultValue="10"
             android:selectable="true"
             app:iconSpaceReserved="false" />
 
+
+<!--        android:entries="@array/hw_shake_entries_production"-->
+<!--        android:entryValues="@array/hw_shake_values_production"-->
         <ListPreference
             app:key="@string/hw_shake_val_key"
 
@@ -153,7 +159,7 @@
 
             android:entries="@array/hw_shake_entries"
             android:entryValues="@array/hw_shake_values"
-            android:defaultValue="@string/hw_shake_value"
+            android:defaultValue="5"
 
             android:selectable="true"
             app:iconSpaceReserved="false" />
@@ -163,7 +169,7 @@
 
             app:title="@string/hw_pedometer_bool_title"
 
-            app:defaultValue="@string/hw_pedometer_bool"
+            app:defaultValue="false"
 
             android:selectable="true"
             app:iconSpaceReserved="false"
@@ -171,6 +177,8 @@
             android:summaryOn="@string/hw_pedometer_summary_on"
             android:summaryOff="@string/hw_pedometer_summary_off" />
 
+<!--        android:entries="@array/hw_pedometer_entries_production-->
+<!--        android:entryValues="@array/hw_pedometer_values_production"-->
         <ListPreference
             app:key="@string/hw_pedometer_val_key"
 
@@ -179,7 +187,7 @@
 
             android:entries="@array/hw_pedometer_entries"
             android:entryValues="@array/hw_pedometer_values"
-            android:defaultValue="@string/hw_pedometer_value"
+            android:defaultValue="10"
 
             android:selectable="true"
             app:iconSpaceReserved="false" />

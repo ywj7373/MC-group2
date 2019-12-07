@@ -44,7 +44,6 @@ class PrefUtil {
         }
 
         private const val SECONDS_REMAINING_ID = "com.example.bluecatapp.seconds_remaining"
-        private const val SECONDS_REMAINING_ID2 = "com.example.bluecatapp.seconds_remaining2"
 
         // * final alarm
         fun getSecondsRemaining(context: Context): Long{
@@ -58,7 +57,6 @@ class PrefUtil {
             editor.putLong(SECONDS_REMAINING_ID, seconds)
             editor.apply()
         }
-
 
         private const val ALARM_SET_TIME_ID = "com.example.bluecatapp.backgrounded_time"
         private const val ALARM_SET_TIME_ID2 = "com.example.bluecatapp.backgrounded_time2"
@@ -89,8 +87,5 @@ class PrefUtil {
             editor.apply()
         }
 
-        fun refreshTimer(context: Context){
-
-        }
     }
 }

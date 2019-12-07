@@ -35,28 +35,10 @@ class TimerExpiredReceiver : BroadcastReceiver() {
             return 0
         }
 
-//        fun unRegisterSensors(type:String) : Int{
-//            var status : Boolean
-//            try{
-//                status = ::mSensors.isInitialized
-//            }catch (e:Exception){
-//                Log.d("TimerExpiredReceiver:initiateSensor", "[ERROR] ${e.message}")
-//                return 0
-//            }
-//
-//            if(status){
-//                mSensors.unRegister(type)
-//                Log.d("TimerExpiredReceiver:initiateSensor", "unregistered $type.")
-//                return 1
-//            }else{
-//                Log.d("TimerExpiredReceiver:initiateSensor", "[ERROR] Sensor not activated.")
-//                return 0
-//            }
-//
-//            return 0
-//        }
 
         lateinit var mSensors: Sensors
+
+        var sensorIndex = -1
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -64,10 +46,17 @@ class TimerExpiredReceiver : BroadcastReceiver() {
         when (intent.action) {
             HWConstants.ACTION_ALARM_FINAL -> {
 
+                Sensors.vibratePhone(context)
                 NotificationUtil.showTimerExpired(context)
+                Toast.makeText(
+                    context!!.applicationContext,
+                    "Timer Expired!",
+                    Toast.LENGTH_LONG
+                ).show()
 
-                TimerActivity.isShaking = true
-                PrefUtil.setTimerState(TimerActivity.TimerState.Stopped, context)
+                // [필요없음] 어차피 TimerActivity 내에서 onTimerFinished 에서 timerState stopped 로 지정함.
+                // PrefUtil.setTimerState(TimerActivity.TimerState.Stopped, context)
+
                 PrefUtil.setAlarmSetTime(0, context)
 
                 // * activate sensor and force the user to shake or walk
@@ -88,16 +77,13 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                         } else {
                             modeArr = arrayOf("SHAKE")
                         }
-                        if (pickRandomMode(modeArr, context, false) == 1) {
-                            Log.d(
-                                "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
-                                "Picked one mode"
-                            )
-                        } else {
-                            Log.d(
-                                "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
-                                "[ERROR] PickingRandomMode"
-                            )
+                        if(sensorIndex<0){
+                            if (pickRandomMode(modeArr, context, false) != 1) {
+                                Log.d(
+                                    "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
+                                    "[ERROR] PickingRandomMode"
+                                )
+                            }
                         }
 
 
@@ -108,18 +94,14 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                             modeArr = arrayOf("SHAKE")
                         }
 
-                        if (pickRandomMode(modeArr, context, true) == 1) {
-                            Log.d(
-                                "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
-                                "Picked one mode"
-                            )
-                        } else {
-                            Log.d(
-                                "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
-                                "[ERROR] PickingRandomMode"
-                            )
+                        if(sensorIndex<0){
+                            if (pickRandomMode(modeArr, context, false) != 1) {
+                                Log.d(
+                                    "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
+                                    "[ERROR] PickingRandomMode"
+                                )
+                            }
                         }
-
 
                     } else {
                         Log.d(
@@ -133,11 +115,10 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                         ).show()
                     }
 
-//                    mSensors.isWalkSensorOn= true
-//                    Toast.makeText(context!!.applicationContext, "Wake UP !!!!!!!!!! Start Walking", Toast.LENGTH_LONG).show()
                 } else {
                     Log.d(
                         "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
+
                         "[ERROR] Initializing"
                     )
                     Toast.makeText(context!!.applicationContext, "Sensor Error", Toast.LENGTH_LONG)
@@ -150,60 +131,81 @@ class TimerExpiredReceiver : BroadcastReceiver() {
 
                 Sensors.vibratePhone(context)
                 NotificationUtil.showTimerSoonBeExpired(context)
-
                 Toast.makeText(
                     context!!.applicationContext,
                     "Timer Will be Expired!",
                     Toast.LENGTH_LONG
                 ).show()
 
-                TimerActivity.notiAlarmSeconds = 0
-                PrefUtil.setAlarmSetTime2(0, context)
-
+                // [필요없음] 어차피 알람이 발생한 상황이기 때문에, 알람을 다시 한 번 제거해줄 필요가 없다.
+                // TimerActivity.removeNotificationAlarm(context)
             }
         }
-
     }
 
     private fun pickRandomMode(arr: Array<String>, context: Context, isReRegister: Boolean): Int {
-        val index = Random().nextInt(arr.size)
-        Log.d("TimerExpiredReceiver:pickRandomMode","index : $index, Pick : ${arr[index]} ")
-        if (arr[index] == "SHAKE") {
-            mSensors.isShakeOn = true
-            if (isReRegister) {
-                mSensors.reRegister("SHAKE", context)
-            }
-            if(mSensors.isWalkOn){
-                mSensors.isWalkOn = false
-                mSensors.unRegister("WALK",context)
+        if(sensorIndex < 0){ // if none of the sensor is enabled, sensorIndex stays as -1
+            // @todo should be set to this in production
+//             sensorIndex= Random().nextInt(arr.size)
+
+            //test
+            if(arr.size>1){
+                sensorIndex = 1
+            }else{
+                sensorIndex = 0
             }
 
-            Sensors.vibratePhone(context)
-            var i = Intent(context, TimerActivity::class.java)
-            i.putExtra("id", context.getString(R.string.SHAKE))
-            i.flags =
-                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
-            context.startActivity(i)
-            return 1
-        } else if (arr[index] == "WALK") {
-            mSensors.isWalkOn = true
-            if (isReRegister) {
-                mSensors.reRegister("WALK", context)
+            val selectedSensor = arr[sensorIndex]
+            Log.d("TimerExpiredReceiver:pickRandomMode","sensorIndex : $sensorIndex, Pick : $selectedSensor ")
+
+            if (selectedSensor == "SHAKE") {
+                Log.d(
+                    "TimerExpiredReceiver:pickRandomMode",
+                    "Picked one mode : SHAKE"
+                )
+                if(mSensors.isWalkOn){
+                    mSensors.isWalkOn = false
+                    mSensors.unRegister("WALK",context)
+                }
+
+                mSensors.isShakeOn = true
+                mSensors.register("SHAKE", context)
+
+                Sensors.vibratePhone(context)
+                var i = Intent(context, TimerActivity::class.java)
+                i.putExtra("id", context.getString(R.string.SHAKE))
+                i.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(i)
+                return 1
+
+            } else if (selectedSensor == "WALK") {
+                Log.d(
+                    "TimerExpiredReceiver:pickRandomMode",
+                    "Picked one mode : WALK"
+                )
+                if(mSensors.isShakeOn){
+                    mSensors.isShakeOn = false
+                    mSensors.unRegister("SHAKE",context)
+                }
+
+                mSensors.isWalkOn = true
+                mSensors.register("WALK", context)
+
+                Sensors.vibratePhone(context)
+                var i = Intent(context, TimerActivity::class.java)
+                i.putExtra("id", context.getString(R.string.WALK))
+                i.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(i)
+
+                return 1
+            } else {
+                return 0
             }
-            if(mSensors.isShakeOn){
-                mSensors.isShakeOn = false
-                mSensors.unRegister("SHAKE",context)
-            }
-            Sensors.vibratePhone(context)
-            var i = Intent(context, TimerActivity::class.java)
-            i.putExtra("id", context.getString(R.string.WALK))
-            i.flags =
-                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
-            context.startActivity(i)
+        }else{
             return 1
-        } else {
-            return 0
+
         }
     }
-
 }

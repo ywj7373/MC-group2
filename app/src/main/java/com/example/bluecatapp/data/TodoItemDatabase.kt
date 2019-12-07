@@ -53,10 +53,10 @@ abstract class TodoItemDatabase : RoomDatabase() {
         private val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date());
 
         override fun doInBackground(vararg p0: Unit?) {
-            todoItemDao?.insert(TodoItem("Task 1", timeStamp,false))
-            todoItemDao?.insert(TodoItem("Task 2", timeStamp,false))
-            todoItemDao?.insert(TodoItem("Task 3", timeStamp,false))
-            todoItemDao?.insert(TodoItem("Task 4", timeStamp,true))
+//            todoItemDao?.insert(TodoItem("Task 1", timeStamp,false))
+//            todoItemDao?.insert(TodoItem("Task 2", timeStamp,false))
+//            todoItemDao?.insert(TodoItem("Task 3", timeStamp,false))
+//            todoItemDao?.insert(TodoItem("Task 4", timeStamp,true))
         }
     }
 

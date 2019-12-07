@@ -33,10 +33,10 @@
         android:visibility="visible"
         layout="@layout/content_timer" />
 
-    <include
-        android:id="@+id/include_sensor_counter"
-        android:visibility="gone"
-        layout="@layout/content_timer_sensor_count" />
+<!--    <include-->
+<!--        android:id="@+id/include_sensor_counter"-->
+<!--        android:visibility="gone"-->
+<!--        layout="@layout/content_timer_sensor_count" />-->
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
