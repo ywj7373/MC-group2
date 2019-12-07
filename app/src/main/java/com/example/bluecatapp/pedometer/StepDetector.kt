@@ -1,7 +1,5 @@
 package com.example.bluecatapp.pedometer
 
-import android.util.Log
-import android.widget.Toast
 import com.example.bluecatapp.pedometer.SensorFilter
 import com.example.bluecatapp.pedometer.StepListener
 import com.google.android.gms.auth.api.signin.GoogleSignIn
