@@ -301,6 +301,7 @@ class TimerActivity : AppCompatActivity() {
                     include_time_counter.visibility = View.GONE
 //            include_sensor_counter.visibility = View.VISIBLE
 
+                    tv_wakeUp_walk.visibility = View.GONE
                     tv_wakeUp_shake.visibility = View.VISIBLE
 
 //                include_time_counter.visibility = View.GONE
@@ -339,7 +340,8 @@ class TimerActivity : AppCompatActivity() {
                     include_time_counter.visibility = View.GONE
 //            include_sensor_counter.visibility = View.VISIBLE
 
-                    tv_wakeUp_shake.visibility = View.VISIBLE
+                    tv_wakeUp_shake.visibility = View.GONE
+                    tv_wakeUp_walk.visibility = View.VISIBLE
                     isWalking = true
 
                     resetTimerFuntions()

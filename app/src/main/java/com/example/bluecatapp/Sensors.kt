@@ -16,7 +16,6 @@ import androidx.preference.PreferenceManager
 
 import com.example.bluecatapp.pedometer.Pedometer
 
-
 open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
 
     fun vibratePhone(context: Context) {
@@ -194,6 +193,7 @@ class Sensors private constructor(context: Context) {
         walkSensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         pedometer = object : Pedometer() {
             override fun onSensorChanged(event: SensorEvent?) {
+                vibratePhone(context)
 
                 if (!isWalkOn) {
                     // unregister the sensors as shaking completed
