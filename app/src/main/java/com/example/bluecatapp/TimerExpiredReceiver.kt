@@ -37,6 +37,8 @@ class TimerExpiredReceiver : BroadcastReceiver() {
 
 
         lateinit var mSensors: Sensors
+
+        var sensorIndex = -1
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -75,12 +77,15 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                         } else {
                             modeArr = arrayOf("SHAKE")
                         }
-                        if (pickRandomMode(modeArr, context, false) != 1) {
-                            Log.d(
-                                "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
-                                "[ERROR] PickingRandomMode"
-                            )
+                        if(sensorIndex<0){
+                            if (pickRandomMode(modeArr, context, false) != 1) {
+                                Log.d(
+                                    "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
+                                    "[ERROR] PickingRandomMode"
+                                )
+                            }
                         }
+
 
                     } else if (state == 2) { // already exist
                         if (isPedometerOn) {
@@ -89,12 +94,15 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                             modeArr = arrayOf("SHAKE")
                         }
 
-                        if (pickRandomMode(modeArr, context, true) != 1) {
-                            Log.d(
-                                "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
-                                "[ERROR] PickingRandomMode"
-                            )
+                        if(sensorIndex<0){
+                            if (pickRandomMode(modeArr, context, false) != 1) {
+                                Log.d(
+                                    "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
+                                    "[ERROR] PickingRandomMode"
+                                )
+                            }
                         }
+
                     } else {
                         Log.d(
                             "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
@@ -136,51 +144,60 @@ class TimerExpiredReceiver : BroadcastReceiver() {
     }
 
     private fun pickRandomMode(arr: Array<String>, context: Context, isReRegister: Boolean): Int {
-        val index = Random().nextInt(arr.size)
-        Log.d("TimerExpiredReceiver:pickRandomMode","index : $index, Pick : ${arr[index]} ")
+        if(sensorIndex < 0){ // if none of the sensor is enabled, sensorIndex stays as -1
+//            sensorIndex= Random().nextInt(arr.size)
+            sensorIndex = 1 // test
+            val selectedSensor = arr[sensorIndex]
+            Log.d("TimerExpiredReceiver:pickRandomMode","sensorIndex : $sensorIndex, Pick : $selectedSensor ")
 
-        if (arr[index] == "SHAKE") {
-            Log.d(
-                "TimerExpiredReceiver:pickRandomMode",
-                "Picked one mode : SHAKE"
-            )
-            mSensors.isShakeOn = true
-            mSensors.register("SHAKE", context)
+            if (selectedSensor == "SHAKE") {
+                Log.d(
+                    "TimerExpiredReceiver:pickRandomMode",
+                    "Picked one mode : SHAKE"
+                )
+                if(mSensors.isWalkOn){
+                    mSensors.isWalkOn = false
+                    mSensors.unRegister("WALK",context)
+                }
 
-            if(mSensors.isWalkOn){
-                mSensors.isWalkOn = false
-                mSensors.unRegister("WALK",context)
+                mSensors.isShakeOn = true
+                mSensors.register("SHAKE", context)
+
+                Sensors.vibratePhone(context)
+                var i = Intent(context, TimerActivity::class.java)
+                i.putExtra("id", context.getString(R.string.SHAKE))
+                i.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(i)
+                return 1
+
+            } else if (selectedSensor == "WALK") {
+                Log.d(
+                    "TimerExpiredReceiver:pickRandomMode",
+                    "Picked one mode : WALK"
+                )
+                if(mSensors.isShakeOn){
+                    mSensors.isShakeOn = false
+                    mSensors.unRegister("SHAKE",context)
+                }
+
+                mSensors.isWalkOn = true
+                mSensors.register("WALK", context)
+
+                Sensors.vibratePhone(context)
+                var i = Intent(context, TimerActivity::class.java)
+                i.putExtra("id", context.getString(R.string.WALK))
+                i.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(i)
+
+                return 1
+            } else {
+                return 0
             }
-
-            Sensors.vibratePhone(context)
-            var i = Intent(context, TimerActivity::class.java)
-            i.putExtra("id", context.getString(R.string.SHAKE))
-            i.flags =
-                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(i)
+        }else{
             return 1
-        } else if (arr[index] == "WALK") {
-            mSensors.isWalkOn = true
-            mSensors.register("WALK", context)
 
-            if(mSensors.isShakeOn){
-                mSensors.isShakeOn = false
-                mSensors.unRegister("SHAKE",context)
-            }
-            Sensors.vibratePhone(context)
-            var i = Intent(context, TimerActivity::class.java)
-            i.putExtra("id", context.getString(R.string.WALK))
-            i.flags =
-                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(i)
-            Log.d(
-                "TimerExpiredReceiver:pickRandomMode",
-                "Picked one mode : SHAKE"
-            )
-            return 1
-        } else {
-            return 0
         }
     }
-
 }

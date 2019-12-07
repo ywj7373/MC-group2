@@ -16,10 +16,6 @@ import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
 import androidx.preference.PreferenceManager
-import android.widget.TextView
-import com.example.bluecatapp.util.PrefUtil
-import com.google.gson.reflect.TypeToken
-import java.util.*
 
 open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
 
@@ -98,6 +94,7 @@ class Sensors private constructor(context: Context) {
         override fun onSensorChanged(se: SensorEvent) {
             if (!isShakeOn) {
                 // unregister the sensors as shaking completed
+                TimerExpiredReceiver.sensorIndex = -1 // set the sensorIndex to be -1 (init) when the sensor mission is completed
                 unRegister("SHAKE", context)
                 return
             }
@@ -200,6 +197,7 @@ class Sensors private constructor(context: Context) {
 
                 if (!isWalkOn) {
                     // unregister the sensors as shaking completed
+                    TimerExpiredReceiver.sensorIndex = -1 // set the sensorIndex to be -1 (init) when the sensor mission is completed
                     unRegister("WALK", context)
                     return
                 }

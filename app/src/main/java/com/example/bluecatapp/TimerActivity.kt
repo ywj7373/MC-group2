@@ -84,13 +84,12 @@ class TimerActivity : AppCompatActivity() {
         val nowSeconds: Long
             get() = Calendar.getInstance().timeInMillis / 1000
 
-        // production version
-        // var notiAlarmOffset : Long =  0L  // given time - three minutes
-        // const val notiAlarmSeconds : Long = 180L // threeMinutes
+        var notiAlarmOffset: Long = 0L  // one minute - notiAlarmSeconds
 
-        // test purpose @todo should be changed when building production version
-        var notiAlarmOffset: Long = 0L  // one minute - 4 seconds
+        // test purpose
         const val notiAlarmSeconds: Long = 4L // 4 seconds
+        // production version @todo should be changed when building production version ( + root_preference )
+        // const val notiAlarmSeconds : Long = 180L // threeMinutes
 
         var isShaking = false
         var isWalking = false
@@ -133,6 +132,8 @@ class TimerActivity : AppCompatActivity() {
                     include_time_counter.visibility = View.GONE
 //            include_sensor_counter.visibility = View.VISIBLE
 
+                    isWalking = false
+                    tv_wakeUp_walk.visibility = View.GONE
                     tv_wakeUp_shake.visibility = View.VISIBLE
 
                     isShaking = true
@@ -165,7 +166,10 @@ class TimerActivity : AppCompatActivity() {
                     include_time_counter.visibility = View.GONE
 //            include_sensor_counter.visibility = View.VISIBLE
 
+                    isShaking = false
+                    tv_wakeUp_shake.visibility = View.GONE
                     tv_wakeUp_walk.visibility = View.VISIBLE
+
                     isWalking = true
                     resetTimerFuntions()
                 }
@@ -180,8 +184,8 @@ class TimerActivity : AppCompatActivity() {
 
                     include_time_counter.visibility = View.VISIBLE
 //            include_sensor_counter.visibility = View.GONE
-
                     tv_wakeUp_walk.visibility = View.GONE
+
                     isWalking = false
                     resetTimerFuntions()
                 }
@@ -257,6 +261,14 @@ class TimerActivity : AppCompatActivity() {
         todoAdapter.onItemClick = { todoItem ->
             //            Log.d("test","todoItem test "+todoItem.id.toString()+"/"+todoItem.done.toString())
             todoViewModel.updateTodoStatus(todoItem)
+        }
+
+        if(isShaking){
+            include_time_counter.visibility = View.GONE
+            tv_wakeUp_shake.visibility = View.VISIBLE
+        }else if (isWalking){
+            include_time_counter.visibility = View.GONE
+            tv_wakeUp_walk.visibility = View.VISIBLE
         }
 
         fab_start.setOnClickListener { v ->
