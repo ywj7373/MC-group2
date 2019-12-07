@@ -481,7 +481,9 @@ class TimerActivity : AppCompatActivity() {
 
             // === only set the notification alarm when the enough time is left === //
             if (secondsRemaining > notiAlarmOffset) {
-                setNotificationAlarm(this, nowSeconds, (secondsRemaining - notiAlarmOffset))
+                val wakeUpTime2 = setNotificationAlarm(this, nowSeconds, (secondsRemaining - notiAlarmOffset))
+                Log.d("TimerActivity:onPause:setNotificationAlarm",
+                    "setNotificationAlarm : $wakeUpTime2, (secondsRemaining - notiAlarmOffset) : ${(secondsRemaining - notiAlarmOffset)}")
             }
 
             NotificationUtil.showTimerRunning(this, wakeUpTime)
@@ -662,9 +664,11 @@ class TimerActivity : AppCompatActivity() {
 
                 if (inputText.equals(hwDoneConfirmText)) { // correct input text.
 
-                    // * cancel the timer
-                    timer.cancel()
-                    onTimerFinished()
+                    resetTimerFuntions()
+//                    // * cancel the timer
+//                    timer.cancel()
+//                    onTimerFinished()
+
 
                     // * dismiss the dialog
 
