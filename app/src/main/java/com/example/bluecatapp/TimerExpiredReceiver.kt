@@ -146,10 +146,15 @@ class TimerExpiredReceiver : BroadcastReceiver() {
     private fun pickRandomMode(arr: Array<String>, context: Context, isReRegister: Boolean): Int {
         if(sensorIndex < 0){ // if none of the sensor is enabled, sensorIndex stays as -1
             // @todo should be set to this in production
-            // sensorIndex= Random().nextInt(arr.size)
+//             sensorIndex= Random().nextInt(arr.size)
 
-            // test
-            sensorIndex = 1
+            //test
+            if(arr.size>1){
+                sensorIndex = 1
+            }else{
+                sensorIndex = 0
+            }
+
             val selectedSensor = arr[sensorIndex]
             Log.d("TimerExpiredReceiver:pickRandomMode","sensorIndex : $sensorIndex, Pick : $selectedSensor ")
 
