@@ -17,7 +17,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.preference.PreferenceManager
 import android.widget.TextView
+import com.example.bluecatapp.util.PrefUtil
 import com.google.gson.reflect.TypeToken
+import java.util.*
 
 open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
 
@@ -126,8 +128,10 @@ class Sensors private constructor(context: Context) {
                 isShakeOn = false
                 isShakeSensorOn = false
 
-                var i = Intent(context, TimerActivity::class.java)
+                // [Obsolete] TimerActivity 내 resetTimerFuntions 에서 똑같은 작업 수행.
+                // PrefUtil.setTimerState(TimerActivity.TimerState.Stopped,context)
 
+                var i = Intent(context, TimerActivity::class.java)
                 i.putExtra("id", context.getString(R.string.SHAKE_COMPLETE))
                 i.flags =
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_FORWARD_RESULT
@@ -169,7 +173,6 @@ class Sensors private constructor(context: Context) {
         shakeCount = 0
         shakeLimit = preference.getInt(context.getString(R.string.hw_shake_value), 30)
 
-
         Log.d("Sensors:init:shakeLimit", "value : $shakeLimit")
 
         this.shakeSensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -178,12 +181,13 @@ class Sensors private constructor(context: Context) {
         shakeAccelCurrent = SensorManager.GRAVITY_EARTH;
         shakeAccelLast = SensorManager.GRAVITY_EARTH;
 
-        shakeSensorManager.registerListener(
-            shakeSensorListener,
-            shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-        isShakeOn = true
+        //=== Do not Initialize the shake sensor in default === //
+//        shakeSensorManager.registerListener(
+//            shakeSensorListener,
+//            shakeSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+//            SensorManager.SENSOR_DELAY_NORMAL
+//        )
+//        isShakeOn = true
 
         //================================== Detect Walking ==================================//
         hwStepCounter = 0
@@ -206,8 +210,10 @@ class Sensors private constructor(context: Context) {
                     isWalkOn = false
                     isWalkSensorOn = false
 
-                    var i = Intent(context, TimerActivity::class.java)
+                    // [Obsolete] TimerActivity 내 resetTimerFuntions 에서 똑같은 작업 수행.
+//                    PrefUtil.setTimerState(TimerActivity.TimerState.Stopped,context)
 
+                    var i = Intent(context, TimerActivity::class.java)
                     i.putExtra("id", context.getString(R.string.WALK_COMPLETE))
                     i.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -239,11 +245,11 @@ class Sensors private constructor(context: Context) {
         Log.d("Sensors:init:walkLimit", "value : $walkLimit")
         Log.d("Sensors:init:isPedometerEnabled", "value : $isPedometerEnabled")
 
-        if (isPedometerEnabled) {
-            Log.d("Sensors:init:pedometerOn", "isPedometerEnabled : $isPedometerEnabled")
-            isWalkOn = true
-            togglePedometer(context, true)
-        }
+//        if (isPedometerEnabled) {
+//            Log.d("Sensors:init:pedometerOn", "isPedometerEnabled : $isPedometerEnabled")
+////            isWalkOn = true
+////            togglePedometer(context, true)
+//        }
 
     }
 
@@ -288,8 +294,7 @@ class Sensors private constructor(context: Context) {
     }
 
     // * s : "SHAKE" or "WALK"
-    fun reRegister(s: String, context: Context): Int {
-        shakeCount = 0
+    fun register(s: String, context: Context): Int {
         when (s) {
             "ALL" -> {
                 shakeCount = 0
@@ -306,7 +311,7 @@ class Sensors private constructor(context: Context) {
                 isWalkOn = true
                 isWalkSensorOn = true
 
-                Log.d("Sensors:reRegister", "$s Sensor reRegister")
+                Log.d("Sensors:register", "$s Sensor register")
 
                 return 1
             }
@@ -319,7 +324,7 @@ class Sensors private constructor(context: Context) {
                 )
                 isShakeOn = true
                 isShakeSensorOn = true
-                Log.d("Sensors:reRegister", "$s Sensor reRegister")
+                Log.d("Sensors:register", "$s Sensor register")
 
                 return 1
             }
@@ -328,12 +333,12 @@ class Sensors private constructor(context: Context) {
                 togglePedometer(context, true)
                 isWalkOn = true
                 isWalkSensorOn = true
-                Log.d("Sensors:reRegister", "$s Sensor reRegister")
+                Log.d("Sensors:register", "$s Sensor register")
 
                 return 1
             }
         }
-        Log.d("Sensors:reRegister", "$s Sensor undefined")
+        Log.d("Sensors:register", "$s Sensor undefined")
         return 0
     }
 

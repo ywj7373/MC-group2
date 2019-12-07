@@ -44,10 +44,17 @@ class TimerExpiredReceiver : BroadcastReceiver() {
         when (intent.action) {
             HWConstants.ACTION_ALARM_FINAL -> {
 
+                Sensors.vibratePhone(context)
                 NotificationUtil.showTimerExpired(context)
+                Toast.makeText(
+                    context!!.applicationContext,
+                    "Timer Expired!",
+                    Toast.LENGTH_LONG
+                ).show()
 
-                TimerActivity.isShaking = true
-                PrefUtil.setTimerState(TimerActivity.TimerState.Stopped, context)
+                // [필요없음] 어차피 TimerActivity 내에서 onTimerFinished 에서 timerState stopped 로 지정함.
+                // PrefUtil.setTimerState(TimerActivity.TimerState.Stopped, context)
+
                 PrefUtil.setAlarmSetTime(0, context)
 
                 // * activate sensor and force the user to shake or walk
@@ -75,7 +82,6 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                             )
                         }
 
-
                     } else if (state == 2) { // already exist
                         if (isPedometerOn) {
                             modeArr = arrayOf("SHAKE", "WALK")
@@ -101,8 +107,6 @@ class TimerExpiredReceiver : BroadcastReceiver() {
                         ).show()
                     }
 
-//                    mSensors.isWalkSensorOn= true
-//                    Toast.makeText(context!!.applicationContext, "Wake UP !!!!!!!!!! Start Walking", Toast.LENGTH_LONG).show()
                 } else {
                     Log.d(
                         "TimerExpiredReceiver:onReceive:ACTION_ALARM_FINAL",
@@ -119,28 +123,30 @@ class TimerExpiredReceiver : BroadcastReceiver() {
 
                 Sensors.vibratePhone(context)
                 NotificationUtil.showTimerSoonBeExpired(context)
-
                 Toast.makeText(
                     context!!.applicationContext,
                     "Timer Will be Expired!",
                     Toast.LENGTH_LONG
                 ).show()
 
-                PrefUtil.setAlarmSetTime2(0, context)
-
+                // [필요없음] 어차피 알람이 발생한 상황이기 때문에, 알람을 다시 한 번 제거해줄 필요가 없다.
+                // TimerActivity.removeNotificationAlarm(context)
             }
         }
-
     }
 
     private fun pickRandomMode(arr: Array<String>, context: Context, isReRegister: Boolean): Int {
         val index = Random().nextInt(arr.size)
         Log.d("TimerExpiredReceiver:pickRandomMode","index : $index, Pick : ${arr[index]} ")
+
         if (arr[index] == "SHAKE") {
+            Log.d(
+                "TimerExpiredReceiver:pickRandomMode",
+                "Picked one mode : SHAKE"
+            )
             mSensors.isShakeOn = true
-            if (isReRegister) {
-                mSensors.reRegister("SHAKE", context)
-            }
+            mSensors.register("SHAKE", context)
+
             if(mSensors.isWalkOn){
                 mSensors.isWalkOn = false
                 mSensors.unRegister("WALK",context)
@@ -152,16 +158,11 @@ class TimerExpiredReceiver : BroadcastReceiver() {
             i.flags =
                 Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(i)
-            Log.d(
-                "TimerExpiredReceiver:pickRandomMode",
-                "Picked one mode : SHAKE"
-            )
             return 1
         } else if (arr[index] == "WALK") {
             mSensors.isWalkOn = true
-            if (isReRegister) {
-                mSensors.reRegister("WALK", context)
-            }
+            mSensors.register("WALK", context)
+
             if(mSensors.isShakeOn){
                 mSensors.isShakeOn = false
                 mSensors.unRegister("SHAKE",context)
