@@ -226,7 +226,7 @@
             app:layout_constraintTop_toBottomOf="@+id/app_list_title" />
 
         <View
-            android:id="@+id/app_divider_3"
+            android:id="@+id/app_divider3"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="16dp"
@@ -245,7 +245,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/app_divider_3" />
+            app:layout_constraintTop_toBottomOf="@+id/app_divider3" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

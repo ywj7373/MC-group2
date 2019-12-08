@@ -87,12 +87,13 @@ class AppBlockingFragment : Fragment() {
     private lateinit var totalUsageTime: TextView
     private lateinit var divider: View
     private lateinit var divider2: View
+    private lateinit var divider3: View
     private var maxTimeLimit: Long = 30 * 60 * 1000 // 30 min in ms
-
+    private var isAppBlockModeEnabled: Boolean = false
 
     // Pedometer variables
     private lateinit var pedometer: Pedometer
-    private var pedometerEnabled: Boolean = false
+    private var isPedometerEnabled: Boolean = false
     private lateinit var sensorManager: SensorManager
     private lateinit var pedometerTitle: TextView
     private lateinit var pedometerLabel: TextView
@@ -168,93 +169,97 @@ class AppBlockingFragment : Fragment() {
         pedometerMaxValue = root.findViewById(R.id.max_step_count)
         motivationalText = root.findViewById(R.id.motivational_text)
         divider2 = root.findViewById(R.id.app_divider2)
+        divider3 = root.findViewById(R.id.app_divider3)
 
         // Initialize strict mode views
         strictModeLayout = root.findViewById(R.id.strict_mode_layout)
         strictModeTitle = root.findViewById(R.id.strict_title)
         strictModeRemainingTime = root.findViewById(R.id.strict_remaining_time)
 
+        // Check if app blocking enabled in Settings
+        isAppBlockModeEnabled = sharedPrefs.getBoolean(getString(R.string.appblock), false)
         // Check if pedometer enabled in preferences
-        pedometerEnabled = sharedPrefs.getBoolean("pedometer", false)
+        isPedometerEnabled = sharedPrefs.getBoolean("pedometer", false)
         maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
         maxTimeLimit =
             sharedPrefs.getString("time_limit", "${30 * 60 * 1000}")!!.toLong() // ms
         isStrictModeActivated = sharedPrefs.getBoolean("shouldUseStrictMode", false)
 
-        // Check if app blocking enabled in Settings
-        val isEnabled = sharedPrefs.getBoolean(getString(R.string.appblock), false)
-        if (isEnabled) {
+        if (isAppBlockModeEnabled) {
             AppBlockForegroundService.startService(context!!, "Monitoring...")
-        } else {
-            AppBlockForegroundService.stopService(context!!)
-        }
 
-        totalUsageTime.text =
-            "Total usage of restricted apps today: ${getTotalUsageTimeDayAllRestrictedApps()}"
+            totalUsageTime.text =
+                "Total usage of restricted apps today: ${getTotalUsageTimeDayAllRestrictedApps()}"
 
-        if (isStrictModeActivated) {
-            strictModeLayout.visibility = View.VISIBLE
-            strictModeTitle.visibility = View.VISIBLE
-            val timeLeftMs =
-                TimeUnit.MILLISECONDS.toMinutes(maxTimeLimit - getTotalAppUsageTime())
-            strictModeRemainingTime.text = "Total usage time left: $timeLeftMs min"
-            strictModeRemainingTime.visibility = View.VISIBLE
-        }
+            if (isStrictModeActivated) {
+                strictModeLayout.visibility = View.VISIBLE
+                strictModeTitle.visibility = View.VISIBLE
+                val timeLeftMs =
+                    TimeUnit.MILLISECONDS.toMinutes(maxTimeLimit - getTotalAppUsageTime())
+                strictModeRemainingTime.text = "Total usage time left: $timeLeftMs min"
+                strictModeRemainingTime.visibility = View.VISIBLE
+            }
 
-        if (currentlyBlockedApps.entries.count() == 0) {
-            hideViews()
-        } else {
-            blockTitle.setText("ACTIVE APP BLOCK")
+            if (currentlyBlockedApps.entries.count() == 0) {
+                hideViews()
+            } else {
+                blockTitle.setText("ACTIVE APP BLOCK")
 
-            currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
-                blockedAppName.setText(getAppNameFromPackage(appPackageName))
-                appUsageTime.text =
-                    "Total usage today: " + getAppTotalUsageTimeDay(appPackageName, true)
+                currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
+                    blockedAppName.setText(getAppNameFromPackage(appPackageName))
+                    appUsageTime.text =
+                        "Total usage today: " + getAppTotalUsageTimeDay(appPackageName, true)
 
-                motivationalText.visibility = View.VISIBLE
-                appIcon.setImageDrawable(getAppIcon(appPackageName))
-                if (System.currentTimeMillis() < finishTimeStamp) {
-                    getBlockCountdown(
-                        finishTimeStamp,
-                        chrono
-                    ).start()
-                } else if (finishTimeStamp <= System.currentTimeMillis()) {
-                    chrono.setText("00:00")
-                    chrono.setTextColor(Color.parseColor("#8bc34a"))
-                }
-                if (pedometerEnabled) {
-                    if (appStepCounters[appPackageName] != null) {
-                        if (appStepCounters[appPackageName]!! >= maxStepCount) {
-                            pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
-                        } else if (appStepCounters[appPackageName]!! < maxStepCount) {
-                            // initialize maxstepcount view
-                            pedometerMaxValue.text = "of ${maxStepCount}"
-                            // Activate pedometer sensor
-                            startPedometer(appPackageName, maxStepCount)
-                        }
+                    motivationalText.visibility = View.VISIBLE
+                    appIcon.setImageDrawable(getAppIcon(appPackageName))
+                    if (System.currentTimeMillis() < finishTimeStamp) {
+                        getBlockCountdown(
+                            finishTimeStamp,
+                            chrono
+                        ).start()
+                    } else if (finishTimeStamp <= System.currentTimeMillis()) {
+                        chrono.setText("00:00")
+                        chrono.setTextColor(Color.parseColor("#8bc34a"))
                     }
-                } else {
-                    hidePedometerViews()
+                    if (isPedometerEnabled) {
+                        if (appStepCounters[appPackageName] != null) {
+                            if (appStepCounters[appPackageName]!! >= maxStepCount) {
+                                pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
+                            } else if (appStepCounters[appPackageName]!! < maxStepCount) {
+                                // initialize maxStepCount view
+                                pedometerMaxValue.text = "of ${maxStepCount}"
+                                // Activate pedometer sensor
+                                startPedometer(appPackageName, maxStepCount)
+                            }
+                        }
+                    } else {
+                        hidePedometerViews()
+                    }
                 }
             }
+        } else {
+            AppBlockForegroundService.stopService(context!!)
+            appBlockModeDisabled()
         }
         return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        if (isAppBlockModeEnabled) {
 
-        appblocking_recycler_view.apply {
-            setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(activity)
-            adapter = AppBlockingAdapter(getAdapterList(), maxStepCount, pedometerEnabled)
+            appblocking_recycler_view.apply {
+                setHasFixedSize(true)
+                layoutManager = LinearLayoutManager(activity)
+                adapter = AppBlockingAdapter(getAdapterList(), maxStepCount, isPedometerEnabled)
+            }
         }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         // Check usage data access permissions
-        if (!hasUsageDataAccessPermission()) {
+        if (isAppBlockModeEnabled && !hasUsageDataAccessPermission()) {
             // Permission is not granted, show alert dialog to request for permission
             Log.d(
                 "bcat",
@@ -626,7 +631,6 @@ class AppBlockingFragment : Fragment() {
         return appStepCounters
     }
 
-    // TODO: Use proper function to get the string for today's usage of an app!!
     private fun getAdapterList(): List<AppDisplayListItem> {
         var blockedAppList: MutableList<AppDisplayListItem> = arrayListOf()
         restrictedApps.forEach { appPackageName ->
@@ -739,6 +743,22 @@ class AppBlockingFragment : Fragment() {
         val usageMin = TimeUnit.MILLISECONDS.toMinutes(usageMs)
 
         return String.format("$usageMin min ${if (isStrictModeActivated) "used" else "left"}")
+    }
+
+    private fun appBlockModeDisabled() {
+        hideViews()
+        hidePedometerViews()
+        val message: SpannableStringBuilder = SpannableStringBuilder()
+            .bold { append("APP BLOCKING MODE IS DISABLED") }
+        blockTitle.text = message
+        blockTitle.setTextColor(Color.DKGRAY)
+        divider3.visibility = View.GONE
+        divider.visibility = View.GONE
+        motivationalText.visibility = View.VISIBLE
+        motivationalText.text =
+            "Please go to the settings to enable the mode if you want to use it."
+        appBlockListTitle.visibility = View.GONE
+        totalUsageTime.visibility = View.GONE
     }
 }
 
