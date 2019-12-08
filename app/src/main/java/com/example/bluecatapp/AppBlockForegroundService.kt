@@ -13,13 +13,13 @@ import android.os.IBinder
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
-import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class AppBlockForegroundService : Service() {
@@ -213,9 +213,9 @@ class AppBlockForegroundService : Service() {
                 Intent(this, TimerActivity::class.java)
                     .putExtra("blockedAppName", packageName)
                     .putExtra("id", getString(R.string.FROMBLOCK))
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or  Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            )  }
-        else {
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            )
+        } else {
             application.startActivity(
                 Intent(this, MainActivity::class.java).putExtra(
                     "frgToLoad",
@@ -409,8 +409,14 @@ class AppBlockForegroundService : Service() {
     }
 
     private fun incrementTimer(packageName: String) {
+
         currentAppUsage += 1000
         appUsageTimers[packageName] = currentAppUsage
+        val minutesConsumed = TimeUnit.MILLISECONDS.toMinutes(currentAppUsage)
+        Log.d(
+            "bcat",
+            String.format("$currentAppUsage %d min consumed $packageName", minutesConsumed)
+        )
         with(sharedPrefs.edit()) {
             putString("appUsageTimers", MainActivity.gson.toJson(appUsageTimers))
             commit()
