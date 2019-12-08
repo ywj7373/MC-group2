@@ -3,13 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.bluecatapp">
 
-    <uses-feature
-        android:name="android.hardware.sensor.stepcounter"
-        android:required="true" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -49,11 +47,7 @@
         <receiver android:name=".ui.location.LocationReminderForegroundService" />
         <service android:name=".ui.location.LocationReminderForegroundService" />
 
-        <receiver android:name=".ui.location.DateChangeReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.DATE_CHANGED"></action>
-            </intent-filter>
-        </receiver>
+        <receiver android:name=".ui.location.AlarmNotificationDeletedReceiver"></receiver>
         <receiver android:name=".TimerExpiredReceiver"></receiver>
         <receiver android:name=".TimerNotificationActionReceiver"></receiver>
     </application>

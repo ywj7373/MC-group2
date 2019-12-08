@@ -669,7 +669,6 @@ class TimerActivity : AppCompatActivity() {
 //                    timer.cancel()
 //                    onTimerFinished()
 
-
                     // * dismiss the dialog
 
                     alertDialog.dismiss()
