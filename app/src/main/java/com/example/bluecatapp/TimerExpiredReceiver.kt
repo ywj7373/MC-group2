@@ -145,10 +145,12 @@ class TimerExpiredReceiver : BroadcastReceiver() {
 
     private fun pickRandomMode(arr: Array<String>, context: Context, isReRegister: Boolean): Int {
         if(sensorIndex < 0){ // if none of the sensor is enabled, sensorIndex stays as -1
-            // @todo should be set to this in production
+
+
+            // @todo should be set to this in production / demo
              sensorIndex= Random().nextInt(arr.size)
 
-            //test
+            //test _ only used to force the walk mode on
 //            if(arr.size>1){
 //                sensorIndex = 1
 //            }else{
