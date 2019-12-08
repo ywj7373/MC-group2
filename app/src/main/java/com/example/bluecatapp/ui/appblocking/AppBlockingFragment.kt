@@ -31,7 +31,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -39,8 +38,8 @@ import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.AppBlockForegroundService
 import com.example.bluecatapp.MainActivity
-import com.example.bluecatapp.pedometer.Pedometer
 import com.example.bluecatapp.R
+import com.example.bluecatapp.pedometer.Pedometer
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension
 import com.google.android.gms.fitness.Fitness
@@ -224,10 +223,12 @@ class AppBlockingFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         // Check usage data access permissions
-        if (hasUsageDataAccessPermission()) {
-            Log.d("bcat", "Permissions all good")
-        } else {
+        if (!hasUsageDataAccessPermission()) {
             // Permission is not granted, show alert dialog to request for permission
+            Log.d(
+                "bcat",
+                "Usage data permissions not granted. Showing dialog asking for permissions."
+            )
             showAlertDialog()
         }
     }
@@ -238,7 +239,7 @@ class AppBlockingFragment : Fragment() {
 
     private fun requestGoogleFitPermissions() {
 
-        if(isConnectedToNetwork()) {
+        if (isConnectedToNetwork()) {
             // From Android 10 (API 29) Activity Recognition permissions required
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 if (
@@ -271,7 +272,7 @@ class AppBlockingFragment : Fragment() {
             } else {
                 Log.d(TAG, "Google fit api permission already exists")
             }
-        } else{
+        } else {
             Log.d(TAG, "NO AVAILABLE NETWORK CONNECTION")
             Toast.makeText(
                 activity!!.applicationContext,
@@ -293,7 +294,7 @@ class AppBlockingFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
-                Log.d(TAG,"Google fit api permission granted")
+                Log.d(TAG, "Google fit api permission granted")
             }
         }
     }
@@ -331,7 +332,7 @@ class AppBlockingFragment : Fragment() {
         requestGoogleFitPermissions()
         hasGoogleFitPermissions = checkGoogleFitPermissions(fitnessOptions)
 
-        if(hasGoogleFitPermissions) {
+        if (hasGoogleFitPermissions) {
             Toast.makeText(
                 activity!!.applicationContext,
                 "GoogleFit enabled",
@@ -411,10 +412,10 @@ class AppBlockingFragment : Fragment() {
     private fun readGoogleFitStepData(appName: String): Int {
         var total = 0
 
-        val  fitnessOptions: GoogleSignInOptionsExtension =
-                FitnessOptions.builder()
-                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                    .build()
+        val fitnessOptions: GoogleSignInOptionsExtension =
+            FitnessOptions.builder()
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .build()
 
         val googleSignInAccount =
             GoogleSignIn.getAccountForExtension(context!!, fitnessOptions);
@@ -422,7 +423,7 @@ class AppBlockingFragment : Fragment() {
         // Listen to live changes in step count
         val stepCountListener = OnDataPointListener { p0 ->
             p0!!.dataType.fields.forEach { field ->
-                val value : Value = p0.getValue(field) // Number of steps detected by listener
+                val value: Value = p0.getValue(field) // Number of steps detected by listener
                 //                    Value(TotalSteps);
                 //                     TotalSteps=val+TotalSteps;
                 Log.i(TAG, "Detected DataPoint field: ${field.name}")
@@ -453,16 +454,21 @@ class AppBlockingFragment : Fragment() {
             }
         }
 
-        var  response: Task<Void> = Fitness.getSensorsClient(context!!, googleSignInAccount)
-                                        .add(SensorRequest.Builder()
-                                            .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
-                                            .setSamplingRate(1, TimeUnit.SECONDS)  // sample once every second
-                                            .setAccuracyMode(SensorRequest.ACCURACY_MODE_HIGH)
-                                            .build(),
-                                            stepCountListener)
+        var response: Task<Void> = Fitness.getSensorsClient(context!!, googleSignInAccount)
+            .add(
+                SensorRequest.Builder()
+                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                    .setSamplingRate(1, TimeUnit.SECONDS)  // sample once every second
+                    .setAccuracyMode(SensorRequest.ACCURACY_MODE_HIGH)
+                    .build(),
+                stepCountListener
+            )
 
 
-        Fitness.getHistoryClient(context!!, GoogleSignIn.getAccountForExtension(context!!, fitnessOptions))
+        Fitness.getHistoryClient(
+            context!!,
+            GoogleSignIn.getAccountForExtension(context!!, fitnessOptions)
+        )
             .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
             .addOnSuccessListener { dataSet ->
                 if (!dataSet.isEmpty) {
@@ -470,10 +476,12 @@ class AppBlockingFragment : Fragment() {
                     Log.d(TAG, "Total steps today: $total")
                 }
             }
-            .addOnFailureListener {Log.w(
-                TAG,
-                "There was a problem getting the step count."
-            )}
+            .addOnFailureListener {
+                Log.w(
+                    TAG,
+                    "There was a problem getting the step count."
+                )
+            }
         return total
     }
 
@@ -481,7 +489,8 @@ class AppBlockingFragment : Fragment() {
     @Suppress("DEPRECATION")
     private fun isConnectedToNetwork(): Boolean {
         Log.d(TAG, "CHECKING NETWORK")
-        val connectivityManager = context?.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager?
+        val connectivityManager =
+            context?.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager?
         return connectivityManager?.activeNetworkInfo?.isConnectedOrConnecting ?: false
     }
 
