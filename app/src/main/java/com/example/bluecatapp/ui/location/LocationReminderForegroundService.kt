@@ -47,6 +47,9 @@ const val ROUTINE_INTERVAL: Long = 60000
 const val DEFAULT_TRAVEL_TIME = "20"
 const val VIBRATION_TIME: Long = 1000
 var ringtone: Ringtone? = null
+object ringtoneInfo {
+    var isPlaying = false
+}
 
 class LocationReminderForegroundService : Service() {
     private val TAG = "Routine Service"
@@ -486,18 +489,20 @@ class LocationReminderForegroundService : Service() {
 
     private fun soundAlarm() {
         // Alarm Sound
-        try {
-            // For morning alarm sound
-            val alarmSound: Uri =
-                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ringtone = RingtoneManager.getRingtone(this, alarmSound)
-            ringtone!!.audioAttributes = AudioAttributes.Builder()
-                .setUsage(USAGE_ALARM)
-                .setContentType(CONTENT_TYPE_MUSIC).build()
-            ringtone!!.play()
-        }
-        catch (e: Exception) {
-            Log.d("ALARM SOUND GENERATION failed : ", e.toString())
+        if (!ringtoneInfo.isPlaying) {                      // Only play ringtone when ringtone is not playing
+            try {
+                // For morning alarm sound
+                val alarmSound: Uri =
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                ringtone = RingtoneManager.getRingtone(this, alarmSound)
+                ringtone!!.audioAttributes = AudioAttributes.Builder()
+                    .setUsage(USAGE_ALARM)
+                    .setContentType(CONTENT_TYPE_MUSIC).build()
+                ringtone!!.play()
+                ringtoneInfo.isPlaying = true
+            } catch (e: Exception) {
+                Log.d("ALARM SOUND GENERATION failed : ", e.toString())
+            }
         }
     }
 }
@@ -507,6 +512,7 @@ class AlarmNotificationDeletedReceiver: BroadcastReceiver() {
         Log.d("ALARM NOTIFICATION DELETED", "Deleted")
         if(ringtone != null) {
             ringtone!!.stop()
+            ringtoneInfo.isPlaying = false
         }
     }
 }
