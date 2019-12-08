@@ -184,7 +184,7 @@ class AppBlockingFragment : Fragment() {
                 blockedAppName.setText(getAppNameFromPackage(appPackageName))
                 appUsageTime.text =
                     "Total usage today: " + getAppTotalUsageTimeDay(appPackageName, true)
-                pedometerValue.setText("${appStepCounters[appPackageName]} / $maxStepCount")
+
                 motivationalText.visibility = View.VISIBLE
                 appIcon.setImageDrawable(getAppIcon(appPackageName))
                 if (System.currentTimeMillis() < finishTimeStamp) {
@@ -196,15 +196,19 @@ class AppBlockingFragment : Fragment() {
                     chrono.setText("00:00")
                     chrono.setTextColor(Color.parseColor("#8bc34a"))
                 }
-                if (!pedometerEnabled) {
+                if (pedometerEnabled) {
+                    if (appStepCounters[appPackageName] != null) {
+                        if (appStepCounters[appPackageName]!! >= maxStepCount) {
+                            pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
+                        } else if (appStepCounters[appPackageName]!! < maxStepCount) {
+                            // initialize maxstepcount view
+                            pedometerMaxValue.text = "${maxStepCount}"
+                            // Activate pedometer sensor
+                            startPedometer(appPackageName, maxStepCount)
+                        }
+                    }
+                } else{
                     hidePedometerViews()
-                } else if (appStepCounters[appPackageName] != null && appStepCounters[appPackageName]!! >= maxStepCount) {
-                    pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
-                } else if (appStepCounters[appPackageName] != null
-                    && appStepCounters[appPackageName]!! < maxStepCount
-                ) {
-                    // Activate pedometer sensor
-                    startPedometer(appPackageName, maxStepCount)
                 }
             }
         }
@@ -324,7 +328,6 @@ class AppBlockingFragment : Fragment() {
         Log.d(TAG, "Pedometer started")
         // initialize step counter views
         pedometerValue.text = "${appStepCounters[appName]}"
-        pedometerMaxValue.text = " of $numberOfSteps"
 
         /* Check permissions for GoogleFit API */
         var hasGoogleFitPermissions = false
