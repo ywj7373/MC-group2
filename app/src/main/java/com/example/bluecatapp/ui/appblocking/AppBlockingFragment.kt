@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -32,7 +33,6 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.text.bold
-import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager.getDefaultSharedPreferences
@@ -181,7 +181,7 @@ class AppBlockingFragment : Fragment() {
             blockTitle.setText("ACTIVE APP BLOCK")
 
             currentlyBlockedApps.forEach { (appPackageName, finishTimeStamp) ->
-                blockedAppName.setText(getAppNameFromPackage(appPackageName, context!!))
+                blockedAppName.setText(getAppNameFromPackage(appPackageName))
                 appUsageTime.text =
                     "Total usage today: " + getAppTotalUsageTimeDay(appPackageName, true)
                 pedometerValue.setText("${appStepCounters[appPackageName]} / $maxStepCount")
@@ -542,19 +542,15 @@ class AppBlockingFragment : Fragment() {
         }
     }
 
-    private fun getAppNameFromPackage(packageName: String, context: Context): String? {
-        val mainIntent = Intent(Intent.ACTION_MAIN, null)
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+    private fun getAppNameFromPackage(targetPackageName: String): String {
+        val fullAppList = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
 
-        val pkgAppsList = context.packageManager
-            .queryIntentActivities(mainIntent, 0)
-
-        for (app in pkgAppsList) {
-            if (app.activityInfo.packageName == packageName) {
-                return app.activityInfo.loadLabel(context.packageManager).toString()
+        fullAppList.forEach { appInfo: ApplicationInfo ->
+            if (appInfo.packageName == targetPackageName) {
+                return appInfo.loadLabel(packageManager).toString()
             }
         }
-        return null
+        return targetPackageName
     }
 
     private fun getAppIcon(packageName: String): Drawable? {
@@ -599,7 +595,7 @@ class AppBlockingFragment : Fragment() {
                 if (currentlyBlockedApps.contains(appPackageName)) currentlyBlockedApps[appPackageName] else null
             blockedAppList.add(
                 AppDisplayListItem(
-                    getAppNameFromPackage(appPackageName, context!!),
+                    getAppNameFromPackage(appPackageName),
                     blockFinishTimeStamp,
                     appStepCounters[appPackageName],
                     getAppIcon(appPackageName),
@@ -615,7 +611,6 @@ class AppBlockingFragment : Fragment() {
     private fun hideViews() {
         //Hide app blocking countdown and pedometer views if no currently blocked apps
         blockTitle.text = "NO ACTIVE APP BLOCK"
-        blockTitle.marginTop
         val blockTitleParams = blockTitle.layoutParams as ViewGroup.MarginLayoutParams
         blockTitleParams.topMargin = 150
         val dividerParams = divider.layoutParams as ViewGroup.MarginLayoutParams
@@ -675,7 +670,7 @@ class AppBlockingFragment : Fragment() {
                 return convertMsToHoursToString(usageStats.totalTimeInForeground, usePretty)
             }
         }
-        return "0.0 hours"
+        return "00:00"
     }
 
     private fun getAppUsageTimers(): MutableMap<String, Long> {

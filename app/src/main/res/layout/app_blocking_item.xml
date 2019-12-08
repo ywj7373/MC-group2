@@ -91,7 +91,7 @@
             android:id="@+id/appItemTotalUsageTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0.0 hours"
+            android:text="00:00"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
