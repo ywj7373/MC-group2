@@ -197,9 +197,11 @@ class LocationReminderForegroundService : Service() {
             .setDeleteIntent(pendingIntent)
             .build()
         //builder.flags = (builder.flags or Notification.FLAG_AUTO_CANCEL)
-        val alarmSoundEnabled = sharedPreferences.getBoolean("Enable Alarm Sound", false)
-        if(alarmSoundEnabled) {          // When alarm sound preference is on
-            soundAlarm()
+        if(id == NOTIF_ID3) {
+            val alarmSoundEnabled = sharedPreferences.getBoolean("Enable Alarm Sound", false)
+            if (alarmSoundEnabled) {          // When alarm sound preference is on
+                soundAlarm()
+            }
         }
         notificationManager.notify(id, builder)
     }
