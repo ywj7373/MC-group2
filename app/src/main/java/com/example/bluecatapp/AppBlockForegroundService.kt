@@ -17,7 +17,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.google.gson.reflect.TypeToken
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -460,10 +459,17 @@ class AppBlockForegroundService : Service() {
     }
 
     private fun checkForAppUsagesToReset() {
-        val blockDuration: Long =
-            sharedPrefs.getString("block_duration", "${10 * 60 * 1000}")!!.toLong()
-        val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
 
+        val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
+        val isStrictModeActivated: Boolean =
+            sharedPrefs.getBoolean("shouldUseStrictMode", false)
+
+        // Block duration of strict mode is static 20 min
+        val blockDuration: Long =
+            if (isStrictModeActivated) 20 * 60 * 1000 else sharedPrefs.getString(
+                "block_duration",
+                "${10 * 60 * 1000}"
+            )!!.toLong()
         val isStillRunningPrevDetectedApp: Boolean =
             prevDetectedForegroundAppPackageName != null && getForegroundApp() == null
 
@@ -591,7 +597,7 @@ class AppBlockForegroundService : Service() {
     }
 
     private fun addAllToBlockList() {
-        val blockDuration: Long = System.currentTimeMillis() + 10 * 60 * 1000 // 10 minutes in ms
+        val blockDuration: Long = System.currentTimeMillis() + 20 * 60 * 1000 // 20 minutes in ms
         val restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
         restrictedApps.forEach {
             currentlyBlockedApps[it] = blockDuration
@@ -607,7 +613,10 @@ class AppBlockForegroundService : Service() {
         appUsageTimers.forEach {
             resetTimer(it.key)
         }
-        Log.d("bcat", "➕ Added all restricted apps to block list (${blockDuration / 1000}s)")
+        Log.d(
+            "bcat",
+            "➕ Added all restricted apps to block list (${blockDuration / (60 * 1000)} min)"
+        )
     }
 
     private fun getAppNameFromPackage(packageName: String, context: Context): String? {
@@ -627,28 +636,19 @@ class AppBlockForegroundService : Service() {
 
     private fun shouldUseStrictMode(): Boolean {
         // If the time is between 00:00 and 10:00, be stricter in terms of when to block.
-
-        val startTimeHarshModeRaw = "00:00:00"
-        val startTime: Date = SimpleDateFormat("HH:mm:ss").parse(startTimeHarshModeRaw)
-        val startTimeHarshMode: Calendar = Calendar.getInstance()
-        startTimeHarshMode.time = startTime
-        startTimeHarshMode.add(Calendar.DATE, 1)
-
-
-        val endTimeHarshModeRaw = "10:00:00"
-        val endTime: Date = SimpleDateFormat("HH:mm:ss").parse(endTimeHarshModeRaw)
-        val endTimeHarshMode: Calendar = Calendar.getInstance()
-        endTimeHarshMode.time = endTime
-        endTimeHarshMode.add(Calendar.DATE, 1)
+        var result = false
 
         val currentDateTime: Calendar = Calendar.getInstance()
-        currentDateTime.add(Calendar.DATE, 1)
+        val currentHour: Int = currentDateTime.get(Calendar.HOUR_OF_DAY)
 
-        val currentTime: Date = currentDateTime.time
-        if (currentTime.after(startTimeHarshMode.time) && currentTime.before(endTimeHarshMode.time)) { // Checks whether the current time is between 00:00:00 and 10:00:00.
-            return true
+        if (currentHour in 0..9) { // Checks whether the current time is between 00:00:00 and 10:00:00.
+            result = true
         }
-        return false
+        with(sharedPrefs.edit()) {
+            putBoolean("shouldUseStrictMode", result)
+            commit()
+        }
+        return result
     }
 }
 

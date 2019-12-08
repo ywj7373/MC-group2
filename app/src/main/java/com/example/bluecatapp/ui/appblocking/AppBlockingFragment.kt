@@ -30,6 +30,7 @@ import android.widget.Chronometer
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
@@ -86,6 +87,8 @@ class AppBlockingFragment : Fragment() {
     private lateinit var totalUsageTime: TextView
     private lateinit var divider: View
     private lateinit var divider2: View
+    private var maxTimeLimit: Long = 30 * 60 * 1000 // 30 min in ms
+
 
     // Pedometer variables
     private lateinit var pedometer: Pedometer
@@ -97,6 +100,12 @@ class AppBlockingFragment : Fragment() {
     private lateinit var pedometerMaxValue: TextView
     private lateinit var motivationalText: TextView
     private var maxStepCount: Int = 10
+
+    // Strict mode variables
+    private lateinit var strictModeLayout: ConstraintLayout
+    private lateinit var strictModeTitle: TextView
+    private lateinit var strictModeRemainingTime: TextView
+    private var isStrictModeActivated = false
 
     private lateinit var fitnessOptions: FitnessOptions
 
@@ -117,6 +126,7 @@ class AppBlockingFragment : Fragment() {
         usageStatsMap = getUsageStatsMap()
         appUsageTimers = getAppUsageTimers()
         restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -159,9 +169,17 @@ class AppBlockingFragment : Fragment() {
         motivationalText = root.findViewById(R.id.motivational_text)
         divider2 = root.findViewById(R.id.app_divider2)
 
+        // Initialize strict mode views
+        strictModeLayout = root.findViewById(R.id.strict_mode_layout)
+        strictModeTitle = root.findViewById(R.id.strict_title)
+        strictModeRemainingTime = root.findViewById(R.id.strict_remaining_time)
+
         // Check if pedometer enabled in preferences
         pedometerEnabled = sharedPrefs.getBoolean("pedometer", false)
         maxStepCount = sharedPrefs.getString("pedometer_count", "0")!!.toInt()
+        maxTimeLimit =
+            sharedPrefs.getString("time_limit", "${30 * 60 * 1000}")!!.toLong() // ms
+        isStrictModeActivated = sharedPrefs.getBoolean("shouldUseStrictMode", false)
 
         // Check if app blocking enabled in Settings
         val isEnabled = sharedPrefs.getBoolean(getString(R.string.appblock), false)
@@ -173,6 +191,15 @@ class AppBlockingFragment : Fragment() {
 
         totalUsageTime.text =
             "Total usage of restricted apps today: ${getTotalUsageTimeDayAllRestrictedApps()}"
+
+        if (isStrictModeActivated) {
+            strictModeLayout.visibility = View.VISIBLE
+            strictModeTitle.visibility = View.VISIBLE
+            val timeLeftMs =
+                TimeUnit.MILLISECONDS.toMinutes(maxTimeLimit - getTotalAppUsageTime())
+            strictModeRemainingTime.text = "Total usage time left: $timeLeftMs min"
+            strictModeRemainingTime.visibility = View.VISIBLE
+        }
 
         if (currentlyBlockedApps.entries.count() == 0) {
             hideViews()
@@ -201,12 +228,12 @@ class AppBlockingFragment : Fragment() {
                             pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
                         } else if (appStepCounters[appPackageName]!! < maxStepCount) {
                             // initialize maxstepcount view
-                            pedometerMaxValue.text = "${maxStepCount}"
+                            pedometerMaxValue.text = "of ${maxStepCount}"
                             // Activate pedometer sensor
                             startPedometer(appPackageName, maxStepCount)
                         }
                     }
-                } else{
+                } else {
                     hidePedometerViews()
                 }
             }
@@ -612,7 +639,7 @@ class AppBlockingFragment : Fragment() {
                     appStepCounters[appPackageName],
                     getAppIcon(appPackageName),
                     getAppTotalUsageTimeDay(appPackageName),
-                    getRemainingAppUsageToString(appPackageName)
+                    getAppUsageToString(appPackageName)
                 )
             )
         }
@@ -624,7 +651,7 @@ class AppBlockingFragment : Fragment() {
         //Hide app blocking countdown and pedometer views if no currently blocked apps
         blockTitle.text = "NO ACTIVE APP BLOCK"
         val blockTitleParams = blockTitle.layoutParams as ViewGroup.MarginLayoutParams
-        blockTitleParams.topMargin = 150
+        blockTitleParams.topMargin = 200
         val dividerParams = divider.layoutParams as ViewGroup.MarginLayoutParams
         dividerParams.topMargin = 200
 
@@ -658,7 +685,7 @@ class AppBlockingFragment : Fragment() {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(hours)
 
         return String.format(
-            if (usePretty) "%dh %dmin" else "%02d:%02d",
+            if (usePretty) "%dh %dmin" else "%dh %02dmin",
             hours, minutes
         )
     }
@@ -670,7 +697,7 @@ class AppBlockingFragment : Fragment() {
         }.forEach { (_, usageStats) ->
             result += usageStats.totalTimeInForeground
         }
-        return convertMsToHoursToString(result, true)
+        return convertMsToHoursToString(result, true) // ms
     }
 
     private fun getAppTotalUsageTimeDay(
@@ -682,7 +709,7 @@ class AppBlockingFragment : Fragment() {
                 return convertMsToHoursToString(usageStats.totalTimeInForeground, usePretty)
             }
         }
-        return "00:00"
+        return "0h 00min"
     }
 
     private fun getAppUsageTimers(): MutableMap<String, Long> {
@@ -697,14 +724,21 @@ class AppBlockingFragment : Fragment() {
         return appUsageTimers
     }
 
-    private fun getRemainingAppUsageToString(targetPackageName: String): String {
-        val maxTimeLimit: Long =
-            sharedPrefs.getString("time_limit", "${30 * 60 * 1000}")!!.toLong() // ms
-        val appUsage = appUsageTimers.getOrDefault(targetPackageName, 0) // ms
-        val millisRemaining = maxTimeLimit - appUsage
-        val minutesRemaining = TimeUnit.MILLISECONDS.toMinutes(millisRemaining)
+    private fun getTotalAppUsageTime(): Long {
+        var totalAppUsageTime: Long = 0
 
-        return String.format("%d min left", minutesRemaining)
+        appUsageTimers.forEach {
+            totalAppUsageTime += it.value
+        }
+        return totalAppUsageTime
+    }
+
+    private fun getAppUsageToString(targetPackageName: String): String {
+        val appUsage = appUsageTimers.getOrDefault(targetPackageName, 0) // ms
+        val usageMs = if (isStrictModeActivated) appUsage else maxTimeLimit - appUsage
+        val usageMin = TimeUnit.MILLISECONDS.toMinutes(usageMs)
+
+        return String.format("$usageMin min ${if (isStrictModeActivated) "used" else "left"}")
     }
 }
 
