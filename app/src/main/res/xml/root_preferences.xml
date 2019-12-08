@@ -105,7 +105,7 @@
             app:title="@string/enable_location"
             android:selectable="true"
             app:iconSpaceReserved="false"
-            android:defaultValue="true"/>
+            android:defaultValue="false"/>
 
         <ListPreference
             app:key="@string/preparation_time"
@@ -123,6 +123,15 @@
             android:selectable="true"
             app:iconSpaceReserved="false"/>
 
+        <SwitchPreference
+            app:key="Enable Alarm Sound"
+            app:title="Enable Alarm Sound"
+            android:selectable="true"
+            app:iconSpaceReserved="false"
+            android:defaultValue="true"
+            android:summaryOff="No alarm sound"
+            android:summaryOn="Alarm will go off when you have to depart. Swipe notification to turn off the alarm."
+            />
 
     </PreferenceCategory>
 

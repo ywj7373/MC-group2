@@ -34,7 +34,7 @@ interface LocationItemDao {
     @Query("UPDATE location_items SET name = :value1, x = :value2, y = :value3, time = :value4, isAlarmed = :value5, done = :value6, daysMode = :value7, days = :value8 WHERE id = :value9")
     fun editLocationItem(value1: String, value2: String, value3: String, value4: String, value5: Boolean, value6: Boolean, value7: Boolean, value8: String, value9: Int)
 
-    @Query("UPDATE LOCATION_ITEMS SET time = (:value1 || substr(time, 10, 19)) WHERE daysMode == 1 AND days LIKE :value2") // %04d-%02d-%02d %02d:%02d:00
+    @Query("UPDATE LOCATION_ITEMS SET time = (:value1 || substr(time, 10, 8)) WHERE daysMode == 1 AND days LIKE :value2") // %04d-%02d-%02d %02d:%02d:00
     fun updateToTodayDateDays(value1: String, value2: String)
 }
 
