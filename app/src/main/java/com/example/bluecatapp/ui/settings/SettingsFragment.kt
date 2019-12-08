@@ -3,16 +3,17 @@ package com.example.bluecatapp.ui.settings
 import android.Manifest
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
+import android.text.SpannableStringBuilder
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.text.bold
 import androidx.fragment.app.DialogFragment
 import androidx.preference.*
 import com.example.bluecatapp.AppBlockForegroundService
@@ -43,227 +44,149 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         val appBlockPreference =
             preferenceManager.findPreference<SwitchPreference>(getString(R.string.appblock))
-        //app block monitoring starts automatically when toggled on
-        appBlockPreference?.setOnPreferenceChangeListener(object :
-            Preference.OnPreferenceChangeListener {
-            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
-                if (!appBlockPreference.isChecked) {
-                    //toggle on: app blocking enabled
-                    AppBlockForegroundService.startService(context!!, "Monitoring.. ")
+        // App block monitoring starts automatically when toggled on
+        appBlockPreference?.setOnPreferenceChangeListener { preference, newValue ->
+            if (!appBlockPreference.isChecked) {
+                // Toggle on: App blocking enabled
+                AppBlockForegroundService.startService(context!!, "Monitoring.. ")
 
-                    Toast.makeText(
-                        activity!!.applicationContext,
-                        "App blocking enabled",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    //toggle off: app blocking disabled
-                    AppBlockForegroundService.stopService(context!!)
-                    Toast.makeText(
-                        activity!!.applicationContext,
-                        "App blocking disabled",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                return true
+                Toast.makeText(
+                    activity!!.applicationContext,
+                    "App blocking enabled",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                // Toggle off: App blocking disabled
+                AppBlockForegroundService.stopService(context!!)
+                Toast.makeText(
+                    activity!!.applicationContext,
+                    "App blocking disabled",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-        })
+            true
+        }
 
         val locationReminderPreference =
             preferenceManager.findPreference<SwitchPreference>(getString(R.string.enable_location))
-        locationReminderPreference?.setOnPreferenceChangeListener(object :
-            Preference.OnPreferenceChangeListener {
-            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
+        locationReminderPreference?.setOnPreferenceChangeListener { preference, newValue ->
+            if (!locationReminderPreference.isChecked) {
 
-                if (!locationReminderPreference.isChecked) {
-
-                    if (ActivityCompat.checkSelfPermission(
-                            requireContext(),
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        editor.putBoolean("Location Reminder", true)
-                        editor.commit()
-                        LocationReminderForegroundService.startService(context!!)
-                        Toast.makeText(
-                            activity!!.applicationContext,
-                            "Location Based Reminder enabled",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        Toast.makeText(
-                            activity!!.applicationContext,
-                            "Enable location permission!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        requestLocationPermission()
-                    }
-                } else {
-                    editor.putBoolean("Location Reminder", false)
+                if (ActivityCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    editor.putBoolean("Location Reminder", true)
                     editor.commit()
-                    LocationReminderForegroundService.stopService(context!!)
+                    LocationReminderForegroundService.startService(context!!)
                     Toast.makeText(
                         activity!!.applicationContext,
-                        "Location Based Reminder disabled",
+                        "Location Based Reminder enabled",
                         Toast.LENGTH_SHORT
                     ).show()
+                } else {
+                    Toast.makeText(
+                        activity!!.applicationContext,
+                        "For location reminder mode to work, we need access to use your permission.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    requestLocationPermission()
                 }
-
-                return true
+            } else {
+                editor.putBoolean("Location Reminder", false)
+                editor.commit()
+                LocationReminderForegroundService.stopService(context!!)
+                Toast.makeText(
+                    activity!!.applicationContext,
+                    "Location Based Reminder disabled",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-        })
+
+            true
+        }
 
         val preparationTimePreference =
             preferenceManager.findPreference<ListPreference>(getString(R.string.preparation_time))
-        preparationTimePreference?.setOnPreferenceChangeListener(object :
-            Preference.OnPreferenceChangeListener {
-            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
+        preparationTimePreference?.setOnPreferenceChangeListener { preference, newValue ->
+            editor.putString("Preparation_time", newValue.toString())
+            editor.commit()
 
-                editor.putString("Preparation_time", newValue.toString())
-                editor.commit()
+            Toast.makeText(
+                activity!!.applicationContext,
+                "Preparation time changed to ${newValue.toString().toInt()} minutes ",
+                Toast.LENGTH_SHORT
+            ).show()
 
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "Preparation time changed to ${newValue.toString().toInt()} minutes ",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                return true
-            }
-        })
+            true
+        }
 
         val resetStatisticsPreference =
             preferenceManager.findPreference<Preference>(getString(R.string.reset_statistic))
-        resetStatisticsPreference?.setOnPreferenceClickListener(object :
-            Preference.OnPreferenceClickListener {
-            override fun onPreferenceClick(preference: Preference?): Boolean {
-                // Dialogue to confirm
-                AlertDialog.Builder(requireContext())
-                    .setTitle("Reset Statistics")
-                    .setMessage("Do you really want to reset?")
-                    .setPositiveButton(android.R.string.yes) { dialogInterface, i ->
-                        LocationRepository(activity!!.application).resetStats()
-                        Toast.makeText(
-                            activity!!.applicationContext,
-                            "Statistics reset completed",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    .setNegativeButton(android.R.string.no) { dialogInterface, i ->
-                        Toast.makeText(
-                            activity!!.applicationContext,
-                            "Statistics reset cancelled",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    .show()
-
-                return true
-            }
-        })
-
-        val hwModeTimePreference =
-            preferenceManager.findPreference<ListPreference>(getString(R.string.hw_time_key))
-        hwModeTimePreference?.setOnPreferenceChangeListener(object :
-            Preference.OnPreferenceChangeListener {
-            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
-
-                editor.putInt(getString(R.string.TIMER_LENGTH_ID), newValue.toString().toInt())
-                editor.commit()
-
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "HW mode time changed to ${newValue.toString()} minutes " +
-//                            "${getString(R.string.hw_time_value).toInt()/1000/60}" +
-                            "",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                return true
-            }
-        })
-
-        val hwModeShakeCountPreference =
-            preferenceManager.findPreference<ListPreference>(getString(R.string.hw_shake_val_key))
-        hwModeShakeCountPreference?.setOnPreferenceChangeListener(object :
-            Preference.OnPreferenceChangeListener {
-            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
-
-                editor.putInt(getString(R.string.hw_shake_value), newValue.toString().toInt())
-                editor.commit()
-
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "HW mode shake count changed to ${newValue.toString().toInt()} times " +
-//                            "${getString(R.string.hw_shake_value)}" +
-                            "",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                return true
-            }
-        })
-
-        val hwModePedometerBoolPreference =
-            preferenceManager.findPreference<SwitchPreference>(getString(R.string.hw_pedometer_bool_key))
-        hwModePedometerBoolPreference?.setOnPreferenceChangeListener(object :
-            Preference.OnPreferenceChangeListener {
-            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
-
-                // why is it backward...??
-                editor.putBoolean(
-                    getString(R.string.hw_pedometer_bool),
-                    !hwModePedometerBoolPreference.isChecked
-                )
-                editor.commit()
-
-                Log.d(
-                    "SettingsFragment:hwModePedometerBoolPreference",
-                    "isEnabled : ${!hwModePedometerBoolPreference.isChecked}"
-                )
-                if (!hwModePedometerBoolPreference.isChecked) {
-
+        resetStatisticsPreference?.setOnPreferenceClickListener {
+            // Dialogue to confirm
+            val message = SpannableStringBuilder()
+                .append("Are you sure you want to reset?\n")
+                .bold { append("This cannot be undone.") }
+            AlertDialog.Builder(requireContext())
+                .setTitle("Reset location reminder statistics")
+                .setMessage(message)
+                .setPositiveButton("RESET STATISTICS") { dialogInterface, i ->
+                    LocationRepository(activity!!.application).resetStats()
                     Toast.makeText(
                         activity!!.applicationContext,
-                        "Pedometer on HW mode enabled " +
-//                                "${R.bool.hw_pedometer_bool.toString()}" +
-                                "",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        activity!!.applicationContext,
-                        "Pedometer on HW mode disabled " +
-//                                "${R.bool.hw_pedometer_bool.toString()}" +
-                                "",
+                        "Reset location reminder statistics",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-                return true
-            }
-        })
+                .setNegativeButton(android.R.string.no) { dialogInterface, i ->
+                }
+                .show()
+
+            true
+        }
+
+        val hwModeTimePreference =
+            preferenceManager.findPreference<ListPreference>(getString(R.string.hw_time_key))
+        hwModeTimePreference?.setOnPreferenceChangeListener { preference, newValue ->
+            editor.putInt(getString(R.string.TIMER_LENGTH_ID), newValue.toString().toInt())
+            editor.commit()
+            true
+        }
+
+        val hwModeShakeCountPreference =
+            preferenceManager.findPreference<ListPreference>(getString(R.string.hw_shake_val_key))
+        hwModeShakeCountPreference?.setOnPreferenceChangeListener { preference, newValue ->
+            editor.putInt(getString(R.string.hw_shake_value), newValue.toString().toInt())
+            editor.commit()
+            true
+        }
+
+        val hwModePedometerBoolPreference =
+            preferenceManager.findPreference<SwitchPreference>(getString(R.string.hw_pedometer_bool_key))
+        hwModePedometerBoolPreference?.setOnPreferenceChangeListener { preference, newValue ->
+            // why is it backward...??
+            editor.putBoolean(
+                getString(R.string.hw_pedometer_bool),
+                !hwModePedometerBoolPreference.isChecked
+            )
+            editor.commit()
+
+            Log.d(
+                "SettingsFragment:hwModePedometerBoolPreference",
+                "isEnabled: ${!hwModePedometerBoolPreference.isChecked}"
+            )
+            true
+        }
 
         val hwModePedometerValPreference =
             preferenceManager.findPreference<ListPreference>(getString(R.string.hw_pedometer_val_key))
-        hwModePedometerValPreference?.setOnPreferenceChangeListener(object :
-            Preference.OnPreferenceChangeListener {
-            override fun onPreferenceChange(preference: Preference?, newValue: Any?): Boolean {
-
-                editor.putInt(getString(R.string.hw_pedometer_value), newValue.toString().toInt())
-                editor.commit()
-
-                Toast.makeText(
-                    activity!!.applicationContext,
-                    "HW mode pedometer settings changed to $newValue steps " +
-//                            "${getString(R.string.hw_pedometer_value)}"+
-                            ""
-                    ,
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                return true
-            }
-        })
+        hwModePedometerValPreference?.setOnPreferenceChangeListener { preference, newValue ->
+            editor.putInt(getString(R.string.hw_pedometer_value), newValue.toString().toInt())
+            editor.commit()
+            true
+        }
     }
 
     override fun onDisplayPreferenceDialog(preference: Preference?) {
@@ -275,7 +198,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         } else super.onDisplayPreferenceDialog(preference)
     }
 
-    //Request for permission for location
+    // Request for permission for location
     private fun requestLocationPermission() {
         val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(
             requireActivity(),
@@ -285,7 +208,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             Log.d("Setting Fragment", "Displaying permission rationale")
             Toast.makeText(
                 requireContext(),
-                "We need permission to enable location reminder",
+                "We need permission to use your location to enable location reminder",
                 Toast.LENGTH_LONG
             ).show()
             requestPermissions(
@@ -296,7 +219,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             )
 
         } else {
-            Log.d("Setting Fragment", "Requesting Permission")
+            Log.d("Setting Fragment", "Requesting Location Permission")
             requestPermissions(
                 arrayOf(
                     Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -306,8 +229,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
-    //Check if the location tracker is enabled in the setting
-    private fun isLocationEnabled(): Boolean {
+    // Check if the location tracker is enabled in the setting
+    private fun isLocationModeEnabled(): Boolean {
         val locationManager: LocationManager =
             requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
@@ -315,15 +238,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
         )
     }
 
-    //Called after the user allows or denies our requested permission
+    // Called after the user allows or denies our requested permission
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permission: Array<String>,
         grantResults: IntArray
     ) {
         if (requestCode == PERMISSION_ID && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (!isLocationEnabled()) {
-                Toast.makeText(requireActivity(), "Turn on location", Toast.LENGTH_LONG).show()
+            if (!isLocationModeEnabled()) {
+                Toast.makeText(
+                    requireActivity(),
+                    "Turn on location mode in the settings",
+                    Toast.LENGTH_LONG
+                ).show()
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
             } else {
@@ -332,7 +259,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 LocationReminderForegroundService.startService(requireContext())
             }
         } else {
-            //turn off location reminder
+            // Turn off location reminder
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
             val editor = sharedPreferences.edit()
             editor.putBoolean("Location Based Reminder", false)
