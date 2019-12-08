@@ -33,7 +33,7 @@
         android:id="@+id/todo_item_container"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="#F9F9F9">
+        android:background="@color/colorPrimaryDark">
 
         <RelativeLayout
             android:id="@+id/todo_task_item_divider"
@@ -53,7 +53,7 @@
             android:layout_width="fill_parent"
             android:layout_height="7dp"
             android:layout_below="@id/todo_item_task"
-            android:background="#ff0000"
+            android:background="@color/colorAccent"
             android:visibility="visible" />
 
         <TextView
