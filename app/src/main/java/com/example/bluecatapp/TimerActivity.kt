@@ -87,9 +87,9 @@ class TimerActivity : AppCompatActivity() {
         var notiAlarmOffset: Long = 0L  // one minute - notiAlarmSeconds
 
         // test purpose
-        const val notiAlarmSeconds: Long = 4L // 4 seconds
+//        const val notiAlarmSeconds: Long = 4L // 4 seconds
         // production version @todo should be changed when building production version ( + root_preference )
-        // const val notiAlarmSeconds : Long = 180L // threeMinutes
+         const val notiAlarmSeconds : Long = 180L // threeMinutes
 
         var isShaking = false
         var isWalking = false
@@ -481,7 +481,9 @@ class TimerActivity : AppCompatActivity() {
 
             // === only set the notification alarm when the enough time is left === //
             if (secondsRemaining > notiAlarmOffset) {
-                setNotificationAlarm(this, nowSeconds, (secondsRemaining - notiAlarmOffset))
+                val wakeUpTime2 = setNotificationAlarm(this, nowSeconds, (secondsRemaining - notiAlarmOffset))
+                Log.d("TimerActivity:onPause:setNotificationAlarm",
+                    "setNotificationAlarm : $wakeUpTime2, (secondsRemaining - notiAlarmOffset) : ${(secondsRemaining - notiAlarmOffset)}")
             }
 
             NotificationUtil.showTimerRunning(this, wakeUpTime)
@@ -500,7 +502,10 @@ class TimerActivity : AppCompatActivity() {
         //if the length was changed in settings while it was backgrounded
         if (timerState == TimerState.Stopped) {
             setNewTimerLength()
-            notiAlarmOffset = timerLengthSeconds - notiAlarmSeconds // set the notiAlarmOffset right after setting the timerLength
+            // test
+//            notiAlarmOffset = timerLengthSeconds - notiAlarmSeconds // set the notiAlarmOffset right after setting the timerLength
+            // @todo should be changed to this when production
+            notiAlarmOffset = notiAlarmSeconds // set the notiAlarmOffset right after setting the timerLength
         } else
             setPreviousTimerLength()
 
