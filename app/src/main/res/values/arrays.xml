@@ -2,75 +2,62 @@
     <!-- App Blocking Preference -->
     <!-- Maximum Time Limit for App Usage -->
     <string-array name="time_limit_entries">
-        <item>Deactivate</item>
-        <item>5 sec (testing)</item>
-        <item>10 sec (testing)</item>
+        <item>10 min</item>
         <item>20 min</item>
         <item>30 min</item>
-        <item>1 hour</item>
-        <item>2 hours</item>
+        <item>40 min</item>
+        <item>50 min</item>
+        <item>60 min</item>
     </string-array>
 
     <string-array name="time_limit_values">
-        <item>-1</item>
-        <item>5000</item>
-        <item>10000</item>
+        <item>600000</item>
         <item>1200000</item>
         <item>1800000</item>
+        <item>2400000</item>
+        <item>3000000</item>
         <item>3600000</item>
-        <item>7200000</item>
     </string-array>
 
     <!-- App Block Duration -->
     <string-array name="block_duration_entries">
-        <item>Deactivate</item>
-        <item>10 sec (testing)</item>
         <item>5 min</item>
         <item>10 min</item>
+        <item>20 min</item>
         <item>30 min</item>
-        <item>1 hour</item>
-        <item>2 hours</item>
+        <item>40 min</item>
+        <item>50 min</item>
+        <item>60 min</item>
     </string-array>
 
     <string-array name="block_duration_values">
-        <item>0</item>
-        <item>10000</item>
         <item>300000</item>
         <item>600000</item>
+        <item>1200000</item>
         <item>1800000</item>
+        <item>2400000</item>
+        <item>3000000</item>
         <item>3600000</item>
-        <item>7200000</item>
     </string-array>
 
     <string-array name="pedometer_entries">
-        <item>1 step (testing)</item>
-        <item>10 steps</item>
-        <item>20 steps</item>
-        <item>50 steps</item>
-        <item>100 steps</item>
-        <item>200 steps</item>
+        <item>30 steps (~20m)</item>
+        <item>50 steps (~40m)</item>
+        <item>100 steps (~75m)</item>
+        <item>150 steps (~115m)</item>
+        <item>200 steps (~150m)</item>
     </string-array>
 
     <string-array name="pedometer_values">
-        <item>1</item>
-        <item>10</item>
-        <item>20</item>
+        <item>30</item>
         <item>50</item>
         <item>100</item>
+        <item>150</item>
         <item>200</item>
     </string-array>
 
     <string-array name="hw_time_entries">
-        <item>1 minute(testing)</item>
-        <item>10 minutes</item>
-        <item>20 minutes</item>
-        <item>30 minutes</item>
-        <item>45 minutes</item>
-        <item>60 minutes</item>
-        <item>90 minutes</item>
-    </string-array>
-
-    <string-array name="hw_time_entries_production">
+        <item>1 minute (testing)</item>
         <item>10 minutes</item>
         <item>20 minutes</item>
         <item>30 minutes</item>
@@ -80,7 +67,6 @@
     </string-array>
 
     <string-array name="hw_time_values">
-
         <item>1</item>
         <item>10</item>
         <item>20</item>
@@ -88,7 +74,15 @@
         <item>45</item>
         <item>60</item>
         <item>90</item>
+    </string-array>
 
+    <string-array name="hw_time_entries_production">
+        <item>10 minutes</item>
+        <item>20 minutes</item>
+        <item>30 minutes</item>
+        <item>45 minutes</item>
+        <item>60 minutes</item>
+        <item>90 minutes</item>
     </string-array>
 
     <string-array name="hw_time_values_production">
@@ -111,14 +105,6 @@
         <item>30 times</item>
     </string-array>
 
-    <string-array name="hw_shake_entries_production">
-        <item>5 times</item>
-        <item>10 times</item>
-        <item>15 times</item>
-        <item>20 times</item>
-        <item>30 times</item>
-    </string-array>
-
     <string-array name="hw_shake_values">
         <item>1</item>
         <item>5</item>
@@ -126,6 +112,14 @@
         <item>15</item>
         <item>20</item>
         <item>30</item>
+    </string-array>
+
+    <string-array name="hw_shake_entries_production">
+        <item>5 times</item>
+        <item>10 times</item>
+        <item>15 times</item>
+        <item>20 times</item>
+        <item>30 times</item>
     </string-array>
 
     <string-array name="hw_shake_values_production">
@@ -136,17 +130,8 @@
         <item>30</item>
     </string-array>
 
-
     <string-array name="hw_pedometer_entries">
         <item>1 step (testing)</item>
-        <item>10 steps</item>
-        <item>20 steps</item>
-        <item>50 steps</item>
-        <item>100 steps</item>
-        <item>200 steps</item>
-    </string-array>
-
-    <string-array name="hw_pedometer_entries_production">
         <item>10 steps</item>
         <item>20 steps</item>
         <item>50 steps</item>
@@ -163,11 +148,19 @@
         <item>200</item>
     </string-array>
 
+    <string-array name="hw_pedometer_entries_production">
+        <item>30 steps (~20m)</item>
+        <item>50 steps (~40m)</item>
+        <item>100 steps (~75m)</item>
+        <item>150 steps (~115m)</item>
+        <item>200 steps (~150m)</item>
+    </string-array>
+
     <string-array name="hw_pedometer_values_production">
-        <item>10</item>
-        <item>20</item>
+        <item>30</item>
         <item>50</item>
         <item>100</item>
+        <item>150</item>
         <item>200</item>
     </string-array>
 

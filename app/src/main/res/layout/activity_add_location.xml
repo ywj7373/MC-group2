@@ -1,256 +1,325 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/locationAddLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
+
+
+    <TextView
+        android:id="@+id/locationLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/location_label"
+        android:textAppearance="@style/labels"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.mancj.materialsearchbar.MaterialSearchBar
         android:id="@+id/searchBar"
         style="@style/MaterialSearchBarLight"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/locationLabel"
         app:mt_hint="Search"
+        app:mt_hintColor="#939393"
         app:mt_maxSuggestionsCount="10"
-        app:mt_speechMode="false"
-        app:mt_placeholder="Search Location"
-        app:mt_searchBarColor="#EFEFEF"
+        app:mt_placeholder="Search: e.g. SNU Main Library"
         app:mt_placeholderColor="@color/darker_gray"
-        app:mt_textColor="#000000"/>
+        app:mt_searchBarColor="#EFEFEF"
+        app:mt_speechMode="false"
+        app:mt_textColor="#000000">
+
+    </com.mancj.materialsearchbar.MaterialSearchBar>
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/linearLayout"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/searchBar"
         android:orientation="vertical"
-        android:id="@+id/choices">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchBar">
+
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="33dp"
-            android:background="#FFFFFF"
-            android:textColor="#000000"
-            android:padding="5dp"
             android:id="@+id/loc1"
-            android:textSize="15sp"/>
-        <TextView
             android:layout_width="match_parent"
-            android:layout_height="33dp"
-            android:background="#EFEFEF"
-            android:padding="5dp"
-            android:textColor="#000000"
-            android:id="@+id/loc2"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="33dp"
+            android:layout_height="wrap_content"
             android:background="#FFFFFF"
             android:padding="5dp"
-            android:textColor="#000000"
-            android:id="@+id/loc3"/>
+            android:textColor="#000000" />
+
         <TextView
+            android:id="@+id/loc2"
             android:layout_width="match_parent"
-            android:layout_height="33dp"
+            android:layout_height="wrap_content"
             android:background="#EFEFEF"
             android:padding="5dp"
-            android:textColor="#000000"
-            android:id="@+id/loc4"/>
+            android:textColor="#000000" />
+
         <TextView
+            android:id="@+id/loc3"
             android:layout_width="match_parent"
-            android:layout_height="33dp"
+            android:layout_height="wrap_content"
             android:background="#FFFFFF"
             android:padding="5dp"
-            android:textColor="#000000"
-            android:id="@+id/loc5"/>
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/loc4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#EFEFEF"
+            android:padding="5dp"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/loc5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:padding="5dp"
+            android:textColor="#000000" />
     </LinearLayout>
 
     <TextView
-        android:id="@+id/nameText"
+        android:id="@+id/displayText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/name_text"
-        android:layout_below="@id/choices"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="20dp"
-        android:textSize="12sp"/>
-    
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/display_label"
+        android:textAppearance="@style/labels"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
     <EditText
         android:id="@+id/displayNameEdit"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_below="@+id/nameText"
-        android:layout_marginStart="17dp"
-        android:layout_marginEnd="20dp"
-        android:textSize="16sp"
-        android:textColor="#000000"
-        android:inputType="text"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
         android:hint="@string/hint"
-        android:maxLength="17" />
+        android:inputType="text"
+        android:maxLength="17"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/displayText" />
 
     <TextView
         android:id="@+id/wordCountText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="12sp"
         android:text="@string/word_count"
-        android:layout_marginEnd="20dp"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/displayNameEdit"/>
-
-    <TextView
-        android:id="@+id/dateText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:text="@string/date_title"
-        android:layout_marginTop="15dp"
-        android:layout_marginStart="20dp"
-        android:layout_below="@id/displayNameEdit"/>
-
-    <TextView
-        android:id="@+id/dateEdit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/date_title"
-        android:textSize="16sp"
-        android:layout_marginStart="20dp"
-        android:layout_below="@id/dateText"
-        android:textColor="#000000"/>
-
-    <RelativeLayout
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_alignStart="@id/dateEdit"
-        android:layout_alignEnd="@id/dateEdit"
-        android:background="@color/darker_gray"
-        android:layout_below="@id/dateEdit" />
+        app:layout_constraintEnd_toEndOf="@+id/displayNameEdit"
+        app:layout_constraintTop_toBottomOf="@+id/displayNameEdit" />
 
     <TextView
         android:id="@+id/timeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="12sp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
         android:text="@string/time_title"
-        android:layout_marginTop="15dp"
-        android:layout_marginStart="20dp"
-        android:layout_below="@id/dateEdit"/>
+        android:textAppearance="@style/labels"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dividerDate" />
 
     <TextView
         android:id="@+id/timeEdit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="@string/time_title"
+        android:textColor="#000000"
         android:textSize="16sp"
-        android:layout_marginStart="20dp"
-        android:layout_below="@id/timeText"
-        android:textColor="#000000"/>
+        app:layout_constraintStart_toStartOf="@+id/timeText"
+        app:layout_constraintTop_toBottomOf="@+id/timeText" />
 
     <RelativeLayout
-        android:id="@+id/divider2"
-        android:layout_width="match_parent"
+        android:id="@+id/dividerTime"
+        android:layout_width="0dp"
         android:layout_height="1dp"
+        android:layout_marginTop="8dp"
         android:background="@color/darker_gray"
-        android:layout_below="@id/timeEdit"
-        android:layout_alignStart="@id/timeEdit"
-        android:layout_alignEnd="@id/timeEdit"/>
+        app:layout_constraintEnd_toEndOf="@+id/timeEdit"
+        app:layout_constraintStart_toStartOf="@+id/timeEdit"
+        app:layout_constraintTop_toBottomOf="@+id/timeEdit" />
+
+    <TextView
+        android:id="@+id/dateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/date_title"
+        android:textAppearance="@style/labels"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/displayNameEdit" />
+
+    <TextView
+        android:id="@+id/dateEdit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/date_title"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/dateText"
+        app:layout_constraintTop_toBottomOf="@+id/dateText" />
+
+    <RelativeLayout
+        android:id="@+id/dividerDate"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/darker_gray"
+        app:layout_constraintEnd_toEndOf="@+id/dateEdit"
+        app:layout_constraintStart_toStartOf="@+id/dateEdit"
+        app:layout_constraintTop_toBottomOf="@+id/dateEdit">
+
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/repeat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/timeEdit"
-        android:text="@string/repeat"
-        android:textSize="12sp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
-        android:layout_marginStart="20dp"/>
+        android:text="@string/repeat"
+        android:textAppearance="@style/labels"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dividerTime" />
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        android:clipToPadding="false"
         android:orientation="horizontal"
-        android:layout_below="@id/repeat"
-        android:layout_marginTop="20dp"
-        android:layout_centerHorizontal="true">
+        android:padding="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/repeat">
 
         <ToggleButton
             android:id="@+id/toggleButton1"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="@drawable/button_bg_round"
             android:text="@string/toggle_button"
+            android:textAllCaps="false"
             android:textColor="@color/darker_gray"
             android:textOff="@string/sun"
-            android:textOn="@string/sun"
-            android:textSize="12sp"/>
+            android:textOn="@string/sun" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ToggleButton
             android:id="@+id/toggleButton2"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="@drawable/button_bg_round"
             android:text="@string/toggle_button"
+            android:textAllCaps="false"
+            android:textColor="@color/darker_gray"
             android:textOff="@string/mon"
-            android:textOn="@string/mon"
-            android:layout_marginStart="15dp"
-            android:textSize="12sp"
-            android:textColor="@color/darker_gray"/>
+            android:textOn="@string/mon" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ToggleButton
             android:id="@+id/toggleButton3"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="@drawable/button_bg_round"
             android:text="@string/toggle_button"
+            android:textAllCaps="false"
+            android:textColor="@color/darker_gray"
             android:textOff="@string/tue"
-            android:textOn="@string/tue"
-            android:layout_marginStart="15dp"
-            android:textSize="12sp"
-            android:textColor="@color/darker_gray"/>
+            android:textOn="@string/tue" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ToggleButton
             android:id="@+id/toggleButton4"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="@drawable/button_bg_round"
             android:text="@string/toggle_button"
+            android:textAllCaps="false"
+            android:textColor="@color/darker_gray"
             android:textOff="@string/wed"
-            android:textOn="@string/wed"
-            android:layout_marginStart="15dp"
-            android:textSize="12sp"
-            android:textColor="@color/darker_gray"/>
+            android:textOn="@string/wed" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ToggleButton
             android:id="@+id/toggleButton5"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="@drawable/button_bg_round"
             android:text="@string/toggle_button"
+            android:textAllCaps="false"
+            android:textColor="@color/darker_gray"
             android:textOff="@string/thu"
-            android:textOn="@string/thu"
-            android:layout_marginStart="15dp"
-            android:textSize="12sp"
-            android:textColor="@color/darker_gray"/>
+            android:textOn="@string/thu" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ToggleButton
             android:id="@+id/toggleButton6"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="@drawable/button_bg_round"
             android:text="@string/toggle_button"
+            android:textAllCaps="false"
+            android:textColor="@color/darker_gray"
             android:textOff="@string/fri"
-            android:textOn="@string/fri"
-            android:layout_marginStart="15dp"
-            android:textSize="12sp"
-            android:textColor="@color/darker_gray"/>
+            android:textOn="@string/fri" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ToggleButton
             android:id="@+id/toggleButton7"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="@drawable/button_bg_round"
             android:text="@string/toggle_button"
+            android:textAllCaps="false"
+            android:textColor="@color/darker_gray"
             android:textOff="@string/sat"
-            android:textOn="@string/sat"
-            android:layout_marginStart="15dp"
-            android:textSize="12sp"
-            android:textColor="@color/darker_gray"/>
+            android:textOn="@string/sat" />
     </LinearLayout>
-</RelativeLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
