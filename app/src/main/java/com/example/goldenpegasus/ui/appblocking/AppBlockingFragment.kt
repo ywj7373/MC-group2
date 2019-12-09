@@ -231,7 +231,7 @@ class AppBlockingFragment : Fragment() {
                             pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
                         } else {
                             // set stepcount views
-                            pedometerMaxValue.text = "of ${maxStepCount}"
+                            pedometerValue.text = "of ${appStepCounters[appPackageName]}"
                             pedometerMaxValue.text = "of ${maxStepCount}"
                         }
                     }
