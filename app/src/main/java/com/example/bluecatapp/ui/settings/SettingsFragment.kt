@@ -230,7 +230,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     // Check if the location tracker is enabled in the setting
-    private fun isLocationModeEnabled(): Boolean {
+    private fun isLocationTrackerEnabled(): Boolean {
         val locationManager: LocationManager =
             requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
@@ -245,7 +245,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         grantResults: IntArray
     ) {
         if (requestCode == PERMISSION_ID && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (!isLocationModeEnabled()) {
+            if (!isLocationTrackerEnabled()) {
                 Toast.makeText(
                     requireActivity(),
                     "Turn on location mode in the settings",

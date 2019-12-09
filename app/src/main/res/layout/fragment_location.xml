@@ -1,134 +1,186 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/locationfraglayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F9F9F9">
 
     <TextView
         android:id="@+id/next_text"
-        android:layout_width="match_parent"
-        android:layout_height="24dp"
-        android:layout_alignParentTop="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
-        android:gravity="center_horizontal|center_vertical"
+        android:gravity="center_horizontal"
         android:lineSpacingExtra="7sp"
         android:text="@string/next"
-        android:textAppearance="@style/next" />
+        android:textAppearance="@style/labels"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
     <TextView
         android:id="@+id/next_loc"
-        android:layout_width="240dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/next_text"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="2dp"
-        android:gravity="top"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:gravity="center_horizontal|top"
         android:lineSpacingExtra="0sp"
         android:text="@string/next_loc"
-        android:textAppearance="@style/text_label" />
+        android:textAppearance="@style/text_label"
+        app:layout_constraintEnd_toStartOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/next_text" />
 
     <TextView
         android:id="@+id/time_loc"
-        android:layout_width="63dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/next_text"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="60dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="top"
+        android:lineSpacingExtra="0sp"
         android:text="@string/time_loc"
         android:textAppearance="@style/text_label"
-        android:lineSpacingExtra="0sp"
-        android:gravity="top" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
+        app:layout_constraintTop_toBottomOf="@+id/next_text" />
 
     <TextView
         android:id="@+id/what_where"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_below="@id/next_loc"
-        android:layout_marginStart="70dp"
-        android:text="@string/what_where"
-        android:textAppearance="@style/descript_label"
+        android:gravity="center_vertical"
         android:lineSpacingExtra="7sp"
-        android:gravity="center_vertical" />
+        android:text="@string/what_where"
+        android:textAppearance="@style/labels"
+        app:layout_constraintEnd_toEndOf="@+id/next_loc"
+        app:layout_constraintStart_toStartOf="@+id/next_loc"
+        app:layout_constraintTop_toBottomOf="@+id/next_loc" />
 
     <TextView
         android:id="@+id/goal_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/time_loc"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="67dp"
-        android:text="@string/goal_time"
-        android:textAppearance="@style/descript_label"
+        android:gravity="center_horizontal|center_vertical"
         android:lineSpacingExtra="3sp"
-        android:gravity="center_horizontal|center_vertical" />
+        android:text="@string/goal_time"
+        android:textAppearance="@style/labels"
+        app:layout_constraintEnd_toEndOf="@+id/time_loc"
+        app:layout_constraintStart_toStartOf="@+id/time_loc"
+        app:layout_constraintTop_toBottomOf="@+id/time_loc" />
 
     <RelativeLayout
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#E4E0E0"
-        android:layout_below="@id/goal_time"
-        android:layout_marginTop="30dp" />
+        android:id="@+id/locdivider1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/what_where">
+
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/stat_title"
-        android:layout_width="76dp"
+        android:layout_width="wrap_content"
         android:layout_height="21dp"
-        android:layout_below="@id/divider"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="50dp"
-        android:text="@string/stat_title"
-        android:textAppearance="@style/stat_title"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:gravity="center_vertical"
         android:lineSpacingExtra="7sp"
-        android:gravity="center_vertical" />
+        android:text="@string/stat_title"
+        android:textAppearance="@style/labels"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/locdivider1" />
+
+    <View
+        android:id="@+id/locdivider2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="#11000000"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/remind_text" />
 
     <TextView
         android:id="@+id/grade"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/stat_title"
-        android:layout_centerInParent="true"
+        android:layout_marginTop="16dp"
+        android:lineSpacingExtra="0sp"
         android:text="@string/grade"
         android:textAppearance="@style/grade"
-        android:lineSpacingExtra="0sp"
-        android:gravity="center_vertical"
-        />
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/stat_title" />
 
     <TextView
         android:id="@+id/stat_label"
         android:layout_width="wrap_content"
-        android:layout_height="21dp"
-        android:layout_below="@id/grade"
-        android:layout_centerInParent="true"
-        android:text="@string/stat_label"
-        android:textAppearance="@style/stat_label"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
         android:lineSpacingExtra="7sp"
-        android:gravity="center_vertical" />
+        android:text="@string/stat_label"
+        android:textAppearance="@style/labels"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/grade" />
 
     <TextView
         android:id="@+id/remind_text"
-        android:layout_width="139dp"
-        android:layout_height="17.5dp"
-        android:layout_below="@id/stat_label"
+        android:layout_width="wrap_content"
+        android:layout_height="18dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="40dp"
-        android:layout_marginStart="50dp"
-        android:text="@string/remind_text"
-        android:textAppearance="@style/remind_text"
+        android:gravity="center_vertical"
         android:lineSpacingExtra="7sp"
-        android:gravity="center_vertical" />
+        android:text="@string/remind_text"
+        android:textAppearance="@style/labels"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/stat_label" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/location_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/remind_text"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="373dp"
         android:scrollbars="vertical"
-        tools:listitem="@layout/location_item">
-    </androidx.recyclerview.widget.RecyclerView>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/locdivider2"
+        tools:listitem="@layout/location_item" />
 
-</RelativeLayout>
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.6" />
+
+    <TextView
+        android:id="@+id/location_disabled_text"
+        android:layout_width="242dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Please go to the settings to enable the mode if you want to use it."
+        android:textAlignment="center"
+        android:textAppearance="@style/app_block_motivational"
+        android:textStyle="italic"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/next_text"
+        app:lineHeight="22sp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
