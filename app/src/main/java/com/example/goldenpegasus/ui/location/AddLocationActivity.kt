@@ -379,36 +379,9 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
         else {
             dateEdit.text = str.substring(0, str.length - 1)
             days_mode_set = true
-
-            var dayOfToday_encoded = current.get(Calendar.DAY_OF_WEEK)
-            var dayOfToday: String = ""
-            var count = 0                       // To prevent infinite loop
-
             year = current.get(Calendar.YEAR)
             monthOfYear = current.get(Calendar.MONTH)
             dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
-            Log.d(TAG, "hi" +dayOfMonth.toString())
-
-            // Iteration for get closest time
-            while (true) {
-                dayOfToday = when (dayOfToday_encoded) {
-                    1 -> "SUN"
-                    2 -> "MON"
-                    3 -> "TUE"
-                    4 -> "WED"
-                    5 -> "THU"
-                    6 -> "FRI"
-                    7 -> "SAT"
-                    else -> ""
-                }
-                if (dateEdit.text.contains(dayOfToday) || count > 10)
-                    break
-                dayOfToday_encoded = dayOfToday_encoded + 1
-                current.add(Calendar.DATE, 1)
-                if (dayOfToday_encoded > 7)
-                    dayOfToday_encoded = 1
-                count++
-            }
         }
     }
 
@@ -435,6 +408,7 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
                 Date(timeInMilli)
             )))
         ) {
+            Log.d(TAG, "already passed date!")
             done = true
         }
 
