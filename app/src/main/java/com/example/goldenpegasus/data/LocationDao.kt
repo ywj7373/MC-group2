@@ -16,7 +16,7 @@ interface LocationItemDao {
     @Query("SELECT * FROM location_items ORDER BY done ASC, CASE WHEN done == 1 AND daysMode == 0 THEN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(('z'||time), '0','a') ,'1', 'b' ) ,'2', 'c' ) ,'3', 'd' ) ,'4', 'e' ) ,'5', '4' ) ,'6', '3' ) ,'7', '2' ) ,'8', '1' ) ,'9', '0' ) ,'a','9') ,'b', '8' ) ,'c', '7' ) ,'d', '6' ) ,'e', '5' ) WHEN done ==0 OR daysMode == 1 THEN time END ASC")
     fun getAllLocationItems(): LiveData<List<LocationItemData>>
 
-    @Query("SELECT * FROM (SELECT * FROM location_items WHERE daysMode == 0 AND done == 0 UNION SELECT * FROM location_items WHERE daysMode == 1 AND days LIKE :value1 AND done == 0) ORDER BY time(time) ASC LIMIT 1")
+    @Query("SELECT * FROM (SELECT * FROM location_items WHERE daysMode == 0 AND done == 0 UNION SELECT * FROM location_items WHERE daysMode == 1 AND days LIKE :value1 AND done == 0) ORDER BY datetime(time) ASC LIMIT 1")
     fun getPriorityDestination(value1: String): LiveData<LocationItemData>
 
     @Query("UPDATE location_items SET isAlarmed = :value1 WHERE id = :value2")
