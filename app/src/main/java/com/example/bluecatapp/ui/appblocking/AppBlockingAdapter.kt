@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bluecatapp.R
 
 class AppBlockingAdapter(
-    private val appList: List<AppDisplayListItem>,
+    private var appList: List<AppDisplayListItem>,
     private val maxStepCount: Int,
     private val pedometerEnabled: Boolean
 ) :
@@ -47,8 +47,6 @@ class AppBlockingAdapter(
         holder.appName.text = appList[position].displayName
         val finishTimeStamp = appList[position].blockTimeStamp
         holder.appIcon.setImageDrawable(appList[position].icon)
-        holder.totalUsage.text = appList[position].todayUsageString
-        holder.remainingUsage.text = appList[position].remainingUsage
 
         val isAppBlocked = finishTimeStamp != null
         if (isAppBlocked) {
@@ -56,34 +54,48 @@ class AppBlockingAdapter(
             holder.appTime.visibility = View.VISIBLE
             holder.totalUsage.visibility = View.INVISIBLE
             holder.remainingUsage.visibility = View.GONE
-        }
-        if (finishTimeStamp != null && System.currentTimeMillis() < finishTimeStamp) {
-            getBlockCountdown(finishTimeStamp, holder.appTime, holder).start()
-        } else if (finishTimeStamp != null && finishTimeStamp <= System.currentTimeMillis()) {
-            holder.appTime.setText("00:00")
-            holder.appTime.setTextColor(Color.parseColor("#8bc34a"))
-        }
-        if (isAppBlocked && pedometerEnabled) {
-            holder.appProgress.visibility = View.VISIBLE
-            holder.appStepCount.visibility = View.VISIBLE
-            holder.appProgress.max = maxStepCount //initialize max progress value
-            val stepCount = appList[position].blockSteps as Int
-            holder.appProgress.progress = stepCount
-            holder.appStepCount.setText("$stepCount / $maxStepCount steps")
 
-            if (stepCount >= maxStepCount) {
-                holder.appStepCount.setTextColor(Color.parseColor("#8bc34a"))
+            if (finishTimeStamp != null && System.currentTimeMillis() < finishTimeStamp) {
+                getBlockCountdown(finishTimeStamp, holder.appTime, holder).start()
+            } else if (finishTimeStamp != null && finishTimeStamp <= System.currentTimeMillis()) {
+                holder.appTime.setText("00:00")
+                holder.appTime.setTextColor(Color.parseColor("#8bc34a"))
             }
+            if (isAppBlocked && pedometerEnabled) {
+                holder.appProgress.visibility = View.VISIBLE
+                holder.appStepCount.visibility = View.VISIBLE
+                holder.appProgress.max = maxStepCount //initialize max progress value
+                appList[position].blockSteps.let {val stepCount = appList[position].blockSteps as Int
+                    holder.appProgress.progress = stepCount
+                    holder.appStepCount.setText("$stepCount / $maxStepCount steps")
+
+                    if (stepCount >= maxStepCount) {
+                        holder.appStepCount.setTextColor(Color.parseColor("#8bc34a"))
+                    }  }
+
+            }
+        } else{
+            holder.totalUsage.text = appList[position].todayUsageString
+            holder.remainingUsage.text = appList[position].remainingUsage
         }
     }
 
     override fun getItemCount(): Int = appList.size
 
+    fun setAppList(newAppList: List<AppDisplayListItem>){
+        this.appList = newAppList
+        notifyDataSetChanged()
+    }
 
-//    fun setAppBlockItems(newItemList: List<List<Any?>>) {
-//        this.appList = newItemList
-//        notifyDataSetChanged()
-//    }
+    fun updateStepCounters(appStepCounters: MutableMap<String, Int>) {
+        appList.forEach {
+            if(it.blockTimeStamp!=null
+                && appStepCounters[it.displayName]!=null){
+                it.blockSteps = appStepCounters[it.displayName]
+            }
+        }
+        notifyDataSetChanged()
+    }
 
     // Get countdown timer for each app in adapter list
     private fun getBlockCountdown(
