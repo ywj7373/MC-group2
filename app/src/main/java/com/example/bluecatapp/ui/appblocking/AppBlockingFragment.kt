@@ -39,7 +39,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.AppBlockForegroundService
-import com.example.bluecatapp.FragmentToLoad
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
 import com.example.bluecatapp.pedometer.Pedometer
@@ -52,7 +51,6 @@ import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.data.Value
 import com.google.android.gms.fitness.request.OnDataPointListener
 import com.google.android.gms.fitness.request.SensorRequest
-import com.google.android.gms.tasks.Task
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.fragment_appblocking.*
 import java.util.concurrent.TimeUnit
@@ -113,6 +111,9 @@ class AppBlockingFragment : Fragment() {
 
     private lateinit var fitnessOptions: FitnessOptions
 
+    // Refresh fragment
+    private var shouldRefresh: Boolean = false
+
     // Constants
     val MY_PERMISSIONS_REQUEST_ACTIVITY_RECOGNITION = 151
     val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 150
@@ -130,12 +131,6 @@ class AppBlockingFragment : Fragment() {
 //        usageStatsMap = getUsageStatsMap()
 //        appUsageTimers = getAppUsageTimers()
         restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
-
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-//        sharedPrefs = getDefaultSharedPreferences(this.context)
 
     }
 
@@ -269,10 +264,6 @@ class AppBlockingFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
-        currentlyBlockedApps = getCurrentlyBlockedApps()
-        appStepCounters = getAppStepCounters()
-
         if (isAppBlockModeEnabled) {
             mAdapter = AppBlockingAdapter(getAdapterList(), maxStepCount, isPedometerEnabled)
             appblocking_recycler_view.apply {
@@ -280,7 +271,15 @@ class AppBlockingFragment : Fragment() {
                 layoutManager = LinearLayoutManager(activity)
                 adapter = mAdapter
             }
+
+            if(shouldRefresh){
+                refreshFragment()
+            }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -425,7 +424,6 @@ class AppBlockingFragment : Fragment() {
                 override fun step(timeNs: Long) {
                     super.step(timeNs)
 
-                    var shouldRefresh = false
                     currentlyBlockedApps.forEach { (appName, finishTimeStamp) ->
                         if (appStepCounters[appName]!! < maxStepCount) {
                             // Increment step count
@@ -441,6 +439,7 @@ class AppBlockingFragment : Fragment() {
                             // Check if app is now unblocked
                             if(System.currentTimeMillis() >= finishTimeStamp) {
                                 shouldRefresh = true
+                                mAdapter.setAppList(getAdapterList())
                             }
                         }
                     }
@@ -452,16 +451,9 @@ class AppBlockingFragment : Fragment() {
                     // Update adapter values
                     mAdapter.updateStepCounters(getUpdateStepCounters())
                     Log.d("Pedometer", "updating step counters")
-
-                    if(shouldRefresh){
-                        // Refresh fragment to display changes
-                        val ft = getFragmentManager()?.beginTransaction()
-                        if (Build.VERSION.SDK_INT >= 26) {
-                            ft?.setReorderingAllowed(false)
-                        }
-                        Log.d("Pedometer", "REFRESHING FRAGMENT!")
-                        ft?.detach(this@AppBlockingFragment)
-                            ?.attach(this@AppBlockingFragment)?.commit()
+                    if(shouldRefresh && activity!!.hasWindowFocus()){
+                        shouldRefresh = false
+                        refreshFragment()
                     }
                 }
             }
@@ -515,7 +507,7 @@ class AppBlockingFragment : Fragment() {
             /**
              * Update values upon data change here
              */
-            var shouldRefresh = false
+            // increment step counts for all apps
             currentlyBlockedApps.forEach { (appName, finishTimeStamp) ->
 
                 val stepCountOfApp = appStepCounters[appName]
@@ -534,6 +526,8 @@ class AppBlockingFragment : Fragment() {
 
                     // Check if app is now unblocked
                     if(System.currentTimeMillis() >= finishTimeStamp) {
+                        // Update adapter
+                        mAdapter.setAppList(getAdapterList())
                         shouldRefresh = true
                     }
                 }
@@ -545,16 +539,9 @@ class AppBlockingFragment : Fragment() {
             }
             mAdapter.updateStepCounters(getUpdateStepCounters())
             Log.d("Pedometer", "updating step counters")
-
-            if(shouldRefresh){
-                // Refresh fragment to display changes
-                val ft = getFragmentManager()?.beginTransaction()
-                if (Build.VERSION.SDK_INT >= 26) {
-                    ft?.setReorderingAllowed(false)
-                }
-                Log.d("Pedometer", "REFRESHING FRAGMENT!")
-                ft?.detach(this@AppBlockingFragment)
-                    ?.attach(this@AppBlockingFragment)?.commit()
+            if(shouldRefresh && activity!!.hasWindowFocus()) {
+                shouldRefresh = false
+                refreshFragment()
             }
         }
 
@@ -599,6 +586,16 @@ class AppBlockingFragment : Fragment() {
     /************************************************/
 
     /************************************************/
+
+    private fun refreshFragment(){
+        val ft = fragmentManager?.beginTransaction()
+        if (Build.VERSION.SDK_INT >= 26) {
+            ft?.setReorderingAllowed(false)
+        }
+        Log.d("Pedometer", "REFRESHING FRAGMENT!")
+        ft?.detach(this@AppBlockingFragment)
+            ?.attach(this@AppBlockingFragment)?.commit()
+    }
 
 
     private fun hasUsageDataAccessPermission(): Boolean {
@@ -649,18 +646,16 @@ class AppBlockingFragment : Fragment() {
 
                 chrono.setText("00:00")
                 chrono.setTextColor(Color.parseColor("#8bc34a"))
-
-                if(!isPedometerEnabled || appStepCounters[appName]!! >= maxStepCount){
-                    // app is unblocked
+                if(!isPedometerEnabled
+                    || appStepCounters[appName] == null
+                    && appStepCounters[appName]!! >= maxStepCount){
+                    // Update adapter and refresh fragment
                     mAdapter.setAppList(getAdapterList())
-
-                    // Refresh fragment to display changes
-                    val ft = getFragmentManager()?.beginTransaction()
-                    if (Build.VERSION.SDK_INT >= 26) {
-                        ft?.setReorderingAllowed(false)
-                    }
-                    Log.d("Pedometer", "REFRESHING FRAGMENT!")
-                    ft?.detach(this@AppBlockingFragment)?.attach(this@AppBlockingFragment)?.commit()
+                    shouldRefresh = activity!!.hasWindowFocus()
+                }
+                if(shouldRefresh && activity!!.hasWindowFocus()){
+                    shouldRefresh = false
+                    refreshFragment()
                 }
                 chrono.stop()
             }
