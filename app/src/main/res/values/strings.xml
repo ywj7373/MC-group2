@@ -11,18 +11,19 @@
     <string name="profile">Profile</string>
     <string name="restricted_apps">Restricted Apps</string>
     <string name="time_limit">Time Limit</string>
-    <string name='pedometer'>Pedometer</string>
+    <string name="pedometer">Pedometer</string>
 
     <string name="enable_location">Location Based Reminder</string>
     <string name="enable_location_alarm">Enable Location Alarm</string>
     <string name="preparation_time">Preparation Time</string>
     <string name="reset_statistic">Reset Statistics</string>
 
-    <string name='hw_time_key'>HW Mode time</string>
-    <string name='hw_shake_val_key'>Shake Count HW Mode</string>
-    <string name='hw_pedometer_bool_key'>Pedometer HW Mode</string>
-    <string name='hw_pedometer_val_key'>Step Count HW Mode</string>
+    <string name="hw_time_key">HW Mode time</string>
+    <string name="hw_shake_val_key">Shake Count HW Mode</string>
+    <string name="hw_pedometer_bool_key">Pedometer HW Mode</string>
+    <string name="hw_pedometer_val_key">Step Count HW Mode</string>
 
+    <string name="location_summary">Get reminders and travel estimates from where you are.</string>
     <!-- Preference Titles -->
     <string name="profile_header">YOUR PROFILE</string>
     <string name="app_blocking_header">APP BLOCKING MODE</string>
@@ -36,6 +37,7 @@
     <string name="profile_dialog_title">Enter Your Name</string>
 
     <!-- App Blocking Mode Preferences -->
+    <string name="appblock_category_summary">Use your phone too much? Moderate your app usage.</string>
     <string name="appblock_title">App Blocking</string>
     <string name="appblock_summary_on">App blocking enabled</string>
     <string name="appblock_summary_off">App blocking disabled</string>
@@ -54,14 +56,15 @@
     <!-- Location Preferences -->
 
     <!-- hw mode -->
-
-    <string name="hw_time_title">HW Mode time</string>
-    <string name='hw_shake_val_title'>Shake Count HW Mode</string>
-    <string name="hw_pedometer_bool_title">Pedometer HW Mode</string>
-    <string name="hw_pedometer_val_title">Step Count HW Mode</string>
-
-    <string name="hw_pedometer_summary_on">Step count feature enabled during HW mode</string>
-    <string name="hw_pedometer_summary_off">Step count feature disabled during HW mode</string>
+    <string name="hw_summary">Block selected apps and receive regular check-ins to focus.</string>
+    <string name="hw_time_title">Check-in Interval</string>
+    <string name="hw_time_summary">The duration between each check-in time</string>
+    <string name="hw_shake_val_title">Shake count</string>
+    <string name="hw_shake_val_summary">The number of times you have to shake your phone to disable the alarm.</string>
+    <string name="hw_pedometer_bool_title">Use Pedometer</string>
+    <string name="hw_pedometer_val_title">Pedometer Step Count</string>
+    <string name="hw_pedometer_summary_on">Pedometer enabled during homework mode</string>
+    <string name="hw_pedometer_summary_off">Pedometer disabled during homework mode</string>
 
     <string name="hw_time_value">
         hw_time_value
@@ -136,25 +139,26 @@
     <string name="next">NEXT UP</string>
     <string name="next_loc">No Schedule</string>
     <string name="time_loc">00:00</string>
-    <string name="what_where">Name</string>
+    <string name="what_where">What/Where</string>
     <string name="goal_time">Goal time</string>
     <string name="remind_text">LOCATION REMINDERS</string>
     <string name="stat_title">YOUR STATS</string>
     <string name="grade">A+</string>
     <string name="stat_label">On-time: 0 times | Absent: 0 time</string>
-    <string name="name_text">Display label</string>
+    <string name="display_label">Display label</string>
+    <string name="location_label">Location</string>
     <string name="time_title">Time</string>
     <string name="date_title">Date</string>
     <string name="repeat">Repeats on</string>
     <string name="toggle_button">ToggleButton</string>
-    <string name="sun">SUN</string>
-    <string name="mon">MON</string>
-    <string name="tue">TUE</string>
-    <string name="wed">WED</string>
-    <string name="thu">THU</string>
-    <string name="fri">FRI</string>
-    <string name="sat">SAT</string>
-    <string name="hint">Edit</string>
+    <string name="sun">Sun</string>
+    <string name="mon">Mon</string>
+    <string name="tue">Tue</string>
+    <string name="wed">Wed</string>
+    <string name="thu">Thu</string>
+    <string name="fri">Fri</string>
+    <string name="sat">Sat</string>
+    <string name="hint">e.g. Main Library</string>
     <string name="word_count">0 / 17</string>
-    <string name="app_bar_add_location">add schedule</string>
+    <string name="app_bar_add_location">Add schedule</string>
 </resources>

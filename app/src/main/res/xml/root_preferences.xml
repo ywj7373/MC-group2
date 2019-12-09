@@ -25,18 +25,19 @@
 
         <EditTextPreference
             app:dialogTitle="@string/profile_dialog_title"
-            app:icon="@mipmap/ic_launcher_round"
-            app:iconSpaceReserved="true"
+            app:iconSpaceReserved="false"
             app:key="profile"
             app:title="@string/profile_title"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:summary="@string/appblock_category_summary"
         app:iconSpaceReserved="false"
         app:title="@string/app_blocking_header">
 
         <SwitchPreference
+            android:defaultValue="true"
             android:selectable="true"
             android:summaryOff="@string/appblock_summary_off"
             android:summaryOn="@string/appblock_summary_on"
@@ -51,7 +52,7 @@
             app:title="@string/restricted_apps_title" />
 
         <ListPreference
-            android:defaultValue="5000"
+            android:defaultValue="1800000"
             android:entries="@array/time_limit_entries"
             android:entryValues="@array/time_limit_values"
             android:selectable="true"
@@ -61,7 +62,8 @@
             app:title="@string/time_limit_title" />
 
         <ListPreference
-            android:defaultValue="300000"
+
+            android:defaultValue="600000"
             android:entries="@array/block_duration_entries"
             android:entryValues="@array/block_duration_values"
             android:selectable="true"
@@ -71,6 +73,7 @@
             app:title="@string/block_duration_title" />
 
         <SwitchPreference
+            android:defaultValue="true"
             android:selectable="true"
             app:iconSpaceReserved="false"
             app:key="smart_blocking"
@@ -78,6 +81,7 @@
             app:title="@string/smart_blocking_title" />
 
         <SwitchPreference
+            android:defaultValue="true"
             android:selectable="true"
             android:summaryOff="@string/pedometer_summary_off"
             android:summaryOn="@string/pedometer_summary_on"
@@ -97,6 +101,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:summary="@string/location_summary"
         app:iconSpaceReserved="false"
         app:title="@string/location_reminder_header">
 
@@ -107,7 +112,6 @@
             app:key="@string/enable_location"
             app:title="@string/enable_location" />
             android:defaultValue="false"/>
-
 
         <ListPreference
             android:defaultValue="@string/preparation_time_value"
@@ -125,19 +129,26 @@
             android:title="@string/reset_statistic"
             app:iconSpaceReserved="false" />
 
+
         <SwitchPreference
-            app:key="Enable Alarm Sound"
-            app:title="Enable Alarm Sound"
-            android:selectable="true"
-            app:iconSpaceReserved="false"
             android:defaultValue="true"
+            android:selectable="true"
             android:summaryOff="No alarm sound"
             android:summaryOn="Alarm will go off when you have to depart. Swipe notification to turn off the alarm."
-            />
+            app:iconSpaceReserved="false"
+            app:key="Enable Alarm Sound"
+            app:title="Enable Alarm Sound" />
+
+        <Preference
+            android:key="@string/reset_statistic"
+            android:selectable="true"
+            android:title="@string/reset_statistic"
+            app:iconSpaceReserved="false" />
 
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:summary="@string/hw_summary"
         app:iconSpaceReserved="false"
         app:title="@string/homework_header">
 
@@ -174,8 +185,26 @@
 
             android:selectable="true"
             app:dialogTitle="@string/hw_shake_val_title"
-            app:iconSpaceReserved="false"
+            app:iconSpaceReserved="false"/>
 
+
+        <ListPreference
+            android:defaultValue="45"
+            android:entries="@array/hw_time_entries_production"
+            android:entryValues="@array/hw_time_values_production"
+            android:selectable="true"
+            app:dialogTitle="@string/hw_time_title"
+            app:iconSpaceReserved="false"
+            app:key="@string/hw_time_key"
+            app:title="@string/hw_time_title" />
+
+        <ListPreference
+            android:defaultValue="10"
+            android:entries="@array/hw_shake_entries_production"
+            android:entryValues="@array/hw_shake_values_production"
+            android:selectable="true"
+            app:dialogTitle="@string/hw_shake_val_title"
+            app:iconSpaceReserved="false"
             app:key="@string/hw_shake_val_key"
             app:title="@string/hw_shake_val_title" />
 
@@ -204,8 +233,20 @@
             android:selectable="true"
             app:dialogTitle="@string/hw_pedometer_val_title"
 
+            android:summaryOff="@string/hw_pedometer_summary_off"
+            android:summaryOn="@string/hw_pedometer_summary_on"
+            app:defaultValue="false"
             app:iconSpaceReserved="false"
+            app:key="@string/hw_pedometer_bool_key"
+            app:title="@string/hw_pedometer_bool_title" />
 
+        <ListPreference
+            android:defaultValue="30"
+            android:entries="@array/hw_pedometer_entries_production"
+            android:entryValues="@array/hw_pedometer_values_production"
+            android:selectable="true"
+            app:dialogTitle="@string/hw_pedometer_val_title"
+            app:iconSpaceReserved="false"
             app:key="@string/hw_pedometer_val_key"
             app:title="@string/hw_pedometer_val_title" />
 

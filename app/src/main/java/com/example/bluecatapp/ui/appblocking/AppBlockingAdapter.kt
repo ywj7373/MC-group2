@@ -54,7 +54,7 @@ class AppBlockingAdapter(
         if (isAppBlocked) {
             holder.blockedText.visibility = View.VISIBLE
             holder.appTime.visibility = View.VISIBLE
-            holder.totalUsage.visibility = View.GONE
+            holder.totalUsage.visibility = View.INVISIBLE
             holder.remainingUsage.visibility = View.GONE
         }
         if (finishTimeStamp != null && System.currentTimeMillis() < finishTimeStamp) {

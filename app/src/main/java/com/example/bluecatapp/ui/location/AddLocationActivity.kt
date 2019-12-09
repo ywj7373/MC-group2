@@ -9,7 +9,9 @@ import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.*
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -20,7 +22,6 @@ import com.example.bluecatapp.R
 import com.example.bluecatapp.data.CurrentLocationData
 import com.example.bluecatapp.data.LocationItemData
 import com.mancj.materialsearchbar.MaterialSearchBar
-import kotlinx.android.synthetic.main.activity_add_location.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -30,14 +31,15 @@ import java.util.*
 const val default_Y = "37.459553"
 const val default_X = "126.952162"
 
-class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSearchBar.OnSearchActionListener {
+class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
+    MaterialSearchBar.OnSearchActionListener {
     private val TAG = "AddLocationActivity"
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var displayNameEdit: EditText
     private lateinit var wordCountText: TextView
     private lateinit var dateEdit: TextView
     private lateinit var timeEdit: TextView
-    private lateinit var dayButtons : Array<ToggleButton>
+    private lateinit var dayButtons: Array<ToggleButton>
     private lateinit var searchBar: MaterialSearchBar
     private lateinit var loc1: TextView
     private lateinit var loc2: TextView
@@ -46,7 +48,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private lateinit var loc5: TextView
     private lateinit var results: List<SearchPlacePlaces>
     private var location: String = "$default_X,$default_Y"
-    private var place : SearchPlacePlaces? = null
+    private var place: SearchPlacePlaces? = null
     private var year: Int = 0
     private var monthOfYear: Int = 0
     private var dayOfMonth: Int = 0
@@ -99,13 +101,15 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         wordCountText = findViewById(R.id.wordCountText)
         dateEdit = findViewById(R.id.dateEdit)
         timeEdit = findViewById(R.id.timeEdit)
-        dayButtons = arrayOf(findViewById(R.id.toggleButton1),
+        dayButtons = arrayOf(
+            findViewById(R.id.toggleButton1),
             findViewById(R.id.toggleButton2),
             findViewById(R.id.toggleButton3),
             findViewById(R.id.toggleButton4),
             findViewById(R.id.toggleButton5),
             findViewById(R.id.toggleButton6),
-            findViewById(R.id.toggleButton7))
+            findViewById(R.id.toggleButton7)
+        )
 
         // set date and time to current date
         val current = Calendar.getInstance()
@@ -127,8 +131,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             intentdaysMode = intent.getBooleanExtra("daysMode", false)
             title = "Edit Schedule"
 
-            year = intenttime.substring(0,4).toInt()
-            monthOfYear = intenttime.substring(5,7).toInt() - 1
+            year = intenttime.substring(0, 4).toInt()
+            monthOfYear = intenttime.substring(5, 7).toInt() - 1
             dayOfMonth = intenttime.substring(8, 10).toInt()
             hour = intenttime.substring(11, 13).toInt()
             min = intenttime.substring(14, 16).toInt()
@@ -136,23 +140,22 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
             dateEdit.text = intenttime.substring(0, 10)
             timeEdit.text = intenttime.substring(11, 16)
 
-            if(intentdaysMode) {
+            if (intentdaysMode) {
                 dateEdit.text = intentdays
 
-                if(intentdays.contains("SUN")) dayButtons[0].setChecked(true)
-                if(intentdays.contains("MON")) dayButtons[1].setChecked(true)
-                if(intentdays.contains("TUE")) dayButtons[2].setChecked(true)
-                if(intentdays.contains("WED")) dayButtons[3].setChecked(true)
-                if(intentdays.contains("THU")) dayButtons[4].setChecked(true)
-                if(intentdays.contains("FRI")) dayButtons[5].setChecked(true)
-                if(intentdays.contains("SAT")) dayButtons[6].setChecked(true)
+                if (intentdays.contains("SUN")) dayButtons[0].setChecked(true)
+                if (intentdays.contains("MON")) dayButtons[1].setChecked(true)
+                if (intentdays.contains("TUE")) dayButtons[2].setChecked(true)
+                if (intentdays.contains("WED")) dayButtons[3].setChecked(true)
+                if (intentdays.contains("THU")) dayButtons[4].setChecked(true)
+                if (intentdays.contains("FRI")) dayButtons[5].setChecked(true)
+                if (intentdays.contains("SAT")) dayButtons[6].setChecked(true)
 
                 for (tb in dayButtons) {
-                    if(tb.isChecked) {
+                    if (tb.isChecked) {
                         tb.setBackgroundResource(R.drawable.button_bg_round_2)
                         tb.setTextColor(Color.WHITE)
-                    }
-                    else {
+                    } else {
                         tb.setBackgroundResource(R.drawable.button_bg_round)
                         tb.setTextColor(ContextCompat.getColor(this, R.color.darker_gray))
                     }
@@ -168,7 +171,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         for (tb in dayButtons)
             tb.setOnClickListener(this)
 
-        displayNameEdit.addTextChangedListener(object: TextWatcher {
+        displayNameEdit.addTextChangedListener(object : TextWatcher {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val len = s?.length.toString()
                 val text = "$len / 17"
@@ -190,7 +193,8 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     override fun onSearchConfirmed(text: CharSequence) {
         clearAll()
         requestSearch(text.trim().toString())
-        val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm: InputMethodManager =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(searchBar.windowToken, 0)
     }
 
@@ -208,11 +212,14 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                     //prevents fast double click
                     val handler = Handler()
                     val runnable = Runnable {
-                       item.isEnabled = true
+                        item.isEnabled = true
                     }
                     handler.postDelayed(runnable, TIME)
-                }
-                else Toast.makeText(this@AddLocationActivity, "Please select a valid location!", Toast.LENGTH_SHORT).show()
+                } else Toast.makeText(
+                    this@AddLocationActivity,
+                    "Please select a valid location!",
+                    Toast.LENGTH_SHORT
+                ).show()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -234,43 +241,62 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
 
     //search for place name using Naver api
     private fun requestSearch(query: String) {
-        NaverRetrofit.getService().requestSearchPlace(query, location).enqueue(object: Callback<SearchPlaceData> {
-            override fun onFailure(call: Call<SearchPlaceData>, t: Throwable) {
-                Log.e(TAG, "Connection failed")
-                Toast.makeText(this@AddLocationActivity, "Connection failed! Please check wifi!", Toast.LENGTH_SHORT).show()
-            }
-
-            override fun onResponse(call: Call<SearchPlaceData>, response: Response<SearchPlaceData>) {
-                if (response.body()!!.status == "OK") {
-                    var len = response.body()!!.meta.totalCount - 1
-                    if (len == -1) Toast.makeText(this@AddLocationActivity, "No result!", Toast.LENGTH_SHORT).show()
-                    else {
-                        //convert len to array index length; max is 4
-                        if (len > 4) len = 4
-
-                        results = response.body()!!.places
-                        for (i in 0..len) {
-                            when (i) {
-                                0 -> loc1.text = results[i].name
-                                1 -> loc2.text = results[i].name
-                                2 -> loc3.text = results[i].name
-                                3 -> loc4.text = results[i].name
-                                4 -> loc5.text = results[i].name
-                            }
-                        }
-                        loc1.setOnClickListener(this@AddLocationActivity)
-                        loc2.setOnClickListener(this@AddLocationActivity)
-                        loc3.setOnClickListener(this@AddLocationActivity)
-                        loc4.setOnClickListener(this@AddLocationActivity)
-                        loc5.setOnClickListener(this@AddLocationActivity)
-                    }
+        NaverRetrofit.getService().requestSearchPlace(query, location)
+            .enqueue(object : Callback<SearchPlaceData> {
+                override fun onFailure(call: Call<SearchPlaceData>, t: Throwable) {
+                    Log.e(TAG, "Connection failed")
+                    Toast.makeText(
+                        this@AddLocationActivity,
+                        "Connection failed! Please check wifi!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-                else if (response.body()!!.status == "INVALID_REQUEST")
-                    Toast.makeText(this@AddLocationActivity, "Bad request!", Toast.LENGTH_SHORT).show()
-                else if (response.body()!!.status == "SYSTEM_ERROR")
-                    Toast.makeText(this@AddLocationActivity, "System Error", Toast.LENGTH_SHORT).show()
-            }
-        })
+
+                override fun onResponse(
+                    call: Call<SearchPlaceData>,
+                    response: Response<SearchPlaceData>
+                ) {
+                    if (response.body()!!.status == "OK") {
+                        var len = response.body()!!.meta.totalCount - 1
+                        if (len == -1) Toast.makeText(
+                            this@AddLocationActivity,
+                            "No result!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        else {
+                            //convert len to array index length; max is 4
+                            if (len > 4) len = 4
+
+                            results = response.body()!!.places
+                            for (i in 0..len) {
+                                when (i) {
+                                    0 -> loc1.text = results[i].name
+                                    1 -> loc2.text = results[i].name
+                                    2 -> loc3.text = results[i].name
+                                    3 -> loc4.text = results[i].name
+                                    4 -> loc5.text = results[i].name
+                                }
+                            }
+                            loc1.setOnClickListener(this@AddLocationActivity)
+                            loc2.setOnClickListener(this@AddLocationActivity)
+                            loc3.setOnClickListener(this@AddLocationActivity)
+                            loc4.setOnClickListener(this@AddLocationActivity)
+                            loc5.setOnClickListener(this@AddLocationActivity)
+                        }
+                    } else if (response.body()!!.status == "INVALID_REQUEST")
+                        Toast.makeText(
+                            this@AddLocationActivity,
+                            "Bad request!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    else if (response.body()!!.status == "SYSTEM_ERROR")
+                        Toast.makeText(
+                            this@AddLocationActivity,
+                            "System Error",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                }
+            })
     }
 
     //clear all highlight
@@ -327,25 +353,37 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         picked = true
     }
 
-    //open date pick dialog
+    // Open date pick dialog
     private fun openDatePickDialog() {
         val current = SimpleDateFormat("yyyyMMddHHmmss", Locale.KOREA).format(Date())
-        val dialog = DatePickerDialog(this, object:DatePickerDialog.OnDateSetListener {
-            override fun onDateSet(view: DatePicker?, year: Int, monthOfYear: Int, dayOfMonth: Int) {
-                this@AddLocationActivity.year = year
-                this@AddLocationActivity.monthOfYear = monthOfYear
-                this@AddLocationActivity.dayOfMonth = dayOfMonth
-                dateEdit.text = String.format("%04d-%02d-%02d", year, monthOfYear+1, dayOfMonth)
-                clearDays()
-            }
-        }, Integer.parseInt(current.substring(0,4)), Integer.parseInt(current.substring(4,6))-1, Integer.parseInt(current.substring(6,8)) )
+        val dialog = DatePickerDialog(
+            this,
+            object : DatePickerDialog.OnDateSetListener {
+                override fun onDateSet(
+                    view: DatePicker?,
+                    year: Int,
+                    monthOfYear: Int,
+                    dayOfMonth: Int
+                ) {
+                    this@AddLocationActivity.year = year
+                    this@AddLocationActivity.monthOfYear = monthOfYear
+                    this@AddLocationActivity.dayOfMonth = dayOfMonth
+                    dateEdit.text =
+                        String.format("%04d-%02d-%02d", year, monthOfYear + 1, dayOfMonth)
+                    clearDays()
+                }
+            },
+            Integer.parseInt(current.substring(0, 4)),
+            Integer.parseInt(current.substring(4, 6)) - 1,
+            Integer.parseInt(current.substring(6, 8))
+        )
         dialog.show()
     }
 
-    //open time pick dialog
+    // Open time pick dialog
     private fun openTimePickDialog() {
         val cal = Calendar.getInstance()
-        val dialog = TimePickerDialog(this, object: TimePickerDialog.OnTimeSetListener {
+        val dialog = TimePickerDialog(this, object : TimePickerDialog.OnTimeSetListener {
             override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
                 this@AddLocationActivity.hour = hourOfDay
                 this@AddLocationActivity.min = minute
@@ -355,7 +393,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         dialog.show()
     }
 
-    //clear all weekdays
+    // Clear all weekdays
     private fun clearDays() {
         for (tb in dayButtons) {
             tb.setChecked(false)
@@ -369,19 +407,18 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
     private fun daysMode() {
         var str = ""
         for (tb in dayButtons) {
-            if(tb.isChecked) {
+            if (tb.isChecked) {
                 tb.setBackgroundResource(R.drawable.button_bg_round_2)
                 tb.setTextColor(Color.WHITE)
                 str = str + tb.textOn + ","
-            }
-            else {
+            } else {
                 tb.setBackgroundResource(R.drawable.button_bg_round)
                 tb.setTextColor(ContextCompat.getColor(this, R.color.darker_gray))
             }
         }
 
         // if there is no day checked
-        if(str == "") {
+        if (str == "") {
             val current = Calendar.getInstance()
             year = current.get(Calendar.YEAR)
             monthOfYear = current.get(Calendar.MONTH)
@@ -391,16 +428,16 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         }
         // if there is at least one day checked
         else {
-            dateEdit.text = str.substring(0, str.length-1)
+            dateEdit.text = str.substring(0, str.length - 1)
             days_mode_set = true
 
             val calendar = Calendar.getInstance()
             var dayOfToday_encoded = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
-            var dayOfToday:String = ""
+            var dayOfToday: String = ""
             var count = 0                       // To prevent infinite loop
 
             // Iteration for get closest time
-            while(true) {
+            while (true) {
                 dayOfToday = when (dayOfToday_encoded) {
                     1 -> "SUN"
                     2 -> "MON"
@@ -415,7 +452,7 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
                     break
                 dayOfToday_encoded = dayOfToday_encoded + 1
                 calendar.add(Calendar.DATE, 1)
-                if(dayOfToday_encoded > 7)
+                if (dayOfToday_encoded > 7)
                     dayOfToday_encoded = 1
                 count++
             }
@@ -431,39 +468,54 @@ class AddLocationActivity: AppCompatActivity(), View.OnClickListener, MaterialSe
         var done = false
 
         //add data to the database
-        val time = String.format("%04d-%02d-%02d %02d:%02d:00", year, monthOfYear+1, dayOfMonth, hour, min)
+        val time = String.format(
+            "%04d-%02d-%02d %02d:%02d:00",
+            year,
+            monthOfYear + 1,
+            dayOfMonth,
+            hour,
+            min
+        )
         val currentTime = System.currentTimeMillis()
         val timeInMilli = timeToSeconds(time)
 
         //check for date validity
-        if (days_mode_set && (simpleTimeFormat.format(Date(currentTime)) >= (simpleTimeFormat.format(Date(timeInMilli))))) {
+        if (days_mode_set && (simpleTimeFormat.format(Date(currentTime)) >= (simpleTimeFormat.format(
+                Date(timeInMilli)
+            )))
+        ) {
             done = true
         }
 
         val newLocationItem =
             if (!picked and editmode)
-                LocationItemData(displayNameEdit.text.toString(),
-                intentx, intenty, time, isAlarmed, done,
-                days_mode_set, dateEdit.text.toString())
+                LocationItemData(
+                    displayNameEdit.text.toString(),
+                    intentx, intenty, time, isAlarmed, done,
+                    days_mode_set, dateEdit.text.toString()
+                )
             else
-                LocationItemData(displayNameEdit.text.toString(),
-                place?.x ?: "0", place?.y ?: "0", time, isAlarmed, done,
-                days_mode_set, dateEdit.text.toString())
+                LocationItemData(
+                    displayNameEdit.text.toString(),
+                    place?.x ?: "0", place?.y ?: "0", time, isAlarmed, done,
+                    days_mode_set, dateEdit.text.toString()
+                )
 
         if (editmode) {
             val id = intent.getIntExtra("Id", 0)
-            locationViewModel.editLocationItem(newLocationItem.name,
+            locationViewModel.editLocationItem(
+                newLocationItem.name,
                 newLocationItem.x, newLocationItem.y, newLocationItem.time,
                 newLocationItem.isAlarmed, newLocationItem.done,
-                newLocationItem.daysMode, newLocationItem.days, id)
+                newLocationItem.daysMode, newLocationItem.days, id
+            )
             finish()
-        }
-        else {
+        } else {
             //don't allow adding schedule with passed date or time
             if (!days_mode_set && currentTime >= timeInMilli) {
-                Toast.makeText(this@AddLocationActivity, "Enter a valid time", Toast.LENGTH_LONG).show()
-            }
-            else  {
+                Toast.makeText(this@AddLocationActivity, "Enter a valid time", Toast.LENGTH_LONG)
+                    .show()
+            } else {
                 locationViewModel.insert(newLocationItem)
                 finish()
             }

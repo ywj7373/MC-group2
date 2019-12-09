@@ -12,16 +12,54 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/strict_mode_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#333333"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/strict_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="STRICT MODE ACTIVATED (00:00-10:00)"
+                android:textAppearance="@style/labels"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/strict_remaining_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total usage time left: 30 min"
+                android:textAppearance="@style/labels"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/strict_title" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <TextView
             android:id="@+id/block_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="24dp"
             android:text="NO ACTIVE APP BLOCK"
             android:textAppearance="@style/labels"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/strict_mode_layout" />
 
         <TextView
             android:id="@+id/blocked_app_name"
@@ -57,7 +95,7 @@
 
         <View
             android:id="@+id/app_divider"
-            android:layout_width="409dp"
+            android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="32dp"
             android:background="?android:attr/listDivider"
@@ -153,7 +191,7 @@
 
         <View
             android:id="@+id/app_divider2"
-            android:layout_width="409dp"
+            android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="32dp"
             android:background="?android:attr/listDivider"
@@ -188,8 +226,8 @@
             app:layout_constraintTop_toBottomOf="@+id/app_list_title" />
 
         <View
-            android:id="@+id/app_divider_3"
-            android:layout_width="409dp"
+            android:id="@+id/app_divider3"
+            android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="16dp"
             android:background="#11000000"
@@ -207,7 +245,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/app_divider_3" />
+            app:layout_constraintTop_toBottomOf="@+id/app_divider3" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
