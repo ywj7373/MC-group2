@@ -62,6 +62,7 @@
             app:title="@string/time_limit_title" />
 
         <ListPreference
+
             android:defaultValue="600000"
             android:entries="@array/block_duration_entries"
             android:entryValues="@array/block_duration_values"
@@ -105,11 +106,12 @@
         app:title="@string/location_reminder_header">
 
         <SwitchPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:selectable="true"
             app:iconSpaceReserved="false"
             app:key="@string/enable_location"
             app:title="@string/enable_location" />
+            android:defaultValue="false"/>
 
         <ListPreference
             android:defaultValue="@string/preparation_time_value"
@@ -121,6 +123,13 @@
             app:key="@string/preparation_time"
             app:title="@string/preparation_time" />
 
+        <Preference
+            android:key="@string/reset_statistic"
+            android:selectable="true"
+            android:title="@string/reset_statistic"
+            app:iconSpaceReserved="false" />
+
+
         <SwitchPreference
             android:defaultValue="true"
             android:selectable="true"
@@ -130,18 +139,14 @@
             app:key="Enable Alarm Sound"
             app:title="Enable Alarm Sound" />
 
-        <Preference
-            android:key="@string/reset_statistic"
-            android:selectable="true"
-            android:title="@string/reset_statistic"
-            app:iconSpaceReserved="false" />
-
     </PreferenceCategory>
 
     <PreferenceCategory
         android:summary="@string/hw_summary"
         app:iconSpaceReserved="false"
         app:title="@string/homework_header">
+
+        <!-- TODO should change to production when production build-->
 
         <ListPreference
             android:defaultValue="45"
@@ -165,22 +170,32 @@
 
         <SwitchPreference
             android:selectable="true"
+
             android:summaryOff="@string/hw_pedometer_summary_off"
             android:summaryOn="@string/hw_pedometer_summary_on"
+
             app:defaultValue="false"
             app:iconSpaceReserved="false"
+
             app:key="@string/hw_pedometer_bool_key"
             app:title="@string/hw_pedometer_bool_title" />
 
+        <!--        test -->
+        <!--        android:entries="@array/hw_pedometer_entries"-->
+        <!--        android:entryValues="@array/hw_pedometer_values"-->
         <ListPreference
             android:defaultValue="30"
+
             android:entries="@array/hw_pedometer_entries_production"
             android:entryValues="@array/hw_pedometer_values_production"
+
             android:selectable="true"
             app:dialogTitle="@string/hw_pedometer_val_title"
+            app:defaultValue="false"
             app:iconSpaceReserved="false"
             app:key="@string/hw_pedometer_val_key"
             app:title="@string/hw_pedometer_val_title" />
+
 
     </PreferenceCategory>
 
