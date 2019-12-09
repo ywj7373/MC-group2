@@ -59,20 +59,6 @@ class LocationAdapter internal constructor(locationViewModel: LocationViewModel)
             }
             handler.postDelayed(runnable, TIME)
         }
-
-        holder.edit_button.setOnClickListener {
-            val intent = Intent(it.context, AddLocationActivity::class.java)
-            val locationItem = locationItems[position]
-            intent.putExtra("Editmode", true)
-            intent.putExtra("Id", locationItem.id)
-            intent.putExtra("name", locationItem.name)
-            intent.putExtra("x", locationItem.x)
-            intent.putExtra("y", locationItem.y)
-            intent.putExtra("time", locationItem.time)
-            intent.putExtra("daysMode", locationItem.daysMode)
-            intent.putExtra("days", locationItem.days)
-            it.context.startActivity(intent)
-        }
     }
 
     override fun getItemCount(): Int = locationItems.size
@@ -94,7 +80,6 @@ class LocationAdapter internal constructor(locationViewModel: LocationViewModel)
         var textViewTime: TextView = itemView.findViewById(R.id.location_item_time)
         var loc_img: Button = itemView.findViewById(R.id.loc_img)
         var delete_button: Button = itemView.findViewById(R.id.delete_button)
-        var edit_button: Button = itemView.findViewById(R.id.edit_button)
     }
 
 }

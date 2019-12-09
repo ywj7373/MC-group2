@@ -58,13 +58,6 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
     private var picked = false
     private var editmode = false
     private val TIME: Long = 1000
-
-    private var intentx: String = ""
-    private var intenty: String = ""
-    private var intentname: String = ""
-    private var intenttime: String = ""
-    private var intentdays: String = ""
-    private var intentdaysMode: Boolean = false
     private val simpleTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.KOREA)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -121,49 +114,6 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
         dateEdit.text = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(current.time)
         timeEdit.text = String.format("%02d:%02d", hour, min)
 
-        // Edit Mode Initialization
-        if (editmode) {
-            intentname = intent.getStringExtra("name")
-            intentx = intent.getStringExtra("x")
-            intenty = intent.getStringExtra("y")
-            intenttime = intent.getStringExtra("time")
-            intentdays = intent.getStringExtra("days")
-            intentdaysMode = intent.getBooleanExtra("daysMode", false)
-            title = "Edit Schedule"
-
-            year = intenttime.substring(0, 4).toInt()
-            monthOfYear = intenttime.substring(5, 7).toInt() - 1
-            dayOfMonth = intenttime.substring(8, 10).toInt()
-            hour = intenttime.substring(11, 13).toInt()
-            min = intenttime.substring(14, 16).toInt()
-            displayNameEdit.setText(intentname)
-            dateEdit.text = intenttime.substring(0, 10)
-            timeEdit.text = intenttime.substring(11, 16)
-
-            if (intentdaysMode) {
-                dateEdit.text = intentdays
-
-                if (intentdays.contains("SUN")) dayButtons[0].setChecked(true)
-                if (intentdays.contains("MON")) dayButtons[1].setChecked(true)
-                if (intentdays.contains("TUE")) dayButtons[2].setChecked(true)
-                if (intentdays.contains("WED")) dayButtons[3].setChecked(true)
-                if (intentdays.contains("THU")) dayButtons[4].setChecked(true)
-                if (intentdays.contains("FRI")) dayButtons[5].setChecked(true)
-                if (intentdays.contains("SAT")) dayButtons[6].setChecked(true)
-
-                for (tb in dayButtons) {
-                    if (tb.isChecked) {
-                        tb.setBackgroundResource(R.drawable.button_bg_round_2)
-                        tb.setTextColor(Color.WHITE)
-                    } else {
-                        tb.setBackgroundResource(R.drawable.button_bg_round)
-                        tb.setTextColor(ContextCompat.getColor(this, R.color.darker_gray))
-                    }
-                }
-            }
-            days_mode_set = intentdaysMode
-        }
-
         //set onclick listener
         displayNameEdit.setOnClickListener(this)
         dateEdit.setOnClickListener(this)
@@ -205,7 +155,7 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
                 true
             }
             R.id.saveLocation -> {
-                if (picked or editmode) {
+                if (picked) {
                     addNewSchedule()
                     //prevents fast double click
                     item.isEnabled = false
@@ -487,39 +437,20 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
             done = true
         }
 
-        val newLocationItem =
-            if (!picked and editmode)
-                LocationItemData(
-                    displayNameEdit.text.toString(),
-                    intentx, intenty, time, isAlarmed, done,
-                    days_mode_set, dateEdit.text.toString()
-                )
-            else
-                LocationItemData(
+        val newLocationItem = LocationItemData(
                     displayNameEdit.text.toString(),
                     place?.x ?: "0", place?.y ?: "0", time, isAlarmed, done,
-                    days_mode_set, dateEdit.text.toString()
-                )
+                    days_mode_set, dateEdit.text.toString())
 
-        if (editmode) {
-            val id = intent.getIntExtra("Id", 0)
-            locationViewModel.editLocationItem(
-                newLocationItem.name,
-                newLocationItem.x, newLocationItem.y, newLocationItem.time,
-                newLocationItem.isAlarmed, newLocationItem.done,
-                newLocationItem.daysMode, newLocationItem.days, id
-            )
-            finish()
+        //don't allow adding schedule with passed date or time
+        if (!days_mode_set && currentTime >= timeInMilli) {
+            Toast.makeText(this@AddLocationActivity, "Enter a valid time", Toast.LENGTH_LONG)
+                .show()
         } else {
-            //don't allow adding schedule with passed date or time
-            if (!days_mode_set && currentTime >= timeInMilli) {
-                Toast.makeText(this@AddLocationActivity, "Enter a valid time", Toast.LENGTH_LONG)
-                    .show()
-            } else {
-                locationViewModel.insert(newLocationItem)
-                finish()
-            }
+            locationViewModel.insert(newLocationItem)
+            finish()
         }
+
     }
 
     //convert date to seconds
