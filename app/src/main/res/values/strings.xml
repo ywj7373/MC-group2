@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BlueCatApp</string>
+    <string name="app_name">Golden Pegasus</string>
     <string name="title_todo">Todo</string>
     <string name="title_appblocking">App Block</string>
     <string name="title_location">Location</string>
@@ -106,11 +106,11 @@
     <string name="FROM_RUNNINGNOTI">FROM_RUNNINGNOTI</string>
 
     <string name="SECONDS_REMAINING_ID">
-        com.example.bluecatapp.seconds_remaining
+        com.example.goldenpegasus.seconds_remaining
     </string>
 
     <string name="TIMER_LENGTH_ID">
-        com.example.bluecatapp.timer_length
+        com.example.goldenpegasus.timer_length
     </string>
 
     <string name="TIMER_EXPIRED_TXT_SHAKE">

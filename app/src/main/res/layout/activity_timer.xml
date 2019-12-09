@@ -5,7 +5,7 @@
     android:id="@+id/activity_timer_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.bluecatapp.TimerActivity">
+    tools:context="com.example.goldenpegasus.TimerActivity">
 
     <TextView
         android:id="@+id/tv_wakeUp_shake"

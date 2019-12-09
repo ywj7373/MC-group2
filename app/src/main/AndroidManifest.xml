@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.bluecatapp">
+    package="com.example.goldenpegasus">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -28,10 +28,10 @@
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"
             android:value="@string/naver_api_key_id" />
-        <service android:name=".AppBlockForegroundService" />
+        <service android:name="com.example.goldenpegasus.AppBlockForegroundService" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.goldenpegasus.MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,17 +39,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AddTodoActivity" />
-        <activity android:name=".TimerActivity" />
-        <activity android:name=".ui.location.AddLocationActivity" />
-        <activity android:name=".ui.location.MapActivity" />
+        <activity android:name="com.example.goldenpegasus.AddTodoActivity" />
+        <activity android:name="com.example.goldenpegasus.TimerActivity" />
+        <activity android:name="com.example.goldenpegasus.ui.location.AddLocationActivity" />
+        <activity android:name="com.example.goldenpegasus.ui.location.MapActivity" />
 
-        <receiver android:name=".ui.location.LocationReminderForegroundService" />
-        <service android:name=".ui.location.LocationReminderForegroundService" />
+        <receiver android:name="com.example.goldenpegasus.ui.location.LocationReminderForegroundService" />
+        <service android:name="com.example.goldenpegasus.ui.location.LocationReminderForegroundService" />
 
-        <receiver android:name=".ui.location.AlarmNotificationDeletedReceiver"></receiver>
-        <receiver android:name=".TimerExpiredReceiver"></receiver>
-        <receiver android:name=".TimerNotificationActionReceiver"></receiver>
+        <receiver android:name="com.example.goldenpegasus.ui.location.AlarmNotificationDeletedReceiver"></receiver>
+        <receiver android:name="com.example.goldenpegasus.TimerExpiredReceiver"></receiver>
+        <receiver android:name="com.example.goldenpegasus.TimerNotificationActionReceiver"></receiver>
     </application>
 
 </manifest>
