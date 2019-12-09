@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:visibility="visible"
-    tools:context="com.example.bluecatapp.TimerActivity"
+    tools:context="com.example.goldenpegasus.TimerActivity"
     tools:showIn="@layout/activity_timer">
 
     <TextView

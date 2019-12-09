@@ -45,7 +45,7 @@
             app:key="@string/appblock"
             app:title="@string/appblock_title" />
 
-        <com.example.bluecatapp.ui.settings.RestrictAppsPreference
+        <com.example.goldenpegasus.ui.settings.RestrictAppsPreference
             android:defaultValue="@array/empty_array"
             app:iconSpaceReserved="false"
             app:key="restricted_apps"
