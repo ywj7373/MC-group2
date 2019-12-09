@@ -17,6 +17,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.SystemClock
@@ -50,7 +51,6 @@ import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.data.Value
 import com.google.android.gms.fitness.request.OnDataPointListener
 import com.google.android.gms.fitness.request.SensorRequest
-import com.google.android.gms.tasks.Task
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.fragment_appblocking.*
 import java.util.concurrent.TimeUnit
@@ -75,6 +75,7 @@ class AppBlockingFragment : Fragment() {
     private lateinit var sharedPrefs: SharedPreferences
     private lateinit var usageStatsMap: MutableMap<String, UsageStats>
     private lateinit var restrictedApps: Set<String>
+    private lateinit var mAdapter: AppBlockingAdapter
 
     // Appblock variables
     private lateinit var blockTitle: TextView
@@ -110,6 +111,9 @@ class AppBlockingFragment : Fragment() {
 
     private lateinit var fitnessOptions: FitnessOptions
 
+    // Refresh fragment
+    private var shouldRefresh: Boolean = false
+
     // Constants
     val MY_PERMISSIONS_REQUEST_ACTIVITY_RECOGNITION = 151
     val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 150
@@ -122,24 +126,12 @@ class AppBlockingFragment : Fragment() {
         appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         usage = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         packageManager = context.packageManager
-        currentlyBlockedApps = getCurrentlyBlockedApps()
-        appStepCounters = getAppStepCounters()
-        usageStatsMap = getUsageStatsMap()
-        appUsageTimers = getAppUsageTimers()
+//        currentlyBlockedApps = getCurrentlyBlockedApps()
+//        appStepCounters = getAppStepCounters()
+//        usageStatsMap = getUsageStatsMap()
+//        appUsageTimers = getAppUsageTimers()
         restrictedApps = sharedPrefs.getStringSet("restricted_apps", mutableSetOf())!!
 
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        sharedPrefs = getDefaultSharedPreferences(this.context)
-
-        /** Declare FitAPI data types */
-        fitnessOptions =
-            FitnessOptions.builder()
-                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .build()
     }
 
     override fun onCreateView(
@@ -150,6 +142,18 @@ class AppBlockingFragment : Fragment() {
         appBlockingViewModel =
             ViewModelProviders.of(this).get(AppBlockingViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_appblocking, container, false)
+
+        /** Declare FitAPI data types */
+        fitnessOptions =
+            FitnessOptions.builder()
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .build()
+
+        currentlyBlockedApps = getCurrentlyBlockedApps()
+        appStepCounters = getAppStepCounters()
+        usageStatsMap = getUsageStatsMap()
+        appUsageTimers = getAppUsageTimers()
 
         // Initialize app block views
         blockTitle = root.findViewById(R.id.block_title)
@@ -214,6 +218,7 @@ class AppBlockingFragment : Fragment() {
                     appIcon.setImageDrawable(getAppIcon(appPackageName))
                     if (System.currentTimeMillis() < finishTimeStamp) {
                         getBlockCountdown(
+                            appPackageName,
                             finishTimeStamp,
                             chrono
                         ).start()
@@ -221,20 +226,21 @@ class AppBlockingFragment : Fragment() {
                         chrono.setText("00:00")
                         chrono.setTextColor(Color.parseColor("#8bc34a"))
                     }
-                    if (isPedometerEnabled) {
-                        if (appStepCounters[appPackageName] != null) {
-                            if (appStepCounters[appPackageName]!! >= maxStepCount) {
-                                pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
-                            } else if (appStepCounters[appPackageName]!! < maxStepCount) {
-                                // initialize maxStepCount view
-                                pedometerMaxValue.text = "of ${maxStepCount}"
-                                // Activate pedometer sensor
-                                startPedometer(appPackageName, maxStepCount)
-                            }
+                    if (isPedometerEnabled && appStepCounters[appPackageName] != null) {
+                        if (appStepCounters[appPackageName]!! >= maxStepCount) {
+                            pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
+                        } else {
+                            // set stepcount views
+                            pedometerMaxValue.text = "of ${maxStepCount}"
+                            pedometerMaxValue.text = "of ${maxStepCount}"
                         }
-                    } else {
-                        hidePedometerViews()
                     }
+                }
+                if (isPedometerEnabled) {
+                    // Activate pedometer sensor
+                    startPedometer()
+                } else {
+                    hidePedometerViews()
                 }
             }
         } else {
@@ -247,13 +253,33 @@ class AppBlockingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (isAppBlockModeEnabled) {
-
+            mAdapter = AppBlockingAdapter(getAdapterList(), maxStepCount, isPedometerEnabled)
             appblocking_recycler_view.apply {
                 setHasFixedSize(true)
                 layoutManager = LinearLayoutManager(activity)
-                adapter = AppBlockingAdapter(getAdapterList(), maxStepCount, isPedometerEnabled)
+                adapter = mAdapter
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isAppBlockModeEnabled) {
+            mAdapter = AppBlockingAdapter(getAdapterList(), maxStepCount, isPedometerEnabled)
+            appblocking_recycler_view.apply {
+                setHasFixedSize(true)
+                layoutManager = LinearLayoutManager(activity)
+                adapter = mAdapter
+            }
+
+            if(shouldRefresh){
+                refreshFragment()
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -357,16 +383,16 @@ class AppBlockingFragment : Fragment() {
 //    }
 
     /** Start pedometer feature using GoogleFit Api or by overriding Pedometer class */
-    private fun startPedometer(appName: String, numberOfSteps: Int) {
+    private fun startPedometer() {
         Log.d(TAG, "Pedometer started")
-        // initialize step counter views
-        pedometerValue.text = "${appStepCounters[appName]}"
 
         /* Check permissions for GoogleFit API */
         var hasGoogleFitPermissions = false
-        requestGoogleFitPermissions()
-        hasGoogleFitPermissions = checkGoogleFitPermissions(fitnessOptions)
-
+        // Disable GoogleFit when no network availableF
+        if(isConnectedToNetwork()) {
+            requestGoogleFitPermissions()
+            hasGoogleFitPermissions = checkGoogleFitPermissions(fitnessOptions)
+        }
         if (hasGoogleFitPermissions) {
             Toast.makeText(
                 activity!!.applicationContext,
@@ -375,7 +401,7 @@ class AppBlockingFragment : Fragment() {
             ).show()
             subscribeGoogleFit()
             // start recording GoogleFit step count
-            readGoogleFitStepData(appName)
+            readGoogleFitStepData()
         } else {
             /**
              *  No permission for GoogleFit
@@ -391,29 +417,43 @@ class AppBlockingFragment : Fragment() {
             pedometer = object : Pedometer() {
                 override fun onSensorChanged(event: SensorEvent?) {
                     // Only detect steps if under max step count
-                    if (appStepCounters[appName]!! < maxStepCount) {
-                        super.onSensorChanged(event)
-                    }
+                    super.onSensorChanged(event)
                 }
 
                 // Behavior when a step is detected
                 override fun step(timeNs: Long) {
                     super.step(timeNs)
-                    // Step count should not go over upper bound
-                    if (appStepCounters[appName]!! < maxStepCount) {
-                        // Increment step count
-                        appStepCounters[appName] = appStepCounters[appName]!!.plus(1)
+
+                    currentlyBlockedApps.forEach { (appName, finishTimeStamp) ->
+                        if (appStepCounters[appName]!! < maxStepCount) {
+                            // Increment step count
+                            appStepCounters[appName] = appStepCounters[appName]!!.plus(1)
+                        }
+                        // Set changed pedometer values
+                        pedometerValue.text = "${appStepCounters[appName]}"
+
+                        if (appStepCounters[appName]!! >= maxStepCount) {
+                            pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
+                            pedometerMaxValue.setTextColor(Color.parseColor("#8bc34a"))
+
+                            // Check if app is now unblocked
+                            if(System.currentTimeMillis() >= finishTimeStamp) {
+                                shouldRefresh = true
+                                mAdapter.setAppList(getAdapterList())
+                            }
+                        }
                     }
                     // Update changes in step count
                     with(sharedPrefs.edit()) {
                         putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
                         commit()
                     }
-                    pedometerValue.text = "${appStepCounters[appName]}"
-
-                    if (appStepCounters[appName]!! >= numberOfSteps) {
-                        pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
-                        pedometerMaxValue.setTextColor(Color.parseColor("#8bc34a"))
+                    // Update adapter values
+                    mAdapter.updateStepCounters(getUpdateStepCounters())
+                    Log.d("Pedometer", "updating step counters")
+                    if(shouldRefresh && activity!!.hasWindowFocus()){
+                        shouldRefresh = false
+                        refreshFragment()
                     }
                 }
             }
@@ -427,7 +467,7 @@ class AppBlockingFragment : Fragment() {
     }
 
     /** Records step data by requesting a subscription to background step data. */
-    fun subscribeGoogleFit() {
+    private fun subscribeGoogleFit() {
         // To create a subscription, invoke the Recording API. As soon as the subscription is
         // active, fitness data will start recording.
         GoogleSignIn.getLastSignedInAccount(context)?.let {
@@ -444,8 +484,7 @@ class AppBlockingFragment : Fragment() {
     }
 
     /** Read Google Fit Data */
-    private fun readGoogleFitStepData(appName: String): Int {
-        var total = 0
+    private fun readGoogleFitStepData() {
 
         val fitnessOptions: GoogleSignInOptionsExtension =
             FitnessOptions.builder()
@@ -457,39 +496,56 @@ class AppBlockingFragment : Fragment() {
 
         // Listen to live changes in step count
         val stepCountListener = OnDataPointListener { p0 ->
+            var value = 0
             p0!!.dataType.fields.forEach { field ->
-                val value: Value = p0.getValue(field) // Number of steps detected by listener
+                // Number of steps detected by listener
+                value = p0.getValue(field).asInt()
                 //                    Value(TotalSteps);
                 //                     TotalSteps=val+TotalSteps;
-                Log.i(TAG, "Detected DataPoint field: ${field.name}")
                 Log.i(TAG, "Detected DataPoint value: $value")
+            }
+            /**
+             * Update values upon data change here
+             */
+            // increment step counts for all apps
+            currentlyBlockedApps.forEach { (appName, finishTimeStamp) ->
 
-                /**
-                 * Update values upon data change here
-                 */
                 val stepCountOfApp = appStepCounters[appName]
 
                 if (stepCountOfApp!! < maxStepCount) {
                     // Increment step count
                     appStepCounters[appName] = stepCountOfApp +
-                            value.asInt() % (maxStepCount - stepCountOfApp + 1)
+                            value % (maxStepCount - stepCountOfApp + 1)
                     // prevent sum from exceeding maxStepCount
-                }
-                // Update changes in step count
-                with(sharedPrefs.edit()) {
-                    putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
-                    commit()
                 }
                 pedometerValue.text = "${appStepCounters[appName]}"
 
                 if (appStepCounters[appName]!! >= maxStepCount) {
                     pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
                     pedometerMaxValue.setTextColor(Color.parseColor("#8bc34a"))
+
+                    // Check if app is now unblocked
+                    if(System.currentTimeMillis() >= finishTimeStamp) {
+                        // Update adapter
+                        mAdapter.setAppList(getAdapterList())
+                        shouldRefresh = true
+                    }
                 }
+            }
+            // Update changes in step count
+            with(sharedPrefs.edit()) {
+                putString("appStepCounters", MainActivity.gson.toJson(appStepCounters))
+                commit()
+            }
+            mAdapter.updateStepCounters(getUpdateStepCounters())
+            Log.d("Pedometer", "updating step counters")
+            if(shouldRefresh && activity!!.hasWindowFocus()) {
+                shouldRefresh = false
+                refreshFragment()
             }
         }
 
-        var response: Task<Void> = Fitness.getSensorsClient(context!!, googleSignInAccount)
+        Fitness.getSensorsClient(context!!, googleSignInAccount)
             .add(
                 SensorRequest.Builder()
                     .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
@@ -499,7 +555,6 @@ class AppBlockingFragment : Fragment() {
                 stepCountListener
             )
 
-
         Fitness.getHistoryClient(
             context!!,
             GoogleSignIn.getAccountForExtension(context!!, fitnessOptions)
@@ -507,7 +562,7 @@ class AppBlockingFragment : Fragment() {
             .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
             .addOnSuccessListener { dataSet ->
                 if (!dataSet.isEmpty) {
-                    total = dataSet.dataPoints[0].getValue(Field.FIELD_STEPS).asInt()
+                    val total = dataSet.dataPoints[0].getValue(Field.FIELD_STEPS).asInt()
                     Log.d(TAG, "Total steps today: $total")
                 }
             }
@@ -517,7 +572,6 @@ class AppBlockingFragment : Fragment() {
                     "There was a problem getting the step count."
                 )
             }
-        return total
     }
 
     // Check for network connectivity
@@ -532,6 +586,16 @@ class AppBlockingFragment : Fragment() {
     /************************************************/
 
     /************************************************/
+
+    private fun refreshFragment(){
+        val ft = fragmentManager?.beginTransaction()
+        if (Build.VERSION.SDK_INT >= 26) {
+            ft?.setReorderingAllowed(false)
+        }
+        Log.d("Pedometer", "REFRESHING FRAGMENT!")
+        ft?.detach(this@AppBlockingFragment)
+            ?.attach(this@AppBlockingFragment)?.commit()
+    }
 
 
     private fun hasUsageDataAccessPermission(): Boolean {
@@ -570,7 +634,7 @@ class AppBlockingFragment : Fragment() {
         dialog.show() // Display the alert dialog on app interface
     }
 
-    private fun getBlockCountdown(countDownFromTime: Long, chrono: Chronometer): CountDownTimer {
+    private fun getBlockCountdown(appName: String, countDownFromTime: Long, chrono: Chronometer): CountDownTimer {
         val msToFinish = countDownFromTime - System.currentTimeMillis()
         chrono.base = SystemClock.elapsedRealtime() + msToFinish
         chrono.start()
@@ -579,8 +643,20 @@ class AppBlockingFragment : Fragment() {
             }
 
             override fun onFinish() {
+
                 chrono.setText("00:00")
                 chrono.setTextColor(Color.parseColor("#8bc34a"))
+                if(!isPedometerEnabled
+                    || appStepCounters[appName] == null
+                    && appStepCounters[appName]!! >= maxStepCount){
+                    // Update adapter and refresh fragment
+                    mAdapter.setAppList(getAdapterList())
+                    shouldRefresh = activity!!.hasWindowFocus()
+                }
+                if(shouldRefresh && activity!!.hasWindowFocus()){
+                    shouldRefresh = false
+                    refreshFragment()
+                }
                 chrono.stop()
             }
         }
@@ -632,6 +708,10 @@ class AppBlockingFragment : Fragment() {
     }
 
     private fun getAdapterList(): List<AppDisplayListItem> {
+        // update values first
+        currentlyBlockedApps = getCurrentlyBlockedApps()
+        appStepCounters = getAppStepCounters()
+
         var blockedAppList: MutableList<AppDisplayListItem> = arrayListOf()
         restrictedApps.forEach { appPackageName ->
             val blockFinishTimeStamp =
@@ -649,6 +729,17 @@ class AppBlockingFragment : Fragment() {
         }
         blockedAppList.sortWith(compareBy { it.displayName })
         return blockedAppList
+    }
+
+    private fun getUpdateStepCounters(): MutableMap<String, Int> {
+         var stepCountersList: MutableMap<String, Int> = mutableMapOf()
+        restrictedApps.forEach { appPackageName ->
+            if (currentlyBlockedApps.contains(appPackageName) && appStepCounters[appPackageName] != null) {
+                val appDisplayName = getAppNameFromPackage(appPackageName)
+                stepCountersList.put(appDisplayName, appStepCounters[appPackageName]!!)
+            }
+        }
+        return stepCountersList
     }
 
     private fun hideViews() {
