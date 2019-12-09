@@ -7,20 +7,12 @@
     <!-- Bottom View Start-->
     <LinearLayout
         android:id="@+id/bottom_wrapper"
-        android:layout_width="160dp"
+        android:layout_width="80dp"
         android:layout_height="50dp"
         android:background="#ffffff"
         android:orientation="horizontal"
         android:weightSum="2">
         <!--What you want to show-->
-        <Button
-            android:id="@+id/edit_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@color/colorPrimary"
-            android:text="Edit"
-            android:textColor="#FFFFFF" />
 
         <Button
             android:id="@+id/delete_button"

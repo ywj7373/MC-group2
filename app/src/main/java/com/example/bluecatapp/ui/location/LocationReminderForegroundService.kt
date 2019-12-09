@@ -135,9 +135,18 @@ class LocationReminderForegroundService : Service() {
         handler = Handler()
         runnable = Runnable {
             Log.d(TAG, "New routine!")
-            checkDate()
-            checkCurrentLocation()
-            checkTime()
+            if (destination != null) {
+                val destinationTime = timeToSeconds(destination!!.time)
+                val currentTime = System.currentTimeMillis()
+                val diff = (destinationTime - currentTime) / 60000
+                Log.d(TAG, diff.toString())
+                if (diff <= 180) {
+                    Log.d(TAG, "Start getting current location")
+                    checkDate()
+                    checkCurrentLocation()
+                    checkTime()
+                }
+            }
             handler.postDelayed(runnable, ROUTINE_INTERVAL)
         }
         handler.post(runnable)

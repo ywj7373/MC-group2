@@ -501,21 +501,23 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
                     days_mode_set, dateEdit.text.toString()
                 )
 
-        if (editmode) {
-            val id = intent.getIntExtra("Id", 0)
-            locationViewModel.editLocationItem(
-                newLocationItem.name,
-                newLocationItem.x, newLocationItem.y, newLocationItem.time,
-                newLocationItem.isAlarmed, newLocationItem.done,
-                newLocationItem.daysMode, newLocationItem.days, id
-            )
-            finish()
-        } else {
+        if (!days_mode_set && currentTime >= timeInMilli) {
             //don't allow adding schedule with passed date or time
-            if (!days_mode_set && currentTime >= timeInMilli) {
-                Toast.makeText(this@AddLocationActivity, "Enter a valid time", Toast.LENGTH_LONG)
-                    .show()
-            } else {
+            Toast.makeText(this@AddLocationActivity, "Enter a valid time", Toast.LENGTH_LONG)
+                .show()
+        }
+        else {
+            if (editmode) {
+                val id = intent.getIntExtra("Id", 0)
+                locationViewModel.editLocationItem(
+                    newLocationItem.name,
+                    newLocationItem.x, newLocationItem.y, newLocationItem.time,
+                    newLocationItem.isAlarmed, newLocationItem.done,
+                    newLocationItem.daysMode, newLocationItem.days, id
+                )
+                finish()
+            }
+            else {
                 locationViewModel.insert(newLocationItem)
                 finish()
             }
