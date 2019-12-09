@@ -130,13 +130,12 @@ class LocationReminderForegroundService : Service() {
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        updateNotification("No Alarm")
-
         handler = Handler()
         runnable = Runnable {
             Log.d(TAG, "New routine!")
             if (destination != null) {
                 val destinationTime = timeToSeconds(destination!!.time)
+                Log.d(TAG, destination!!.time)
                 val currentTime = System.currentTimeMillis()
                 val diff = (destinationTime - currentTime) / 60000
                 Log.d(TAG, diff.toString())
@@ -146,6 +145,9 @@ class LocationReminderForegroundService : Service() {
                     checkCurrentLocation()
                     checkTime()
                 }
+            }
+            else {
+                updateNotification("No Alarm")
             }
             handler.postDelayed(runnable, ROUTINE_INTERVAL)
         }
@@ -247,6 +249,7 @@ class LocationReminderForegroundService : Service() {
                     "yyyy MMM dd, EEE, h:mm a\n", Locale.KOREA
                 ).format(Date(alarmTime))
 
+                Log.d(TAG, isAlarmed.toString())
                 if (!isAlarmed) updateNotification(alarmText)
 
                 // Check if current time passed arrival time
@@ -339,7 +342,7 @@ class LocationReminderForegroundService : Service() {
             val calendar = Calendar.getInstance()
             calendar.add(Calendar.DATE, 6)
             var futureDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(calendar.time)
-            val dayOfTodayEncoded = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            val dayOfTodayEncoded = calendar.get(Calendar.DAY_OF_WEEK)
             var iteratingDay = (dayOfTodayEncoded + 6) % 7
             var dayOfToday = ""
 

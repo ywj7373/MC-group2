@@ -366,10 +366,9 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
                 tb.setTextColor(ContextCompat.getColor(this, R.color.darker_gray))
             }
         }
-
+        val current = Calendar.getInstance()
         // if there is no day checked
         if (str == "") {
-            val current = Calendar.getInstance()
             year = current.get(Calendar.YEAR)
             monthOfYear = current.get(Calendar.MONTH)
             dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
@@ -381,10 +380,14 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
             dateEdit.text = str.substring(0, str.length - 1)
             days_mode_set = true
 
-            val calendar = Calendar.getInstance()
-            var dayOfToday_encoded = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            var dayOfToday_encoded = current.get(Calendar.DAY_OF_WEEK)
             var dayOfToday: String = ""
             var count = 0                       // To prevent infinite loop
+
+            year = current.get(Calendar.YEAR)
+            monthOfYear = current.get(Calendar.MONTH)
+            dayOfMonth = current.get(Calendar.DAY_OF_MONTH)
+            Log.d(TAG, "hi" +dayOfMonth.toString())
 
             // Iteration for get closest time
             while (true) {
@@ -401,14 +404,11 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
                 if (dateEdit.text.contains(dayOfToday) || count > 10)
                     break
                 dayOfToday_encoded = dayOfToday_encoded + 1
-                calendar.add(Calendar.DATE, 1)
+                current.add(Calendar.DATE, 1)
                 if (dayOfToday_encoded > 7)
                     dayOfToday_encoded = 1
                 count++
             }
-            year = calendar.get(Calendar.YEAR)
-            monthOfYear = calendar.get(Calendar.MONTH)
-            dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
         }
     }
 
@@ -416,6 +416,7 @@ class AddLocationActivity : AppCompatActivity(), View.OnClickListener,
     private fun addNewSchedule() {
         val isAlarmed = false
         var done = false
+
 
         //add data to the database
         val time = String.format(

@@ -1,12 +1,20 @@
 package com.example.goldenpegasus.ui.location
 
+import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.LocationManager
 import android.os.Bundle
+import android.provider.Settings
 import android.text.SpannableStringBuilder
+import android.util.Log
 import android.view.*
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.text.bold
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -23,6 +31,8 @@ class LocationFragment : Fragment() {
     private lateinit var locationAdapter: LocationAdapter
     private lateinit var sharedPreferences: SharedPreferences
     private var isLocationModeEnabled: Boolean = false
+    private val PERMISSION_ID = 270
+    private val TAG = "Location Fragment"
 
     // Views
     private lateinit var nextUpView: TextView
@@ -69,7 +79,7 @@ class LocationFragment : Fragment() {
         isLocationModeEnabled = sharedPreferences.getBoolean("Location Reminder", true)
         if (isLocationModeEnabled) {
             setHasOptionsMenu(true)
-
+            startLocationService()
             locationViewModel.getAllLocationItems().observe(this,
                 Observer<List<LocationItemData>> { t -> locationAdapter.setLocationItems(t!!) })
 
@@ -194,5 +204,88 @@ class LocationFragment : Fragment() {
         nextUpViewParams.topMargin = 200
         nextUpView.setTextColor(Color.DKGRAY)
         disabledTextView.visibility = View.VISIBLE
+    }
+
+    // Check if the location tracker is enabled in the setting
+    private fun isLocationTrackerEnabled(): Boolean {
+        val locationManager: LocationManager =
+            requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
+    }
+
+    // Start location service
+    private fun startLocationService() {
+        if (checkLocationPermissions()) {
+            if (!isLocationTrackerEnabled()) {
+                Toast.makeText(requireActivity(), "Turn on location", Toast.LENGTH_LONG).show()
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(intent)
+            } else {
+                LocationReminderForegroundService.startService(requireContext())
+            }
+        } else requestLocationPermission()
+    }
+
+    // Check if the user needs permission for location
+    private fun checkLocationPermissions(): Boolean {
+        val permissionState = ActivityCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        return permissionState == PackageManager.PERMISSION_GRANTED
+    }
+
+    // Request for permission for location
+    private fun requestLocationPermission() {
+        val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(
+            requireActivity(),
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        if (shouldProvideRationale) {
+            Log.d(TAG, "Displaying permission rationale")
+            Toast.makeText(
+                requireContext(),
+                "We need permission to use your location to enable location reminders",
+                Toast.LENGTH_LONG
+            ).show()
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ), PERMISSION_ID
+            )
+
+        } else {
+            Log.d(TAG, "Requesting Permission")
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ), PERMISSION_ID
+            )
+        }
+    }
+
+    // Called after the user allows or denies our requested permission
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permission: Array<String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == PERMISSION_ID && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (!isLocationTrackerEnabled()) {
+                Toast.makeText(requireActivity(), "Turn on location", Toast.LENGTH_LONG).show()
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(intent)
+            } else LocationReminderForegroundService.startService(requireContext())
+        } else {
+            // Turn off location reminder
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            val editor = sharedPreferences.edit()
+            editor.putBoolean("Location Based Reminder", false)
+            editor.apply()
+        }
     }
 }
