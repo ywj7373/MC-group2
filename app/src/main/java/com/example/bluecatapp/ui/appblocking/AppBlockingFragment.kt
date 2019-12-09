@@ -17,6 +17,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.SystemClock
@@ -38,6 +39,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bluecatapp.AppBlockForegroundService
+import com.example.bluecatapp.FragmentToLoad
 import com.example.bluecatapp.MainActivity
 import com.example.bluecatapp.R
 import com.example.bluecatapp.pedometer.Pedometer
@@ -422,7 +424,8 @@ class AppBlockingFragment : Fragment() {
                 // Behavior when a step is detected
                 override fun step(timeNs: Long) {
                     super.step(timeNs)
-                    // Step count should not go over upper bound
+
+                    var shouldRefresh = false
                     currentlyBlockedApps.forEach { (appName, finishTimeStamp) ->
                         if (appStepCounters[appName]!! < maxStepCount) {
                             // Increment step count
@@ -434,6 +437,11 @@ class AppBlockingFragment : Fragment() {
                         if (appStepCounters[appName]!! >= maxStepCount) {
                             pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
                             pedometerMaxValue.setTextColor(Color.parseColor("#8bc34a"))
+
+                            // Check if app is now unblocked
+                            if(System.currentTimeMillis() >= finishTimeStamp) {
+                                shouldRefresh = true
+                            }
                         }
                     }
                     // Update changes in step count
@@ -444,6 +452,17 @@ class AppBlockingFragment : Fragment() {
                     // Update adapter values
                     mAdapter.updateStepCounters(getUpdateStepCounters())
                     Log.d("Pedometer", "updating step counters")
+
+                    if(shouldRefresh){
+                        // Refresh fragment to display changes
+                        val ft = getFragmentManager()?.beginTransaction()
+                        if (Build.VERSION.SDK_INT >= 26) {
+                            ft?.setReorderingAllowed(false)
+                        }
+                        Log.d("Pedometer", "REFRESHING FRAGMENT!")
+                        ft?.detach(this@AppBlockingFragment)
+                            ?.attach(this@AppBlockingFragment)?.commit()
+                    }
                 }
             }
             sensorManager = activity!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -496,6 +515,7 @@ class AppBlockingFragment : Fragment() {
             /**
              * Update values upon data change here
              */
+            var shouldRefresh = false
             currentlyBlockedApps.forEach { (appName, finishTimeStamp) ->
 
                 val stepCountOfApp = appStepCounters[appName]
@@ -511,6 +531,11 @@ class AppBlockingFragment : Fragment() {
                 if (appStepCounters[appName]!! >= maxStepCount) {
                     pedometerValue.setTextColor(Color.parseColor("#8bc34a"))
                     pedometerMaxValue.setTextColor(Color.parseColor("#8bc34a"))
+
+                    // Check if app is now unblocked
+                    if(System.currentTimeMillis() >= finishTimeStamp) {
+                        shouldRefresh = true
+                    }
                 }
             }
             // Update changes in step count
@@ -520,6 +545,17 @@ class AppBlockingFragment : Fragment() {
             }
             mAdapter.updateStepCounters(getUpdateStepCounters())
             Log.d("Pedometer", "updating step counters")
+
+            if(shouldRefresh){
+                // Refresh fragment to display changes
+                val ft = getFragmentManager()?.beginTransaction()
+                if (Build.VERSION.SDK_INT >= 26) {
+                    ft?.setReorderingAllowed(false)
+                }
+                Log.d("Pedometer", "REFRESHING FRAGMENT!")
+                ft?.detach(this@AppBlockingFragment)
+                    ?.attach(this@AppBlockingFragment)?.commit()
+            }
         }
 
         Fitness.getSensorsClient(context!!, googleSignInAccount)
@@ -610,14 +646,23 @@ class AppBlockingFragment : Fragment() {
             }
 
             override fun onFinish() {
+
                 chrono.setText("00:00")
                 chrono.setTextColor(Color.parseColor("#8bc34a"))
-                chrono.stop()
 
-//                if(appStepCounters[appName]!! >= maxStepCount){
+                if(!isPedometerEnabled || appStepCounters[appName]!! >= maxStepCount){
                     // app is unblocked
-//                    mAdapter.setAppList(getAdapterList())
-//                }
+                    mAdapter.setAppList(getAdapterList())
+
+                    // Refresh fragment to display changes
+                    val ft = getFragmentManager()?.beginTransaction()
+                    if (Build.VERSION.SDK_INT >= 26) {
+                        ft?.setReorderingAllowed(false)
+                    }
+                    Log.d("Pedometer", "REFRESHING FRAGMENT!")
+                    ft?.detach(this@AppBlockingFragment)?.attach(this@AppBlockingFragment)?.commit()
+                }
+                chrono.stop()
             }
         }
     }
